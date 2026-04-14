@@ -1,0 +1,179 @@
+-- [[ FISH IT - pociXkarin GLOBAL EDITION ]] --
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- Remotes untuk Mancing & Jual
+local RF_Charge = Net:WaitForChild("RF/7ada2be0cc37f3fe3074474597294d6a0db80bfa57af22072243bf54abddb5db")
+local RF_Start  = Net:WaitForChild("RF/7ebfbf23d01d874124f449a8b95d1caeb8dd834802d49955755c51311dc0c104")
+local RE_Catch  = Net:WaitForChild("RE/97334f8ee89117accc3e6c2e76a00e6e427dcb4b8c74e158534e5562d0ddd67d")
+local RF_Sell   = Net:WaitForChild("RF/86ef13eed84cdc0c3ff8bd780a4232dd7891790ec2888f1bce99e37bc9bde199")
+
+-- Remotes untuk Beli Telur
+local RF_Egg1 = Net:WaitForChild("RF/195e84046abc4c223dd6d35b5d95deb7feb5f94e48ad0f5bf8602e02e1ce0ad8")
+local RF_Egg2 = Net:WaitForChild("RF/20f9c7c272578fe0fd2c7c96db1fb223fa846668447b7c755f44bbd4a67589fc")
+
+-- Konfigurasi
+local targetCFrame = CFrame.new(1187.18164, 10.8309031, 2592.33643, 0.59283185, 1.60291957e-08, 0.805326283, -5.46121512e-08, 1, 2.02981418e-08, -0.805326283, -5.60139846e-08, 0.59283185)
+local isRunning = false
+
+-- --- UI SETUP (Menggunakan Style Icon Bulat) --- --
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ResetOnSpawn = false
+
+local Icon = Instance.new("TextButton")
+Icon.Name = "pociIcon"
+Icon.Parent = ScreenGui
+Icon.Size = UDim2.new(0, 50, 0, 50)
+Icon.Position = UDim2.new(0, 20, 0, 100)
+Icon.BackgroundColor3 = Color3.fromRGB(255, 0, 100)
+Icon.Text = "🎣\n+"
+Icon.TextSize = 14
+Icon.TextColor3 = Color3.new(1, 1, 1)
+Icon.Font = Enum.Font.SourceSansBold
+local IconCorner = Instance.new("UICorner", Icon)
+IconCorner.CornerRadius = UDim.new(0, 12)
+
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.Size = UDim2.new(0, 150, 0, 110)
+Frame.Position = UDim2.new(0, 80, 0, 100)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.Visible = false 
+local FrameCorner = Instance.new("UICorner", Frame)
+FrameCorner.CornerRadius = UDim.new(0, 15)
+
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Text = "pociXkarin"
+Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 14
+Title.BackgroundTransparency = 1
+
+local Toggle = Instance.new("TextButton", Frame)
+Toggle.Position = UDim2.new(0.1, 0, 0.35, 0)
+Toggle.Size = UDim2.new(0.8, 0, 0, 35)
+Toggle.Text = "START FARM"
+Toggle.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+Toggle.TextColor3 = Color3.new(1, 1, 1)
+Toggle.Font = Enum.Font.GothamBold
+Toggle.TextSize = 12
+Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 8)
+
+local Close = Instance.new("TextButton", Frame)
+Close.Position = UDim2.new(0, 0, 0.75, 0)
+Close.Size = UDim2.new(1, 0, 0, 25)
+Close.Text = "CLOSE"
+Close.BackgroundTransparency = 1
+Close.TextColor3 = Color3.fromRGB(200, 50, 50)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 11
+
+-- --- 1. JALUR AUTO SELL (Independent) --- --
+task.spawn(function()
+    while true do
+        task.wait(10)
+        pcall(function()
+            RF_Sell:InvokeServer()
+        end)
+        task.wait(300)
+    end
+end)
+
+-- --- 2. JALUR AUTO FARM (Independent) --- --
+task.spawn(function()
+    while true do
+        if isRunning then
+            pcall(function()
+                RF_Charge:InvokeServer()
+                task.wait(math.random(5, 15) / 100)
+                RF_Start:InvokeServer(unpack({-1.233184814453125, 0.9999655501601774, 1776146256.458831}))
+                task.wait(math.random(20, 50) / 100) 
+                RE_Catch:FireServer()
+                RE_Catch:FireServer()
+            end)
+            task.wait(math.random(1, 3) / 10) 
+        else
+            task.wait(0.5)
+        end
+    end
+end)
+
+-- --- 3. JALUR AUTO MOVE & EGG (Independent - Auto Execute) --- --
+task.spawn(function()
+    while true do
+        local char = game.Players.LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+        if hrp then
+            -- A. Simpan Lokasi & Move
+            local savedPos = hrp.CFrame
+            task.wait(2)
+            hrp.CFrame = targetCFrame
+            task.wait(1)
+
+            -- B. Beli Telur 8x
+            for i = 1, 8 do
+                pcall(function()
+                    RF_Egg1:InvokeServer()
+                    RF_Egg2:InvokeServer()
+                end)
+                task.wait(2)
+            end
+
+            -- C. Balik ke Lokasi Awal
+            task.wait(2)
+            hrp.CFrame = savedPos
+        end
+
+        -- D. Jeda 1 Jam 10 Detik
+        task.wait(3610)
+    end
+end)
+
+-- --- INTERAKSI UI --- --
+Icon.MouseButton1Click:Connect(function()
+    Frame.Visible = not Frame.Visible
+end)
+
+Toggle.MouseButton1Click:Connect(function()
+    isRunning = not isRunning
+    Toggle.Text = isRunning and "STOP" or "START FARM"
+    Toggle.BackgroundColor3 = isRunning and Color3.fromRGB(200, 100, 0) or Color3.fromRGB(0, 150, 0)
+end)
+
+Close.MouseButton1Click:Connect(function()
+    isRunning = false
+    ScreenGui:Destroy()
+end)
+
+-- Fungsi Drag (Mobile Friendly)
+local function makeDraggable(obj)
+    local UserInputService = game:GetService("UserInputService")
+    local dragging, dragInput, dragStart, startPos
+    obj.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true dragStart = input.Position startPos = obj.Position
+        end
+    end)
+    obj.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            dragInput = input
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    obj.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+end
+
+makeDraggable(Icon)
+makeDraggable(Frame)

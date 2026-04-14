@@ -102,6 +102,9 @@ end)
 
 -- --- 3. JALUR AUTO MOVE & EGG (Independent - Auto Execute) --- --
 task.spawn(function()
+    -- Jeda awal 1 menit setelah execute sesuai instruksi
+    task.wait(60)
+    
     while true do
         local char = game.Players.LocalPlayer.Character
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -113,8 +116,8 @@ task.spawn(function()
             hrp.CFrame = targetCFrame
             task.wait(1)
 
-            -- B. Beli Telur 8x
-            for i = 1, 8 do
+            -- B. Beli Telur 6x (Diubah dari 8x)
+            for i = 1, 6 do
                 pcall(function()
                     RF_Egg1:InvokeServer()
                     RF_Egg2:InvokeServer()

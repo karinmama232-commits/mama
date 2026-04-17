@@ -44,10 +44,10 @@ Icon.Font = Enum.Font.SourceSansBold
 local IconCorner = Instance.new("UICorner", Icon)
 IconCorner.CornerRadius = UDim.new(0, 12)
 
--- Frame diperbesar sedikit untuk 4 tombol, tombolnya kita buat lebih kecil (height 25)
+-- Frame diperbesar sedikit untuk menampung tombol baru
 local Frame = Instance.new("Frame")
 Frame.Parent = ScreenGui
-Frame.Size = UDim2.new(0, 150, 0, 220) 
+Frame.Size = UDim2.new(0, 150, 0, 260) 
 Frame.Position = UDim2.new(0, 80, 0, 100)
 Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Frame.Visible = false 
@@ -64,7 +64,7 @@ Title.BackgroundTransparency = 1
 
 -- Tombol 1: Auto Farm
 local Toggle = Instance.new("TextButton", Frame)
-Toggle.Position = UDim2.new(0.1, 0, 0.18, 0)
+Toggle.Position = UDim2.new(0.1, 0, 0.15, 0)
 Toggle.Size = UDim2.new(0.8, 0, 0, 25)
 Toggle.Text = "FARM: OFF"
 Toggle.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
@@ -75,7 +75,7 @@ Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 6)
 
 -- Tombol 2: Auto Sell
 local ToggleSell = Instance.new("TextButton", Frame)
-ToggleSell.Position = UDim2.new(0.1, 0, 0.32, 0)
+ToggleSell.Position = UDim2.new(0.1, 0, 0.27, 0)
 ToggleSell.Size = UDim2.new(0.8, 0, 0, 25)
 ToggleSell.Text = "SELL: OFF"
 ToggleSell.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
@@ -86,7 +86,7 @@ Instance.new("UICorner", ToggleSell).CornerRadius = UDim.new(0, 6)
 
 -- Tombol 3: Auto Move & Egg
 local ToggleMove = Instance.new("TextButton", Frame)
-ToggleMove.Position = UDim2.new(0.1, 0, 0.46, 0)
+ToggleMove.Position = UDim2.new(0.1, 0, 0.39, 0)
 ToggleMove.Size = UDim2.new(0.8, 0, 0, 25)
 ToggleMove.Text = "MOVE & EGG: OFF"
 ToggleMove.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
@@ -97,7 +97,7 @@ Instance.new("UICorner", ToggleMove).CornerRadius = UDim.new(0, 6)
 
 -- Tombol 4: Anim & Notify (GABUNGAN)
 local ToggleOpti = Instance.new("TextButton", Frame)
-ToggleOpti.Position = UDim2.new(0.1, 0, 0.60, 0)
+ToggleOpti.Position = UDim2.new(0.1, 0, 0.51, 0)
 ToggleOpti.Size = UDim2.new(0.8, 0, 0, 25)
 ToggleOpti.Text = "ANIM & NOTIF: OFF"
 ToggleOpti.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
@@ -106,8 +106,19 @@ ToggleOpti.Font = Enum.Font.GothamBold
 ToggleOpti.TextSize = 10
 Instance.new("UICorner", ToggleOpti).CornerRadius = UDim.new(0, 6)
 
+-- Tombol 5: Teleport (Baru)
+local BtnTeleport = Instance.new("TextButton", Frame)
+BtnTeleport.Position = UDim2.new(0.1, 0, 0.63, 0)
+BtnTeleport.Size = UDim2.new(0.8, 0, 0, 25)
+BtnTeleport.Text = "TELEPORT"
+BtnTeleport.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+BtnTeleport.TextColor3 = Color3.new(1, 1, 1)
+BtnTeleport.Font = Enum.Font.GothamBold
+BtnTeleport.TextSize = 11
+Instance.new("UICorner", BtnTeleport).CornerRadius = UDim.new(0, 6)
+
 local Close = Instance.new("TextButton", Frame)
-Close.Position = UDim2.new(0, 0, 0.80, 0)
+Close.Position = UDim2.new(0, 0, 0.85, 0)
 Close.Size = UDim2.new(1, 0, 0, 25)
 Close.Text = "CLOSE UI"
 Close.BackgroundTransparency = 1
@@ -255,6 +266,15 @@ ToggleOpti.MouseButton1Click:Connect(function()
     isOptiEnabled = not isOptiEnabled
     ToggleOpti.Text = isOptiEnabled and "ANIM & NOTIF: ON" or "ANIM & NOTIF: OFF"
     ToggleOpti.BackgroundColor3 = isOptiEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+end)
+
+-- Interaksi Tombol Teleport (Satu kali jalan)
+BtnTeleport.MouseButton1Click:Connect(function()
+    local char = Players.LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = CFrame.new(1066.65247, -47.7099075, 2679.47949, 0.848919868, 5.94613159e-09, 0.528521538, -4.15829504e-08, 1, 5.55407134e-08, -0.528521538, -6.9127104e-08, 0.848919868)
+    end
 end)
 
 Close.MouseButton1Click:Connect(function()

@@ -1,224 +1,274 @@
--- [[ FISH IT - pociXkarin GLOBAL EDITION (MODIFIED 4x SPEED & OPTIMIZER) ]] --
+-- [[ EASTER ISLAND - FINAL OPTIMIZED GLOBAL EDITION ]] --
+
+local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
+
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
--- Remotes untuk Mancing & Jual
-local RF_Charge = Net:WaitForChild("RF/cf50d40220ae9c204b2092474991326830922b307a89413d25fb475eb89a9362")
-local RF_Start  = Net:WaitForChild("RF/e9fa3b743b580392b9017f170faa08c486e7869bd0de9ca8b6180dbe97ae6dfd")
-local RE_Catch  = Net:WaitForChild("RE/5bea60fdad48291b36dc8798bfe3ccd1d58fc58d1f86db9aef727689c8d6edf6")
-local RF_Sell   = Net:WaitForChild("RF/1b15b6a56c737ec3826ab3d94c3c96ec79a9709cc3a086a92f1fdabc39c791f5")
-
--- Remotes untuk Beli Telur
-local RF_Egg1 = Net:WaitForChild("RF/195e84046abc4c223dd6d35b5d95deb7feb5f94e48ad0f5bf8602e02e1ce0ad8")
-local RF_Egg2 = Net:WaitForChild("RF/20f9c7c272578fe0fd2c7c96db1fb223fa846668447b7c755f44bbd4a67589fc")
-
--- Konfigurasi
-local targetCFrame = CFrame.new(1187.18164, 10.8309031, 2592.33643, 0.59283185, 1.60291957e-08, 0.805326283, -5.46121512e-08, 1, 2.02981418e-08, -0.805326283, -5.60139846e-08, 0.59283185)
-
--- Status Toggles
-local isRunning = false
-local isAutoSell = false
-local isAutoMove = false
-local isOptiEnabled = false -- Toggle gabungan Anim & Notify
-
--- --- UI SETUP --- --
+-- ==========================================
+-- 1. SETUP UI COMPACT
+-- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "pociXkarinUI"
-ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Name = "EasterIslandUI"
+ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
-local Icon = Instance.new("TextButton")
-Icon.Name = "pociIcon"
-Icon.Parent = ScreenGui
-Icon.Size = UDim2.new(0, 50, 0, 50)
-Icon.Position = UDim2.new(0, 20, 0, 100)
-Icon.BackgroundColor3 = Color3.fromRGB(255, 0, 100)
-Icon.Text = "🎣\n+"
-Icon.TextSize = 14
-Icon.TextColor3 = Color3.new(1, 1, 1)
-Icon.Font = Enum.Font.SourceSansBold
-local IconCorner = Instance.new("UICorner", Icon)
-IconCorner.CornerRadius = UDim.new(0, 12)
+-- ICON
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "EasterIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(255, 105, 180) 
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "♡"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 30
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 10)
 
--- Frame diperbesar sedikit untuk menampung tombol baru
-local Frame = Instance.new("Frame")
-Frame.Parent = ScreenGui
-Frame.Size = UDim2.new(0, 150, 0, 260) 
-Frame.Position = UDim2.new(0, 80, 0, 100)
-Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Frame.Visible = false 
-local FrameCorner = Instance.new("UICorner", Frame)
-FrameCorner.CornerRadius = UDim.new(0, 15)
+-- MENU UTAMA
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "EasterMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(255, 245, 248) 
+MainFrame.BackgroundTransparency = 0.2 
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 220, 0, 160) 
+MainFrame.Visible = false 
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
-local Title = Instance.new("TextLabel", Frame)
-Title.Size = UDim2.new(1, 0, 0, 35)
-Title.Text = "pociXkarin"
-Title.TextColor3 = Color3.new(1, 1, 1)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 14
+-- Header
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
+Title.Text = "Easter Island ♡" 
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Tombol 1: Auto Farm
-local Toggle = Instance.new("TextButton", Frame)
-Toggle.Position = UDim2.new(0.1, 0, 0.15, 0)
-Toggle.Size = UDim2.new(0.8, 0, 0, 25)
-Toggle.Text = "FARM: OFF"
-Toggle.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-Toggle.TextColor3 = Color3.new(1, 1, 1)
-Toggle.Font = Enum.Font.GothamBold
-Toggle.TextSize = 11
-Instance.new("UICorner", Toggle).CornerRadius = UDim.new(0, 6)
+local HideBtn = Instance.new("TextButton", Header)
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0) 
+HideBtn.Size = UDim2.new(0, 25, 0, 25) 
+HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HideBtn.BackgroundTransparency = 0.4
+HideBtn.Text = "-"
+HideBtn.TextColor3 = Color3.fromRGB(255, 105, 180)
+HideBtn.TextSize = 18
+HideBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
 
--- Tombol 2: Auto Sell
-local ToggleSell = Instance.new("TextButton", Frame)
-ToggleSell.Position = UDim2.new(0.1, 0, 0.27, 0)
-ToggleSell.Size = UDim2.new(0.8, 0, 0, 25)
-ToggleSell.Text = "SELL: OFF"
-ToggleSell.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-ToggleSell.TextColor3 = Color3.new(1, 1, 1)
-ToggleSell.Font = Enum.Font.GothamBold
-ToggleSell.TextSize = 11
-Instance.new("UICorner", ToggleSell).CornerRadius = UDim.new(0, 6)
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0) 
+CloseBtn.Size = UDim2.new(0, 25, 0, 25) 
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 105, 180)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- Tombol 3: Auto Move & Egg
-local ToggleMove = Instance.new("TextButton", Frame)
-ToggleMove.Position = UDim2.new(0.1, 0, 0.39, 0)
-ToggleMove.Size = UDim2.new(0.8, 0, 0, 25)
-ToggleMove.Text = "MOVE & EGG: OFF"
-ToggleMove.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-ToggleMove.TextColor3 = Color3.new(1, 1, 1)
-ToggleMove.Font = Enum.Font.GothamBold
-ToggleMove.TextSize = 11
-Instance.new("UICorner", ToggleMove).CornerRadius = UDim.new(0, 6)
+-- State Variables
+local isWeather = false
+local isAutoSell = false
+local isFishing = false
+local isEgg = false
+local isNotify = false
 
--- Tombol 4: Anim & Notify (GABUNGAN)
-local ToggleOpti = Instance.new("TextButton", Frame)
-ToggleOpti.Position = UDim2.new(0.1, 0, 0.51, 0)
-ToggleOpti.Size = UDim2.new(0.8, 0, 0, 25)
-ToggleOpti.Text = "ANIM & NOTIF: OFF"
-ToggleOpti.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-ToggleOpti.TextColor3 = Color3.new(1, 1, 1)
-ToggleOpti.Font = Enum.Font.GothamBold
-ToggleOpti.TextSize = 10
-Instance.new("UICorner", ToggleOpti).CornerRadius = UDim.new(0, 6)
+-- Reset Function
+local BtnWeather, BtnSell, BtnFishing, BtnEgg, BtnNotify
 
--- Tombol 5: Teleport (Baru)
-local BtnTeleport = Instance.new("TextButton", Frame)
-BtnTeleport.Position = UDim2.new(0.1, 0, 0.63, 0)
-BtnTeleport.Size = UDim2.new(0.8, 0, 0, 25)
-BtnTeleport.Text = "TELEPORT"
-BtnTeleport.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-BtnTeleport.TextColor3 = Color3.new(1, 1, 1)
-BtnTeleport.Font = Enum.Font.GothamBold
-BtnTeleport.TextSize = 11
-Instance.new("UICorner", BtnTeleport).CornerRadius = UDim.new(0, 6)
+local function resetAll()
+    isWeather = false; if BtnWeather then BtnWeather.BackgroundTransparency = 0.4 end
+    isAutoSell = false; if BtnSell then BtnSell.BackgroundTransparency = 0.4; BtnSell.Text = "SELL ALL FISH" end
+    isFishing = false; if BtnFishing then BtnFishing.BackgroundTransparency = 0.4 end
+    isEgg = false; if BtnEgg then BtnEgg.BackgroundTransparency = 0.4 end
+    isNotify = false; if BtnNotify then BtnNotify.BackgroundTransparency = 0.4 end
+    RunService:UnbindFromRenderStep("Easter_Optimizer")
+end
 
-local Close = Instance.new("TextButton", Frame)
-Close.Position = UDim2.new(0, 0, 0.85, 0)
-Close.Size = UDim2.new(1, 0, 0, 25)
-Close.Text = "CLOSE UI"
-Close.BackgroundTransparency = 1
-Close.TextColor3 = Color3.fromRGB(200, 50, 50)
-Close.Font = Enum.Font.GothamBold
-Close.TextSize = 11
+IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() resetAll() ScreenGui:Destroy() end)
 
--- --- 1. OPTIMIZER: DISABLE ANIM & NOTIFY --- --
-RunService:BindToRenderStep("pociXkarin_Optimizer", Enum.RenderPriority.Camera.Value + 1, function()
-    if isOptiEnabled then
-        -- 1. Disable Animation
-        local char = Player.Character
-        if char and char:FindFirstChild("Humanoid") then
-            for _, v in pairs(char.Humanoid:GetPlayingAnimationTracks()) do 
-                v:Stop() 
-            end
-        end
+-- Style Helper
+local function styleBtn(b, fSize)
+    b.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+    b.BackgroundTransparency = 0.4
+    b.TextColor3 = Color3.new(1,1,1)
+    b.TextSize = fSize
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
 
-        -- 2. Disable Notification ("you got:")
-        for _, gui in pairs(PlayerGui:GetChildren()) do
-            if gui:IsA("ScreenGui") and gui.Name ~= "pociXkarinUI" then
-                for _, v in pairs(gui:GetDescendants()) do
-                    if v:IsA("TextLabel") or v:IsA("ImageLabel") then
-                        local txt = v:IsA("TextLabel") and v.Text:lower() or ""
-                        if txt:find("you got:") then
-                            v.Visible = false
-                            if v.Parent:IsA("Frame") then 
-                                v.Parent.Visible = false 
-                            end
-                        end
-                    end
+-- ==========================================
+-- 2. TOMBOL & LOGIKA (BARIS ATAS)
+-- ==========================================
+BtnWeather = Instance.new("TextButton", MainFrame)
+BtnWeather.Size = UDim2.new(0, 62, 0, 25)
+BtnWeather.Position = UDim2.new(0, 10, 0, 45)
+BtnWeather.Text = "WEATHER"
+styleBtn(BtnWeather, 9)
+
+BtnSell = Instance.new("TextButton", MainFrame)
+BtnSell.Size = UDim2.new(0, 62, 0, 25)
+BtnSell.Position = UDim2.new(0, 79, 0, 45)
+BtnSell.Text = "SELL ALL FISH"
+styleBtn(BtnSell, 8)
+
+local BtnCharm = Instance.new("TextButton", MainFrame)
+BtnCharm.Size = UDim2.new(0, 62, 0, 25)
+BtnCharm.Position = UDim2.new(0, 148, 0, 45)
+BtnCharm.Text = "CHARM"
+styleBtn(BtnCharm, 9)
+
+-- Logika Weather
+BtnWeather.MouseButton1Click:Connect(function()
+    isWeather = not isWeather
+    BtnWeather.BackgroundTransparency = isWeather and 0 or 0.4
+    if isWeather then
+        task.spawn(function()
+            local RF_Weather = Net:WaitForChild("RF/10fa4be1625813ff92ac309eb9b6a089ce100ac0180720cdf2378b172179f4cb")
+            while isWeather do
+                pcall(function() RF_Weather:InvokeServer("Cloudy") end)
+                task.wait(1)
+                if not isWeather then break end
+                pcall(function() RF_Weather:InvokeServer("Wind") end)
+                task.wait(1)
+                if not isWeather then break end
+                pcall(function() RF_Weather:InvokeServer("Storm") end)
+                
+                -- Jeda 10 Menit (600 Detik)
+                for i = 600, 1, -1 do
+                    if not isWeather then break end
+                    task.wait(1)
                 end
             end
-        end
+        end)
     end
 end)
 
-
--- --- 2. JALUR AUTO SELL (Dengan Sistem Tick) --- --
-local sellTick = 0
-task.spawn(function()
-    while true do
-        task.wait(1) 
-        if isAutoSell then
-            sellTick = sellTick + 1
-            if sellTick >= 300 then 
-                pcall(function()
-                    RF_Sell:InvokeServer()
-                end)
-                sellTick = 0
+-- Logika Sell All Fish
+BtnSell.MouseButton1Click:Connect(function()
+    isAutoSell = not isAutoSell
+    BtnSell.BackgroundTransparency = isAutoSell and 0 or 0.4
+    if isAutoSell then
+        task.spawn(function()
+            while isAutoSell do
+                for i = 300, 1, -1 do
+                    if not isAutoSell then break end
+                    BtnSell.Text = "SELL: "..i.."s"
+                    task.wait(1)
+                end
+                if isAutoSell then
+                    pcall(function()
+                        Net:WaitForChild("RF/1b15b6a56c737ec3826ab3d94c3c96ec79a9709cc3a086a92f1fdabc39c791f5"):InvokeServer()
+                    end)
+                end
             end
-        else
-            sellTick = 0 
-        end
+            BtnSell.Text = "SELL ALL FISH"
+        end)
+    else
+        BtnSell.Text = "SELL ALL FISH"
     end
 end)
 
-
--- --- 3. JALUR AUTO FARM (Kecepatan Diperbesar LALU DIPERKALI LAGI!) --- --
-task.spawn(function()
-    while true do
-        if isRunning then
-            pcall(function()
-                RF_Charge:InvokeServer()
-                -- Delay Super Singkat (0.01 - 0.03 detik)
-                task.wait(math.random(1, 3) / 100) 
-                
-                RF_Start:InvokeServer(unpack({-1.233184814453125, 0.9999655501601774, 1776146256.458831}))
-                -- Delay Tarik Kail Super Cepat (0.05 - 0.12 detik)
-                task.wait(math.random(5, 12) / 100) 
-                
-                RE_Catch:FireServer()
-                RE_Catch:FireServer()
-            end)
-            -- Jeda loop sangat minim (0.02 - 0.07 detik)
-            task.wait(math.random(2, 7) / 100) 
-        else
-            task.wait(0.5)
+-- Logika Charm (Beli 10x dalam 2 detik)
+BtnCharm.MouseButton1Click:Connect(function()
+    task.spawn(function()
+        BtnCharm.BackgroundTransparency = 0
+        local RF_Charm = Net:WaitForChild("RF/7cf09da3ce4e65c1e7dc9084d3ee493829923eaf738954bc089b00b881b7d768")
+        for i = 1, 10 do
+            pcall(function() RF_Charm:InvokeServer(17) end)
+            task.wait(0.2)
         end
+        BtnCharm.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- ==========================================
+-- 3. TOMBOL & LOGIKA (BARIS TENGAH)
+-- ==========================================
+BtnFishing = Instance.new("TextButton", MainFrame)
+BtnFishing.Size = UDim2.new(0.32, -4, 0, 28)
+BtnFishing.Position = UDim2.new(0.1, 0, 0.52, 0)
+BtnFishing.Text = "FISHING"
+styleBtn(BtnFishing, 10)
+
+BtnEgg = Instance.new("TextButton", MainFrame)
+BtnEgg.Size = UDim2.new(0.16, -4, 0, 28)
+BtnEgg.Position = UDim2.new(0.42, 2, 0.52, 0)
+BtnEgg.Text = "EGG"
+styleBtn(BtnEgg, 9)
+
+BtnNotify = Instance.new("TextButton", MainFrame)
+BtnNotify.Size = UDim2.new(0.32, -4, 0, 28)
+BtnNotify.Position = UDim2.new(0.58, 4, 0.52, 0)
+BtnNotify.Text = "NOTIFY"
+styleBtn(BtnNotify, 10)
+
+-- Logika Fishing (Full Script 2 + New Remotes)
+BtnFishing.MouseButton1Click:Connect(function()
+    isFishing = not isFishing
+    BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
+    if isFishing then
+        task.spawn(function()
+            local RF_Charge = Net:WaitForChild("RF/cf50d40220ae9c204b2092474991326830922b307a89413d25fb475eb89a9362")
+            local RF_Start  = Net:WaitForChild("RF/e9fa3b743b580392b9017f170faa08c486e7869bd0de9ca8b6180dbe97ae6dfd")
+            local RE_Catch  = Net:WaitForChild("RE/5bea60fdad48291b36dc8798bfe3ccd1d58fc58d1f86db9aef727689c8d6edf6")
+            
+            while isFishing do
+                pcall(function()
+                    RF_Charge:InvokeServer()
+                    task.wait(math.random(1, 3) / 100) 
+                    
+                    RF_Start:InvokeServer(unpack({-1.233184814453125, 0.9627973239633528, 1776539810.087486}))
+                    task.wait(math.random(5, 12) / 100) 
+                    
+                    RE_Catch:FireServer()
+                    RE_Catch:FireServer()
+                end)
+                task.wait(math.random(2, 7) / 100) 
+            end
+        end)
     end
 end)
 
-
--- --- 4. JALUR AUTO MOVE & EGG (Dengan Sistem Tick) --- --
+-- Logika Egg (Full Script 2 Auto Move & Egg)
 local moveTick = 3550 
 task.spawn(function()
+    local targetCFrame = CFrame.new(1187.18164, 10.8309031, 2592.33643, 0.59283185, 1.60291957e-08, 0.805326283, -5.46121512e-08, 1, 2.02981418e-08, -0.805326283, -5.60139846e-08, 0.59283185)
+    local RF_Egg1 = Net:WaitForChild("RF/48394ebb999716d9dc2942d245eae683e4b505452eac1b5282cc5cfe607c9bef")
+    local RF_Egg2 = Net:WaitForChild("RF/93e2aa31e540724fff230ed97b1fa660d1f289331be99f4001ac9165885cfe26")
+
     while true do
-        task.wait(1) 
-        if isAutoMove then
+        task.wait(1)
+        if isEgg then
             moveTick = moveTick + 1
             if moveTick >= 3610 then 
-                local char = game.Players.LocalPlayer.Character
+                local char = Player.Character
                 local hrp = char and char:FindFirstChild("HumanoidRootPart")
-
+                
                 if hrp then
                     local savedPos = hrp.CFrame
                     task.wait(2)
                     hrp.CFrame = targetCFrame
                     task.wait(1)
-
+                    
                     for i = 1, 6 do
                         pcall(function()
                             RF_Egg1:InvokeServer()
@@ -226,7 +276,7 @@ task.spawn(function()
                         end)
                         task.wait(2)
                     end
-
+                    
                     task.wait(2)
                     hrp.CFrame = savedPos
                 end
@@ -238,80 +288,53 @@ task.spawn(function()
     end
 end)
 
-
--- --- INTERAKSI UI --- --
-Icon.MouseButton1Click:Connect(function()
-    Frame.Visible = not Frame.Visible
+BtnEgg.MouseButton1Click:Connect(function()
+    isEgg = not isEgg
+    BtnEgg.BackgroundTransparency = isEgg and 0 or 0.4
 end)
 
-Toggle.MouseButton1Click:Connect(function()
-    isRunning = not isRunning
-    Toggle.Text = isRunning and "FARM: ON" or "FARM: OFF"
-    Toggle.BackgroundColor3 = isRunning and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+-- Logika Notify (Disable Anim & You Got)
+BtnNotify.MouseButton1Click:Connect(function()
+    isNotify = not isNotify
+    BtnNotify.BackgroundTransparency = isNotify and 0 or 0.4
+    if isNotify then
+        RunService:BindToRenderStep("Easter_Optimizer", Enum.RenderPriority.Camera.Value + 1, function()
+            local char = Player.Character
+            if char and char:FindFirstChild("Humanoid") then
+                for _, v in pairs(char.Humanoid:GetPlayingAnimationTracks()) do v:Stop() end
+            end
+            for _, gui in pairs(PlayerGui:GetChildren()) do
+                if gui:IsA("ScreenGui") and gui.Name ~= "EasterIslandUI" then
+                    for _, v in pairs(gui:GetDescendants()) do
+                        if v:IsA("TextLabel") or v:IsA("ImageLabel") then
+                            local txt = v:IsA("TextLabel") and v.Text:lower() or ""
+                            if txt:find("you got:") then
+                                v.Visible = false
+                                if v.Parent:IsA("Frame") then v.Parent.Visible = false end
+                            end
+                        end
+                    end
+                end
+            end
+        end)
+    else
+        RunService:UnbindFromRenderStep("Easter_Optimizer")
+    end
 end)
 
-ToggleSell.MouseButton1Click:Connect(function()
-    isAutoSell = not isAutoSell
-    ToggleSell.Text = isAutoSell and "SELL: ON" or "SELL: OFF"
-    ToggleSell.BackgroundColor3 = isAutoSell and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-end)
+-- ==========================================
+-- 4. TOMBOL TELEPORT (BARIS BAWAH)
+-- ==========================================
+local BtnTeleport = Instance.new("TextButton", MainFrame)
+BtnTeleport.Size = UDim2.new(0.8, 0, 0, 28)
+BtnTeleport.Position = UDim2.new(0.1, 0, 0.74, 0)
+BtnTeleport.Text = "TELEPORT"
+styleBtn(BtnTeleport, 12)
 
-ToggleMove.MouseButton1Click:Connect(function()
-    isAutoMove = not isAutoMove
-    ToggleMove.Text = isAutoMove and "MOVE & EGG: ON" or "MOVE & EGG: OFF"
-    ToggleMove.BackgroundColor3 = isAutoMove and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-end)
-
-ToggleOpti.MouseButton1Click:Connect(function()
-    isOptiEnabled = not isOptiEnabled
-    ToggleOpti.Text = isOptiEnabled and "ANIM & NOTIF: ON" or "ANIM & NOTIF: OFF"
-    ToggleOpti.BackgroundColor3 = isOptiEnabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
-end)
-
--- Interaksi Tombol Teleport (Satu kali jalan)
 BtnTeleport.MouseButton1Click:Connect(function()
-    local char = Players.LocalPlayer.Character
+    local char = Player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     if hrp then
         hrp.CFrame = CFrame.new(1066.65247, -47.7099075, 2679.47949, 0.848919868, 5.94613159e-09, 0.528521538, -4.15829504e-08, 1, 5.55407134e-08, -0.528521538, -6.9127104e-08, 0.848919868)
     end
 end)
-
-Close.MouseButton1Click:Connect(function()
-    isRunning = false
-    isAutoSell = false
-    isAutoMove = false
-    isOptiEnabled = false
-    RunService:UnbindFromRenderStep("pociXkarin_Optimizer") -- Matikan optimizer jika UI ditutup
-    ScreenGui:Destroy()
-end)
-
--- Fungsi Drag (Mobile Friendly)
-local function makeDraggable(obj)
-    local UserInputService = game:GetService("UserInputService")
-    local dragging, dragInput, dragStart, startPos
-    obj.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true dragStart = input.Position startPos = obj.Position
-        end
-    end)
-    obj.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-    obj.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-end
-
-makeDraggable(Icon)
-makeDraggable(Frame)

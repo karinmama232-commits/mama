@@ -10,7 +10,7 @@ local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):Wa
 local RF_Charge = Net:WaitForChild("RF/7ada2be0cc37f3fe3074474597294d6a0db80bfa57af22072243bf54abddb5db")
 local RF_Start  = Net:WaitForChild("RF/7ebfbf23d01d874124f449a8b95d1caeb8dd834802d49955755c51311dc0c104")
 local RE_Catch  = Net:WaitForChild("RE/97334f8ee89117accc3e6c2e76a00e6e427dcb4b8c74e158534e5562d0ddd67d")
-local RF_Sell   = Net:WaitForChild("RF/86ef13eed84cdc0c3ff8bd780a4232dd7891790ec2888f1bce99e37bc9bde199")
+local RF_Sell   = Net:WaitForChild("RF/1b15b6a56c737ec3826ab3d94c3c96ec79a9709cc3a086a92f1fdabc39c791f5")
 
 -- Remotes untuk Beli Telur
 local RF_Egg1 = Net:WaitForChild("RF/195e84046abc4c223dd6d35b5d95deb7feb5f94e48ad0f5bf8602e02e1ce0ad8")

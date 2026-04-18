@@ -7,9 +7,9 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
 -- Remotes untuk Mancing & Jual
-local RF_Charge = Net:WaitForChild("RF/7ada2be0cc37f3fe3074474597294d6a0db80bfa57af22072243bf54abddb5db")
-local RF_Start  = Net:WaitForChild("RF/7ebfbf23d01d874124f449a8b95d1caeb8dd834802d49955755c51311dc0c104")
-local RE_Catch  = Net:WaitForChild("RE/97334f8ee89117accc3e6c2e76a00e6e427dcb4b8c74e158534e5562d0ddd67d")
+local RF_Charge = Net:WaitForChild("RF/cf50d40220ae9c204b2092474991326830922b307a89413d25fb475eb89a9362")
+local RF_Start  = Net:WaitForChild("RF/e9fa3b743b580392b9017f170faa08c486e7869bd0de9ca8b6180dbe97ae6dfd")
+local RE_Catch  = Net:WaitForChild("RE/5bea60fdad48291b36dc8798bfe3ccd1d58fc58d1f86db9aef727689c8d6edf6")
 local RF_Sell   = Net:WaitForChild("RF/1b15b6a56c737ec3826ab3d94c3c96ec79a9709cc3a086a92f1fdabc39c791f5")
 
 -- Remotes untuk Beli Telur

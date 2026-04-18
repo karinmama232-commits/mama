@@ -28,7 +28,7 @@ local isOptiEnabled = false -- Toggle gabungan Anim & Notify
 -- --- UI SETUP --- --
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "pociXkarinUI"
-ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.Parent = game:GetService("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
 local Icon = Instance.new("TextButton")

@@ -136,21 +136,32 @@ BtnCharm.Position = UDim2.new(0, 148, 0, 45)
 BtnCharm.Text = "CHARM"
 styleBtn(BtnCharm, 9)
 
--- Logika Weather
+-- Logika Weather (UPDATED REMOTES)
 BtnWeather.MouseButton1Click:Connect(function()
     isWeather = not isWeather
     BtnWeather.BackgroundTransparency = isWeather and 0 or 0.4
     if isWeather then
         task.spawn(function()
-            local RF_Weather = Net:WaitForChild("RF/10fa4be1625813ff92ac309eb9b6a089ce100ac0180720cdf2378b172179f4cb")
+            local RF_Weather = Net:WaitForChild("RF/160747f8676510161ffb9256007fe560cd4e2ce4174542f132f545e6713c7d53")
             while isWeather do
-                pcall(function() RF_Weather:InvokeServer("Cloudy") end)
+                pcall(function() 
+                    local args = { [1] = "Cloudy" }
+                    RF_Weather:InvokeServer(unpack(args)) 
+                end)
                 task.wait(1)
+                
                 if not isWeather then break end
-                pcall(function() RF_Weather:InvokeServer("Wind") end)
+                pcall(function() 
+                    local args = { [1] = "Wind" }
+                    RF_Weather:InvokeServer(unpack(args)) 
+                end)
                 task.wait(1)
+                
                 if not isWeather then break end
-                pcall(function() RF_Weather:InvokeServer("Storm") end)
+                pcall(function() 
+                    local args = { [1] = "Storm" }
+                    RF_Weather:InvokeServer(unpack(args)) 
+                end)
                 
                 -- Jeda 10 Menit (600 Detik)
                 for i = 600, 1, -1 do

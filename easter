@@ -176,7 +176,7 @@ BtnSell.MouseButton1Click:Connect(function()
                 end
                 if isAutoSell then
                     pcall(function()
-                        Net:WaitForChild("RF/1b15b6a56c737ec3826ab3d94c3c96ec79a9709cc3a086a92f1fdabc39c791f5"):InvokeServer()
+                        Net:WaitForChild("RF/14ac137d6609db9b5e3f817ee364eafa76d8e01ec0cff62ba7aa2bf4e47b40ba"):InvokeServer()
                     end)
                 end
             end
@@ -191,7 +191,7 @@ end)
 BtnCharm.MouseButton1Click:Connect(function()
     task.spawn(function()
         BtnCharm.BackgroundTransparency = 0
-        local RF_Charm = Net:WaitForChild("RF/7cf09da3ce4e65c1e7dc9084d3ee493829923eaf738954bc089b00b881b7d768")
+        local RF_Charm = Net:WaitForChild("RF/41e81f149345e73230501942d9aa85449079e6ceda70fcdba35568c924128077")
         for i = 1, 10 do
             pcall(function() RF_Charm:InvokeServer(17) end)
             task.wait(0.2)
@@ -227,9 +227,9 @@ BtnFishing.MouseButton1Click:Connect(function()
     BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
     if isFishing then
         task.spawn(function()
-            local RF_Charge = Net:WaitForChild("RF/cf50d40220ae9c204b2092474991326830922b307a89413d25fb475eb89a9362")
-            local RF_Start  = Net:WaitForChild("RF/e9fa3b743b580392b9017f170faa08c486e7869bd0de9ca8b6180dbe97ae6dfd")
-            local RE_Catch  = Net:WaitForChild("RE/5bea60fdad48291b36dc8798bfe3ccd1d58fc58d1f86db9aef727689c8d6edf6")
+            local RF_Charge = Net:WaitForChild("RF/533e0a76a49bd2948dd4235322e3488ee727130a311e2917cd112c9a3026ee84")
+            local RF_Start  = Net:WaitForChild("RF/0d21544b5e7f1c699f4b439b50a49d22408231e58a7947f2a56cb241cc0f4070")
+            local RE_Catch  = Net:WaitForChild("RE/e5a4acaa370274c800cd13e04ed6a1738434df40ce2bf54da0a13e9351d250a5")
             
             while isFishing do
                 pcall(function()
@@ -252,8 +252,8 @@ end)
 local moveTick = 3550 
 task.spawn(function()
     local targetCFrame = CFrame.new(1187.18164, 10.8309031, 2592.33643, 0.59283185, 1.60291957e-08, 0.805326283, -5.46121512e-08, 1, 2.02981418e-08, -0.805326283, -5.60139846e-08, 0.59283185)
-    local RF_Egg1 = Net:WaitForChild("RF/48394ebb999716d9dc2942d245eae683e4b505452eac1b5282cc5cfe607c9bef")
-    local RF_Egg2 = Net:WaitForChild("RF/93e2aa31e540724fff230ed97b1fa660d1f289331be99f4001ac9165885cfe26")
+    local RF_Egg1 = Net:WaitForChild("RF/88063960d964017e6a9f7576fa91e4559d75f251e76d085ec11179f6acc94dc8")
+    local RF_Egg2 = Net:WaitForChild("RF/0eaa09066007d124b5587496fe1fec4eeea88050389f965d53c61c44924b777b")
 
     while true do
         task.wait(1)

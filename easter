@@ -163,8 +163,8 @@ BtnWeather.MouseButton1Click:Connect(function()
                     RF_Weather:InvokeServer(unpack(args)) 
                 end)
                 
-                -- Jeda 10 Menit (600 Detik)
-                for i = 600, 1, -1 do
+                -- Jeda 2 Menit (120 Detik)
+                for i = 120, 1, -1 do
                     if not isWeather then break end
                     task.wait(1)
                 end

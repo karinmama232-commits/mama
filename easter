@@ -163,8 +163,8 @@ BtnWeather.MouseButton1Click:Connect(function()
                     RF_Weather:InvokeServer(unpack(args)) 
                 end)
                 
-                -- Jeda 2 Menit (120 Detik)
-                for i = 120, 1, -1 do
+                -- Jeda 10 Menit (600 Detik)
+                for i = 600, 1, -1 do
                     if not isWeather then break end
                     task.wait(1)
                 end
@@ -203,9 +203,9 @@ BtnCharm.MouseButton1Click:Connect(function()
     task.spawn(function()
         BtnCharm.BackgroundTransparency = 0
         local RF_Charm = Net:WaitForChild("RF/41e81f149345e73230501942d9aa85449079e6ceda70fcdba35568c924128077")
-        for i = 1, 100 do
+        for i = 1, 10 do
             pcall(function() RF_Charm:InvokeServer(17) end)
-            task.wait(0.1)
+            task.wait(0.2)
         end
         BtnCharm.BackgroundTransparency = 0.4
     end)

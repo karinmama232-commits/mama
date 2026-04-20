@@ -136,13 +136,13 @@ BtnCharm.Position = UDim2.new(0, 148, 0, 45)
 BtnCharm.Text = "CHARM"
 styleBtn(BtnCharm, 9)
 
--- Logika Weather (UPDATED REMOTES)
+-- Logika Weather (UPDATED REMOTES & TIME)
 BtnWeather.MouseButton1Click:Connect(function()
     isWeather = not isWeather
     BtnWeather.BackgroundTransparency = isWeather and 0 or 0.4
     if isWeather then
         task.spawn(function()
-            local RF_Weather = Net:WaitForChild("RF/160747f8676510161ffb9256007fe560cd4e2ce4174542f132f545e6713c7d53")
+            local RF_Weather = Net:WaitForChild("RF/ebd816eb3d35df090379f18e5badd15cc5b129ed0fa83ffafdbac71858d507f0")
             while isWeather do
                 pcall(function() 
                     local args = { [1] = "Cloudy" }
@@ -163,8 +163,8 @@ BtnWeather.MouseButton1Click:Connect(function()
                     RF_Weather:InvokeServer(unpack(args)) 
                 end)
                 
-                -- Jeda 10 Menit (600 Detik)
-                for i = 600, 1, -1 do
+                -- Jeda 1 Menit (60 Detik)
+                for i = 60, 1, -1 do
                     if not isWeather then break end
                     task.wait(1)
                 end
@@ -173,39 +173,37 @@ BtnWeather.MouseButton1Click:Connect(function()
     end
 end)
 
--- Logika Sell All Fish (UPDATED)
-BtnSell.MouseButton1Click:Connect(function()
-    isAutoSell = not isAutoSell
-    BtnSell.BackgroundTransparency = isAutoSell and 0 or 0.4
-    if isAutoSell then
-        task.spawn(function()
-            while isAutoSell do
-                for i = 300, 1, -1 do
-                    if not isAutoSell then break end
-                    BtnSell.Text = "SELL: "..i.."s"
-                    task.wait(1)
-                end
-                if isAutoSell then
-                    pcall(function()
-                        Net:WaitForChild("RF/14ac137d6609db9b5e3f817ee364eafa76d8e01ec0cff62ba7aa2bf4e47b40ba"):InvokeServer()
-                    end)
-                end
-            end
-            BtnSell.Text = "SELL ALL FISH"
-        end)
-    else
-        BtnSell.Text = "SELL ALL FISH"
+-- Logika Sell All Fish (Berjalan otomatis setelah execute, di luar tombol)
+task.spawn(function()
+    task.wait(10) -- Jeda 10 detik setelah execute
+    isAutoSell = true
+    BtnSell.BackgroundTransparency = 0
+    while true do
+        for i = 300, 1, -1 do
+            if not isAutoSell then break end
+            BtnSell.Text = "SELL: "..i.."s"
+            task.wait(1)
+        end
+        if isAutoSell then
+            pcall(function()
+                Net:WaitForChild("RF/3d436c038ea13421e97a4eec28fb7841c910257e13073b8bc7b1019871210709"):InvokeServer()
+            end)
+        end
     end
 end)
 
--- Logika Charm (UPDATED)
+BtnSell.MouseButton1Click:Connect(function()
+    -- Tombol dinonaktifkan, Autosell berjalan di background secara berurutan
+end)
+
+-- Logika Charm (UPDATED REMOTES & LOOP)
 BtnCharm.MouseButton1Click:Connect(function()
     task.spawn(function()
         BtnCharm.BackgroundTransparency = 0
-        local RF_Charm = Net:WaitForChild("RF/41e81f149345e73230501942d9aa85449079e6ceda70fcdba35568c924128077")
-        for i = 1, 10 do
+        local RF_Charm = Net:WaitForChild("RF/237569ca74d331e8df537ea0405129fd58c665fca2bd7c09add27b370e309156")
+        for i = 1, 100 do
             pcall(function() RF_Charm:InvokeServer(17) end)
-            task.wait(0.2)
+            task.wait(0.1)
         end
         BtnCharm.BackgroundTransparency = 0.4
     end)
@@ -238,16 +236,16 @@ BtnFishing.MouseButton1Click:Connect(function()
     BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
     if isFishing then
         task.spawn(function()
-            local RF_Charge = Net:WaitForChild("RF/533e0a76a49bd2948dd4235322e3488ee727130a311e2917cd112c9a3026ee84")
-            local RF_Start  = Net:WaitForChild("RF/0d21544b5e7f1c699f4b439b50a49d22408231e58a7947f2a56cb241cc0f4070")
-            local RE_Catch  = Net:WaitForChild("RE/e5a4acaa370274c800cd13e04ed6a1738434df40ce2bf54da0a13e9351d250a5")
+            local RF_Charge = Net:WaitForChild("RF/dd9791f12ef55a0f92e38a0e5674434da5c1217befb837885e8fb1e933c27a12")
+            local RF_Start  = Net:WaitForChild("RF/1bec72206d4a3a3ebe76cc505f8f990f8249a5afcc40bbbcd71bd777fb8392b1")
+            local RE_Catch  = Net:WaitForChild("RE/b9a6e0880b04a8a608fb8a73cbfbbeb9687c091bb2731f28bb8fb7d1c2ccabe2")
             
             while isFishing do
                 pcall(function()
                     RF_Charge:InvokeServer()
                     task.wait(math.random(1, 3) / 100) 
                     
-                    RF_Start:InvokeServer(unpack({-0.9879989624023438, 0.9635591968396146, 1776581413.737955}))
+                    RF_Start:InvokeServer(unpack({-1.233184814453125, 0.14502816106925892, 1776678253.150644}))
                     task.wait(math.random(5, 12) / 100) 
                     
                     RE_Catch:FireServer()
@@ -263,8 +261,8 @@ end)
 local moveTick = 3550 
 task.spawn(function()
     local targetCFrame = CFrame.new(1187.18164, 10.8309031, 2592.33643, 0.59283185, 1.60291957e-08, 0.805326283, -5.46121512e-08, 1, 2.02981418e-08, -0.805326283, -5.60139846e-08, 0.59283185)
-    local RF_Egg1 = Net:WaitForChild("RF/88063960d964017e6a9f7576fa91e4559d75f251e76d085ec11179f6acc94dc8")
-    local RF_Egg2 = Net:WaitForChild("RF/0eaa09066007d124b5587496fe1fec4eeea88050389f965d53c61c44924b777b")
+    local RF_Egg1 = Net:WaitForChild("RF/fb508dc54cae55e3c5777b46de06adebc23004890c271a966e54c29ad0d2a282")
+    local RF_Egg2 = Net:WaitForChild("RF/a457e6def5b5aefc3a5f139f5fc7d9ad2c3a1bae763131bb590f14d865ab2ce6")
 
     while true do
         task.wait(1)

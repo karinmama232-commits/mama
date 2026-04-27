@@ -1,4 +1,4 @@
--- [[ CLASSIC ISLAND - FINAL OPTIMIZED GLOBAL EDITION (UPDATED REMOTES) ]] --
+-- [[ CLASSIC ISLAND - pociXkarin GLOBAL EDITION (WEATHER AUTO & 24H MOVE) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -10,6 +10,26 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
 -- ==========================================
+-- FUNGSI GLOBAL (SECURE CLICK)
+-- ==========================================
+local function secureClick()
+    pcall(function()
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") then
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
+                    if dist < 25 then
+                        task.wait(0.2)
+                        fireproximityprompt(obj)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- ==========================================
 -- 1. SETUP UI COMPACT
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
@@ -17,34 +37,31 @@ ScreenGui.Name = "ClassicIslandUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- ICON (TEMA LEGO/MINECRAFT KOTAK)
 local IconButton = Instance.new("TextButton")
 IconButton.Name = "ClassicIcon"
 IconButton.Parent = ScreenGui
-IconButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- Warna hijau ala block rumput
+IconButton.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
 IconButton.Position = UDim2.new(0, 15, 0.5, -22)
 IconButton.Size = UDim2.new(0, 45, 0, 45)
-IconButton.Text = "🧱" -- Icon bata kotak
+IconButton.Text = "🧱"
 IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 IconButton.TextSize = 25
 IconButton.Active = true
 IconButton.Draggable = true
-Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8) -- Sudut lebih tegas (kotak)
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
 
--- MENU UTAMA
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "ClassicMain"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(245, 255, 245) 
-MainFrame.BackgroundTransparency = 0.1 
+MainFrame.BackgroundColor3 = Color3.fromRGB(245, 255, 245)
+MainFrame.BackgroundTransparency = 0.1
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
-MainFrame.Size = UDim2.new(0, 220, 0, 160) 
-MainFrame.Visible = false 
+MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
--- Header
 local Header = Instance.new("Frame", MainFrame)
 Header.Size = UDim2.new(1, 0, 0, 35)
 Header.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
@@ -54,15 +71,15 @@ local Title = Instance.new("TextLabel", Header)
 Title.Size = UDim2.new(0.6, 0, 1, 0)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "Classic Island 🧱" 
+Title.Text = "Classic Island 🧱"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 15
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local HideBtn = Instance.new("TextButton", Header)
-HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0) 
-HideBtn.Size = UDim2.new(0, 25, 0, 25) 
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
+HideBtn.Size = UDim2.new(0, 25, 0, 25)
 HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 HideBtn.BackgroundTransparency = 0.4
 HideBtn.Text = "-"
@@ -72,8 +89,8 @@ HideBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
 
 local CloseBtn = Instance.new("TextButton", Header)
-CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0) 
-CloseBtn.Size = UDim2.new(0, 25, 0, 25) 
+CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.BackgroundTransparency = 0.4
 CloseBtn.Text = "X"
@@ -83,29 +100,19 @@ CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 -- State Variables
-local isWeather = false
 local isAutoSell = false
 local isFishing = false
+local isX2 = false
 local isParty = false
-local isNotify = false
-
--- Reset Function
-local BtnWeather, BtnSell, BtnFishing, BtnParty, BtnNotify
 
 local function resetAll()
-    isWeather = false; if BtnWeather then BtnWeather.BackgroundTransparency = 0.4 end
-    isAutoSell = false; if BtnSell then BtnSell.BackgroundTransparency = 0.4 end
-    isFishing = false; if BtnFishing then BtnFishing.BackgroundTransparency = 0.4 end
-    isParty = false; if BtnParty then BtnParty.BackgroundTransparency = 0.4 end
-    isNotify = false; if BtnNotify then BtnNotify.BackgroundTransparency = 0.4 end
-    RunService:UnbindFromRenderStep("Classic_Optimizer")
+    isAutoSell = false; isFishing = false; isX2 = false; isParty = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() resetAll() ScreenGui:Destroy() end)
 
--- Style Helper
 local function styleBtn(b, fSize)
     b.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
     b.BackgroundTransparency = 0.4
@@ -118,13 +125,13 @@ end
 -- ==========================================
 -- 2. TOMBOL & LOGIKA (BARIS ATAS)
 -- ==========================================
-BtnWeather = Instance.new("TextButton", MainFrame)
-BtnWeather.Size = UDim2.new(0, 62, 0, 25)
-BtnWeather.Position = UDim2.new(0, 10, 0, 45)
-BtnWeather.Text = "WEATHER"
-styleBtn(BtnWeather, 9)
+local Btn24H = Instance.new("TextButton", MainFrame)
+Btn24H.Size = UDim2.new(0, 62, 0, 25)
+Btn24H.Position = UDim2.new(0, 10, 0, 45)
+Btn24H.Text = "24H MOVE"
+styleBtn(Btn24H, 8)
 
-BtnSell = Instance.new("TextButton", MainFrame)
+local BtnSell = Instance.new("TextButton", MainFrame)
 BtnSell.Size = UDim2.new(0, 62, 0, 25)
 BtnSell.Position = UDim2.new(0, 79, 0, 45)
 BtnSell.Text = "AUTO SELL"
@@ -136,60 +143,47 @@ BtnCharm.Position = UDim2.new(0, 148, 0, 45)
 BtnCharm.Text = "CHARM"
 styleBtn(BtnCharm, 9)
 
--- Logika Weather (UPDATED REMOTES)
-BtnWeather.MouseButton1Click:Connect(function()
-    isWeather = not isWeather
-    BtnWeather.BackgroundTransparency = isWeather and 0 or 0.4
-    if isWeather then
-        task.spawn(function()
-            local RF_Weather = Net:WaitForChild("RF/28a00ed979fdd6f7b7a2028c590f7ba8d5e259591fd96f6633cd3131451f20db")
-            while isWeather do
-                pcall(function() RF_Weather:InvokeServer("Cloudy") end)
-                task.wait(1)
-                
-                if not isWeather then break end
-                pcall(function() RF_Weather:InvokeServer("Wind") end)
-                task.wait(1)
-                
-                if not isWeather then break end
-                pcall(function() RF_Weather:InvokeServer("Storm") end)
-                
-                -- Jeda 1 Menit (60 Detik)
-                for i = 60, 1, -1 do
-                    if not isWeather then break end
-                    task.wait(1)
-                end
-            end
-        end)
-    end
+-- 24H MOVE (Klik Sekali: Simpan -> Pindah -> Balik)
+Btn24H.MouseButton1Click:Connect(function()
+    task.spawn(function()
+        Btn24H.BackgroundTransparency = 0
+        local target6H = CFrame.new(1512.2533, 144.463409, 2848.81226, 0.992056251, 2.43436666e-08, 0.12579523, -2.19012026e-08, 1, -2.07992148e-08, -0.12579523, 1.78789232e-08, 0.992056251)
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            local saved = hrp.CFrame
+            task.wait(1) 
+            hrp.CFrame = target6H
+            task.wait(1.5)
+            for i = 1, 2 do secureClick() task.wait(0.8) end
+            task.wait(1)
+            if hrp then hrp.CFrame = saved end
+        end
+        task.wait(0.5)
+        Btn24H.BackgroundTransparency = 0.4
+    end)
 end)
 
--- Logika Auto Sell (Sistem Toggle)
+-- Auto Sell
 BtnSell.MouseButton1Click:Connect(function()
     isAutoSell = not isAutoSell
     BtnSell.BackgroundTransparency = isAutoSell and 0 or 0.4
     if isAutoSell then
         task.spawn(function()
-            local RF_Sell = Net:WaitForChild("RF/b1d10e8a032ed6a88003228363b8dbab53577efc9d4e9509bb5a8ba124629b0a")
+            local RF_Sell = Net:WaitForChild("RF/db9c05f42cf9ce12d4ba36a4ce97961ab2fcfe9efcf414ab5c80198534ec049a")
             while isAutoSell do
-                pcall(function()
-                    RF_Sell:InvokeServer()
-                end)
-                task.wait(10) -- Loop jual setiap 10 detik agar aman
+                pcall(function() RF_Sell:InvokeServer() end)
+                task.wait(10)
             end
         end)
     end
 end)
 
--- Logika Charm (UPDATED REMOTES & ARGS)
+-- Charm
 BtnCharm.MouseButton1Click:Connect(function()
     task.spawn(function()
         BtnCharm.BackgroundTransparency = 0
-        local RF_Charm = Net:WaitForChild("RF/b78fc4f408ed8d12f5e98a2541fa03fdc158d4ca0b4fead7398784d2c39618f6")
-        for i = 1, 100 do
-            pcall(function() RF_Charm:InvokeServer(19) end)
-            task.wait(0.1)
-        end
+        local RF_Charm = Net:WaitForChild("RF/38ac06a58a09cec371dd097152291d5eddea836d27e1997a4130be566ab52be5")
+        for i = 1, 100 do pcall(function() RF_Charm:InvokeServer(19) end) task.wait(0.1) end
         BtnCharm.BackgroundTransparency = 0.4
     end)
 end)
@@ -197,99 +191,86 @@ end)
 -- ==========================================
 -- 3. TOMBOL & LOGIKA (BARIS TENGAH)
 -- ==========================================
-BtnFishing = Instance.new("TextButton", MainFrame)
+local BtnFishing = Instance.new("TextButton", MainFrame)
 BtnFishing.Size = UDim2.new(0.32, -4, 0, 28)
 BtnFishing.Position = UDim2.new(0.1, 0, 0.52, 0)
 BtnFishing.Text = "FISHING"
 styleBtn(BtnFishing, 10)
 
-BtnParty = Instance.new("TextButton", MainFrame)
-BtnParty.Size = UDim2.new(0.16, -4, 0, 28)
-BtnParty.Position = UDim2.new(0.42, 2, 0.52, 0)
+local BtnX2 = Instance.new("TextButton", MainFrame)
+BtnX2.Size = UDim2.new(0.16, -4, 0, 28)
+BtnX2.Position = UDim2.new(0.42, 2, 0.52, 0)
+BtnX2.Text = "X2"
+styleBtn(BtnX2, 9)
+
+local BtnParty = Instance.new("TextButton", MainFrame)
+BtnParty.Size = UDim2.new(0.32, -4, 0, 28)
+BtnParty.Position = UDim2.new(0.58, 4, 0.52, 0)
 BtnParty.Text = "PARTY"
-styleBtn(BtnParty, 9)
+styleBtn(BtnParty, 10)
 
-BtnNotify = Instance.new("TextButton", MainFrame)
-BtnNotify.Size = UDim2.new(0.32, -4, 0, 28)
-BtnNotify.Position = UDim2.new(0.58, 4, 0.52, 0)
-BtnNotify.Text = "NOTIFY"
-styleBtn(BtnNotify, 10)
-
--- Logika Fishing (UPDATED REMOTES)
+-- Fishing
 BtnFishing.MouseButton1Click:Connect(function()
     isFishing = not isFishing
     BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
     if isFishing then
         task.spawn(function()
-            local RF_Charge = Net:WaitForChild("RF/17f9382d6957004bd146ce33ae05b825b851f94802490f558345b9d3be512a82")
-            local RF_Start  = Net:WaitForChild("RF/29ef54097b4d1c27e0073ed8a2045b27c3d335ce0dca4bdb4b8180947013c8de")
-            local RE_Catch  = Net:WaitForChild("RE/7b70ce8fccce96ad28afe82d35862fa267e5c449b1dcda562412e9bd684c8be9")
-            
+            pcall(function() Net:WaitForChild("RE/fea70f385004d756bf8d1d43ae66fa7f50758c439a6ca250180285629af8707d"):FireServer(1) end)
+            task.wait(0.5)
+            local RF_Charge = Net:WaitForChild("RF/efa544e741030d05392a343f535281e6d753730f214a891cd12d2613fe7ba3f3")
+            local RF_Start  = Net:WaitForChild("RF/e5fec9d5375c91f346097d34cff0649f7d5abfcec751d5dbcd577e73bac21d77")
+            local RE_Catch  = Net:WaitForChild("RE/af4e1d2c00abe54a018817fc46650d267d07e6dbc6fefce896b0d91f5389e901")
             while isFishing do
                 pcall(function()
                     RF_Charge:InvokeServer()
-                    task.wait(math.random(1, 3) / 100) 
-                    
-                    RF_Start:InvokeServer(-1.233184814453125, 0.34651760989614055, 1777217878.146866)
-                    task.wait(math.random(5, 12) / 100) 
-                    
+                    task.wait(0.01)
+                    RF_Start:InvokeServer(-1.233184814453125, 0.6406011834703764, 1777305818.546498)
+                    task.wait(0.08)
                     RE_Catch:FireServer()
                     RE_Catch:FireServer()
                 end)
-                task.wait(math.random(2, 7) / 100) 
+                task.wait(0.05)
             end
         end)
     end
 end)
 
--- Logika Party (Pengganti Egg - Beli setiap 10 menit)
+-- X2 (Teleport & Save Lokasi - 19m Loop)
+BtnX2.MouseButton1Click:Connect(function()
+    isX2 = not isX2
+    BtnX2.BackgroundTransparency = isX2 and 0 or 0.4
+    if isX2 then
+        task.spawn(function()
+            local targetCFrame = CFrame.new(1322.31042, 48.0009918, 2758.5249, 0.0847494006, -5.52437704e-08, 0.996402323, -2.10848263e-08, 1, 5.72366154e-08, -0.996402323, -2.58597375e-08, 0.0847494006)
+            while isX2 do
+                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local saved = hrp.CFrame
+                    task.wait(1)
+                    hrp.CFrame = targetCFrame
+                    task.wait(1.5)
+                    for i = 1, 2 do if not isX2 then break end secureClick() task.wait(0.8) end
+                    task.wait(1)
+                    if hrp then hrp.CFrame = saved end
+                end
+                for i = 1140, 1, -1 do if not isX2 then break end task.wait(1) end
+            end
+        end)
+    end
+end)
+
+-- Party
 BtnParty.MouseButton1Click:Connect(function()
     isParty = not isParty
     BtnParty.BackgroundTransparency = isParty and 0 or 0.4
     if isParty then
         task.spawn(function()
-            local RE_Party = Net:WaitForChild("RE/896ea2f6dacc6b14cd347714dbca6e2ab0498ae3fa40a0f0c44381270ebf047f")
+            local RE_Party = Net:WaitForChild("RE/54405a04a59e22229c055abf12226e2a2387bdf16d7ed3feb2597fcfbe6af001")
             while isParty do
-                pcall(function()
-                    RE_Party:FireServer("Party Wizard", 1, 1)
-                end)
-                
-                -- Hitung mundur 10 menit (600 detik)
-                for i = 600, 1, -1 do
-                    if not isParty then break end
-                    task.wait(1)
-                end
+                pcall(function() RE_Party:FireServer("Party Wizard", 1, 1) end)
+                for i = 600, 1, -1 do if not isParty then break end task.wait(1) end
             end
         end)
-    end
-end)
-
--- Logika Notify (Disable Anim & You Got)
-BtnNotify.MouseButton1Click:Connect(function()
-    isNotify = not isNotify
-    BtnNotify.BackgroundTransparency = isNotify and 0 or 0.4
-    if isNotify then
-        RunService:BindToRenderStep("Classic_Optimizer", Enum.RenderPriority.Camera.Value + 1, function()
-            local char = Player.Character
-            if char and char:FindFirstChild("Humanoid") then
-                for _, v in pairs(char.Humanoid:GetPlayingAnimationTracks()) do v:Stop() end
-            end
-            for _, gui in pairs(PlayerGui:GetChildren()) do
-                if gui:IsA("ScreenGui") and gui.Name ~= "ClassicIslandUI" then
-                    for _, v in pairs(gui:GetDescendants()) do
-                        if v:IsA("TextLabel") or v:IsA("ImageLabel") then
-                            local txt = v:IsA("TextLabel") and v.Text:lower() or ""
-                            if txt:find("you got:") then
-                                v.Visible = false
-                                if v.Parent:IsA("Frame") then v.Parent.Visible = false end
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-    else
-        RunService:UnbindFromRenderStep("Classic_Optimizer")
     end
 end)
 
@@ -303,9 +284,21 @@ BtnTeleport.Text = "TELEPORT"
 styleBtn(BtnTeleport, 12)
 
 BtnTeleport.MouseButton1Click:Connect(function()
-    local char = Player.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        hrp.CFrame = CFrame.new(1472.36865, 58.0009956, 2856.60547, 0.744470656, 3.18405924e-08, 0.66765517, -3.45702809e-08, 1, -9.14249032e-09, -0.66765517, -1.62747114e-08, 0.744470656)
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then hrp.CFrame = CFrame.new(1472.36865, 58.0009956, 2856.60547, 0.744470656, 3.18405924e-08, 0.66765517, -3.45702809e-08, 1, -9.14249032e-09, -0.66765517, -1.62747114e-08, 0.744470656) end
+end)
+
+-- ==========================================
+-- 5. WEATHER AUTO LOOP (DARI SCRIPT AWAL)
+-- ==========================================
+task.spawn(function()
+    local RF_Weather = Net:WaitForChild("RF/cbdd11a81d3ad9c6a2b2debd6fd0cf5ffbb093f945a7aa067107b0dc1616d79a")
+    while true do
+        pcall(function() RF_Weather:InvokeServer("Cloudy") end)
+        task.wait(1)
+        pcall(function() RF_Weather:InvokeServer("Wind") end)
+        task.wait(1)
+        pcall(function() RF_Weather:InvokeServer("Storm") end)
+        task.wait(60)
     end
 end)

@@ -1,4 +1,4 @@
--- [[ CLASSIC ISLAND - pociXkarin GLOBAL EDITION (WEATHER AUTO & 24H MOVE) ]] --
+ -- [[ CLASSIC ISLAND - pociXkarin GLOBAL EDITION (UPDATE) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -100,13 +100,15 @@ CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 -- State Variables
+local isAutoRuin = false
 local isAutoSell = false
+local isCuaca = false
 local isFishing = false
 local isX2 = false
 local isParty = false
 
 local function resetAll()
-    isAutoSell = false; isFishing = false; isX2 = false; isParty = false
+    isAutoRuin = false; isAutoSell = false; isCuaca = false; isFishing = false; isX2 = false; isParty = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -125,11 +127,11 @@ end
 -- ==========================================
 -- 2. TOMBOL & LOGIKA (BARIS ATAS)
 -- ==========================================
-local Btn24H = Instance.new("TextButton", MainFrame)
-Btn24H.Size = UDim2.new(0, 62, 0, 25)
-Btn24H.Position = UDim2.new(0, 10, 0, 45)
-Btn24H.Text = "24H MOVE"
-styleBtn(Btn24H, 8)
+local BtnAutoRuin = Instance.new("TextButton", MainFrame)
+BtnAutoRuin.Size = UDim2.new(0, 62, 0, 25)
+BtnAutoRuin.Position = UDim2.new(0, 10, 0, 45)
+BtnAutoRuin.Text = "AUTORUIN"
+styleBtn(BtnAutoRuin, 8)
 
 local BtnSell = Instance.new("TextButton", MainFrame)
 BtnSell.Size = UDim2.new(0, 62, 0, 25)
@@ -137,31 +139,47 @@ BtnSell.Position = UDim2.new(0, 79, 0, 45)
 BtnSell.Text = "AUTO SELL"
 styleBtn(BtnSell, 8)
 
-local BtnCharm = Instance.new("TextButton", MainFrame)
-BtnCharm.Size = UDim2.new(0, 62, 0, 25)
-BtnCharm.Position = UDim2.new(0, 148, 0, 45)
-BtnCharm.Text = "CHARM"
-styleBtn(BtnCharm, 9)
+local BtnCuaca = Instance.new("TextButton", MainFrame)
+BtnCuaca.Size = UDim2.new(0, 62, 0, 25)
+BtnCuaca.Position = UDim2.new(0, 148, 0, 45)
+BtnCuaca.Text = "CUACA"
+styleBtn(BtnCuaca, 9)
 
--- 24H MOVE (Klik Sekali: Simpan -> Pindah -> Balik)
-Btn24H.MouseButton1Click:Connect(function()
-    task.spawn(function()
-        Btn24H.BackgroundTransparency = 0
-        local target6H = CFrame.new(1512.2533, 144.463409, 2848.81226, 0.992056251, 2.43436666e-08, 0.12579523, -2.19012026e-08, 1, -2.07992148e-08, -0.12579523, 1.78789232e-08, 0.992056251)
-        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local saved = hrp.CFrame
-            task.wait(1) 
-            hrp.CFrame = target6H
-            task.wait(1.5)
-            for i = 1, 2 do secureClick() task.wait(0.8) end
-            task.wait(1)
-            if hrp then hrp.CFrame = saved end
-        end
-        task.wait(0.5)
-        Btn24H.BackgroundTransparency = 0.4
-    end)
+-- Autoruin Toggle
+BtnAutoRuin.MouseButton1Click:Connect(function()
+    isAutoRuin = not isAutoRuin
+    BtnAutoRuin.BackgroundTransparency = isAutoRuin and 0 or 0.4
 end)
+
+-- Deteksi Chat untuk Autoruin
+game:GetService("TextChatService").OnIncomingMessage = function(message)
+    if not isAutoRuin then return end
+    local txt = message.Text:lower()
+    
+    if txt:find("%[server%]:") and txt:find("ancient ruin has started") then
+        task.spawn(function()
+            local targetRuin = CFrame.new(6095.5918, -585.924316, 4634.07373, -0.656337857, -3.71952815e-08, 0.75446713, 7.69708386e-09, 1, 5.59960363e-08, -0.75446713, 4.25595132e-08, -0.656337857)
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            
+            if hrp then
+                local saved = hrp.CFrame
+                task.wait(1) 
+                hrp.CFrame = targetRuin
+                
+                -- Jeda 30 Menit (1800 detik)
+                for i = 1800, 1, -1 do 
+                    if not isAutoRuin then break end 
+                    task.wait(1) 
+                end
+                
+                -- Balik lagi jika Autoruin masih aktif
+                if hrp and isAutoRuin then 
+                    hrp.CFrame = saved 
+                end
+            end
+        end)
+    end
+end
 
 -- Auto Sell
 BtnSell.MouseButton1Click:Connect(function()
@@ -169,7 +187,7 @@ BtnSell.MouseButton1Click:Connect(function()
     BtnSell.BackgroundTransparency = isAutoSell and 0 or 0.4
     if isAutoSell then
         task.spawn(function()
-            local RF_Sell = Net:WaitForChild("RF/db9c05f42cf9ce12d4ba36a4ce97961ab2fcfe9efcf414ab5c80198534ec049a")
+            local RF_Sell = Net:WaitForChild("RF/6ba6768dbd043eab854ddc00de854feeef21dc133918f2204bbb3622eb40454c")
             while isAutoSell do
                 pcall(function() RF_Sell:InvokeServer() end)
                 task.wait(10)
@@ -178,14 +196,36 @@ BtnSell.MouseButton1Click:Connect(function()
     end
 end)
 
--- Charm
-BtnCharm.MouseButton1Click:Connect(function()
-    task.spawn(function()
-        BtnCharm.BackgroundTransparency = 0
-        local RF_Charm = Net:WaitForChild("RF/38ac06a58a09cec371dd097152291d5eddea836d27e1997a4130be566ab52be5")
-        for i = 1, 100 do pcall(function() RF_Charm:InvokeServer(19) end) task.wait(0.1) end
-        BtnCharm.BackgroundTransparency = 0.4
-    end)
+-- Cuaca (Loop 10 Menit, Beli 4 cuaca jeda 2 detik)
+BtnCuaca.MouseButton1Click:Connect(function()
+    isCuaca = not isCuaca
+    BtnCuaca.BackgroundTransparency = isCuaca and 0 or 0.4
+    if isCuaca then
+        task.spawn(function()
+            local RF_Init = Net:WaitForChild("RF/0f753af260d30310594b899aa609a752cc19fc071611121446ca3f3720338b63")
+            local RF_Weather = Net:WaitForChild("RF/b2fdf805045bc023b7b4b1ee362b2153f893aad0428ac0dd64cee188519913c4")
+            
+            while isCuaca do
+                pcall(function() 
+                    RF_Init:InvokeServer()
+                    task.wait(0.5)
+                    RF_Weather:InvokeServer("Retro Lightning")
+                    task.wait(2)
+                    RF_Weather:InvokeServer("Retro Tornado")
+                    task.wait(2)
+                    RF_Weather:InvokeServer("Retro Volcano")
+                    task.wait(2)
+                    RF_Weather:InvokeServer("Raining Tacos")
+                end)
+                
+                -- Loop 10 menit
+                for i = 600, 1, -1 do 
+                    if not isCuaca then break end 
+                    task.wait(1) 
+                end
+            end
+        end)
+    end
 end)
 
 -- ==========================================
@@ -215,18 +255,19 @@ BtnFishing.MouseButton1Click:Connect(function()
     BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
     if isFishing then
         task.spawn(function()
-            pcall(function() Net:WaitForChild("RE/fea70f385004d756bf8d1d43ae66fa7f50758c439a6ca250180285629af8707d"):FireServer(1) end)
-            task.wait(0.5)
-            local RF_Charge = Net:WaitForChild("RF/efa544e741030d05392a343f535281e6d753730f214a891cd12d2613fe7ba3f3")
-            local RF_Start  = Net:WaitForChild("RF/e5fec9d5375c91f346097d34cff0649f7d5abfcec751d5dbcd577e73bac21d77")
-            local RE_Catch  = Net:WaitForChild("RE/af4e1d2c00abe54a018817fc46650d267d07e6dbc6fefce896b0d91f5389e901")
+            local RE_Fish1 = Net:WaitForChild("RE/4f6160a0a0bf28bee0239406414c82f0735ecc0cbd55e21970e70b34867f93cc")
+            local RF_Fish2 = Net:WaitForChild("RF/ab0ac6b3fc688ed11d8b59543b09b9d58fa8ea93d9a000a081c5b2cbe3d6f50b")
+            local RF_Fish3 = Net:WaitForChild("RF/83b5e90dd513b12be33ff3b19cf2c38c87b5fa47d1ad10544ed5a53cfb9dedac")
+            local RE_Catch = Net:WaitForChild("RE/97496507e8a72d252b4f90ff73a05fb1ed77463d376e5c4a332621206f32cbd9")
+            
             while isFishing do
                 pcall(function()
-                    RF_Charge:InvokeServer()
+                    RE_Fish1:FireServer(1)
                     task.wait(0.01)
-                    RF_Start:InvokeServer(-1.233184814453125, 0.6406011834703764, 1777305818.546498)
+                    RF_Fish2:InvokeServer()
+                    task.wait(0.01)
+                    RF_Fish3:InvokeServer(-1.233184814453125, 0.6269751116619552, 1777816907.751259)
                     task.wait(0.08)
-                    RE_Catch:FireServer()
                     RE_Catch:FireServer()
                 end)
                 task.wait(0.05)
@@ -242,6 +283,9 @@ BtnX2.MouseButton1Click:Connect(function()
     if isX2 then
         task.spawn(function()
             local targetCFrame = CFrame.new(1322.31042, 48.0009918, 2758.5249, 0.0847494006, -5.52437704e-08, 0.996402323, -2.10848263e-08, 1, 5.72366154e-08, -0.996402323, -2.58597375e-08, 0.0847494006)
+            local RF_Init = Net:WaitForChild("RF/0f753af260d30310594b899aa609a752cc19fc071611121446ca3f3720338b63")
+            local RF_Basic = Net:WaitForChild("RF/76d6c0f7c83489155373cf0208c63ce55675ffada06d15bab8d37675eaa457a9")
+            
             while isX2 do
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
@@ -249,11 +293,29 @@ BtnX2.MouseButton1Click:Connect(function()
                     task.wait(1)
                     hrp.CFrame = targetCFrame
                     task.wait(1.5)
-                    for i = 1, 2 do if not isX2 then break end secureClick() task.wait(0.8) end
+                    
+                    for i = 1, 2 do 
+                        if not isX2 then break end 
+                        secureClick() 
+                        task.wait(0.8) 
+                    end
+                    
+                    -- Tambahan script Basic
+                    if isX2 then
+                        pcall(function()
+                            RF_Init:InvokeServer()
+                            RF_Basic:InvokeServer("Basic")
+                        end)
+                    end
+                    
                     task.wait(1)
                     if hrp then hrp.CFrame = saved end
                 end
-                for i = 1140, 1, -1 do if not isX2 then break end task.wait(1) end
+                
+                for i = 1140, 1, -1 do 
+                    if not isX2 then break end 
+                    task.wait(1) 
+                end
             end
         end)
     end
@@ -265,9 +327,9 @@ BtnParty.MouseButton1Click:Connect(function()
     BtnParty.BackgroundTransparency = isParty and 0 or 0.4
     if isParty then
         task.spawn(function()
-            local RE_Party = Net:WaitForChild("RE/54405a04a59e22229c055abf12226e2a2387bdf16d7ed3feb2597fcfbe6af001")
+            local RE_Party = Net:WaitForChild("RE/2c44fbad7da2c3cbd30c64877af23b14839487c6cd8b9dd36c81d81559d1b7bf")
             while isParty do
-                pcall(function() RE_Party:FireServer("Party Wizard", 1, 1) end)
+                pcall(function() RE_Party:FireServer("Party Wizard", 1, 2) end)
                 for i = 600, 1, -1 do if not isParty then break end task.wait(1) end
             end
         end)
@@ -286,19 +348,4 @@ styleBtn(BtnTeleport, 12)
 BtnTeleport.MouseButton1Click:Connect(function()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then hrp.CFrame = CFrame.new(1472.36865, 58.0009956, 2856.60547, 0.744470656, 3.18405924e-08, 0.66765517, -3.45702809e-08, 1, -9.14249032e-09, -0.66765517, -1.62747114e-08, 0.744470656) end
-end)
-
--- ==========================================
--- 5. WEATHER AUTO LOOP (DARI SCRIPT AWAL)
--- ==========================================
-task.spawn(function()
-    local RF_Weather = Net:WaitForChild("RF/cbdd11a81d3ad9c6a2b2debd6fd0cf5ffbb093f945a7aa067107b0dc1616d79a")
-    while true do
-        pcall(function() RF_Weather:InvokeServer("Cloudy") end)
-        task.wait(1)
-        pcall(function() RF_Weather:InvokeServer("Wind") end)
-        task.wait(1)
-        pcall(function() RF_Weather:InvokeServer("Storm") end)
-        task.wait(60)
-    end
 end)

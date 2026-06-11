@@ -23,10 +23,10 @@ local list_megalodon = {"Megalodon"}
 
 -- Daftar pesan hype acak
 local hype_messages = {
-    "OMG %s dapet %s!",
-    "Guys look 👀 %s dapet %s!",
-    "Selamat %s berhasil dapat %s!",
-    "%s dapet %s!"
+    "Congratulations!! %s Get %s!",
+    "Congratulations!! %s Get %s!",
+    "Congratulations!! %s Get %s!",
+    "Congratulations!! %s Get %s!"
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --

@@ -1,0 +1,155 @@
+-- [[ CONFIG ]] --
+local webhook_url = "https://discord.com/api/webhooks/1471473387120361573/OJN4BmXmdHbf89_fJ6oV-QRp7j0XVeQVR4mxYR_aIIZTwmaoHYxU9oYqsGK8OQRecxY4"
+local startTime = os.time()
+
+-- Counter Server
+local serverCount = {
+    evo = 0, runic = 0, withering = 0, ruby = 0,
+    kraken = 0, lochness = 0, secret = 0,
+    megalodon = 0, forgotten = 0
+}
+
+-- Counter Player
+local playerCount = {}
+
+-- Daftar item per kategori
+local list_evo       = {"Evolved Enchant Stone"}
+local list_runic     = {"Runic Enchant Stone"}
+local list_withering = {"Withering Core"}
+local list_ruby      = {"GEMSTONE Ruby"}
+local list_kraken    = {"Cursed Kraken"}
+local list_lochness  = {"Lochness Monster"}
+local list_megalodon = {"Megalodon"}
+
+-- Daftar pesan hype acak
+local hype_messages = {
+    "OMG 😱 %s baru aja dapet %s!",
+    "No way 🤯 %s berhasil nangkep %s!",
+    "Unbelievable 😮 %s dapet %s!",
+    "Insane catch 🔥 %s nangkep %s!",
+    "Guys look 👀 %s dapet %s!",
+    "Legendary moment 🏆 %s berhasil amankan %s!",
+    "Bro just popped off 💥 %s dapet %s!",
+    "Server gemetar 😳 %s barusan nangkep %s!",
+    "Absolute madness 😈 %s dapet %s!",
+    "Historic catch 🐉 %s baru aja dapet %s!"
+}
+
+-- [[ FUNGSI KIRIM WEBHOOK ]] --
+local function sendWebhook(fishName, fullText, category, isStart)
+    local req = request or http_request or (http and http.request)
+    if not req then return end
+
+    local content, description, color
+    
+    if isStart then
+        content = "🔔 **Webhook Fishit Aktif!**"
+        description = "Script running di akun: **" .. game.Players.LocalPlayer.Name .. "**\nMenunggu kabar dari server..."
+        color = 65535 
+    else
+        local cleanerText = fullText:gsub("<[^>]*>", "") 
+        local luckyPlayer = cleanerText:match("%[Server%]%: (.-) obtained") or "Unknown Player"
+        local fishName = cleanerText:match("obtained a (.-%))") or category:gsub("^%l", string.upper)
+
+        -- Pilih pesan acak
+        local randomMsg = hype_messages[math.random(1, #hype_messages)]
+        content = string.format(randomMsg, luckyPlayer, fishName)
+
+        -- Update Counter Server
+        serverCount[category] = (serverCount[category] or 0) + 1
+
+        -- Update Counter Player
+        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {
+            evo=0, runic=0, withering=0, ruby=0,
+            kraken=0, lochness=0, secret=0,
+            megalodon=0, forgotten=0
+        }
+        playerCount[luckyPlayer][category] = playerCount[luckyPlayer][category] + 1
+
+        local s = os.time() - startTime
+        local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
+        
+        local displayCategory = category:gsub("^%l", string.upper)
+
+        -- Format Player Records dulu
+        local pStats = playerCount[luckyPlayer]
+        local playerStats = "\nEvo: " .. pStats.evo .. " | Runic: " .. pStats.runic .. " | Withering: " .. pStats.withering ..
+            "\nRuby: " .. pStats.ruby .. " | Kraken: " .. pStats.kraken .. " | Lochness: " .. pStats.lochness ..
+            "\nSecret: " .. pStats.secret .. " | Megalodon: " .. pStats.megalodon .. " | Forgotten: " .. pStats.forgotten
+
+        -- Format Server Records di bawah
+        local serverStats = "\nEvo: " .. serverCount.evo .. " | Runic: " .. serverCount.runic .. " | Withering: " .. serverCount.withering ..
+            "\nRuby: " .. serverCount.ruby .. " | Kraken: " .. serverCount.kraken .. " | Lochness: " .. serverCount.lochness ..
+            "\nSecret: " .. serverCount.secret .. " | Megalodon: " .. serverCount.megalodon .. " | Forgotten: " .. serverCount.forgotten
+
+        description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
+            "\n\n**Player Records (" .. luckyPlayer .. ")**" .. playerStats ..
+            "\n\n**Server Records**" .. serverStats
+        
+        -- Warna embed per kategori
+        if category == "forgotten" then 
+            color = 16777215
+        elseif category == "secret" then 
+            color = 65280
+        elseif category == "evo" then 
+            color = 0
+        elseif category == "ruby" then 
+            color = 16711935
+        elseif category == "withering" then 
+            color = 3447003
+        elseif category == "megalodon" then 
+            color = 255
+        elseif category == "runic" or category == "kraken" or category == "lochness" then 
+            color = 16766720
+        else
+            color = 8421504
+        end
+    end
+
+    req({
+        Url = webhook_url,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode({
+            ["content"] = content,
+            ["embeds"] = {{
+                ["description"] = description,
+                ["color"] = color,
+                ["footer"] = {["text"] = "Server Mybubub • " .. os.date("%X", os.time() - 3600)}
+            }}
+        })
+    })
+end
+
+-- [[ STARTUP ]] --
+sendWebhook(nil, nil, nil, true)
+
+-- [[ DETEKSI CHAT ]] --
+game:GetService("TextChatService").OnIncomingMessage = function(message)
+    local txt = message.Text:lower()
+    
+    if txt:find("%[server%]:") and txt:find("obtained") then
+        
+        for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "evo", false) return end end
+        for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false) return end end
+        for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false) return end end
+        for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false) return end end
+        for _, n in pairs(list_kraken) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "kraken", false) return end end
+        for _, n in pairs(list_lochness) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lochness", false) return end end
+        for _, n in pairs(list_megalodon) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "megalodon", false) return end end
+        
+        local chanceNum, chanceUnit = txt:match("1 in ([%d%.]+)([km]) chance")
+        if chanceNum and chanceUnit then
+            local val = tonumber(chanceNum)
+            if not val then return end
+            if chanceUnit == "k" then val = val * 1000 end
+            if chanceUnit == "m" then val = val * 1000000 end
+            
+            if val >= 246000 and val <= 10000000 then
+                sendWebhook(nil, message.Text, "secret", false)
+            elseif val > 10000000 then
+                sendWebhook(nil, message.Text, "forgotten", false)
+            end
+        end
+    end
+end

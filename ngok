@@ -66,9 +66,9 @@ local function sendWebhook(fishName, fullText, category, isStart)
         local suffix = suffixMap[category] or "item"
         local displayCategory = category:gsub("^%l", string.upper)
 
-        -- ambil nama ikan + berat langsung dari pesan server
+        -- ambil nama ikan + berat langsung dari pesan server untuk kategori ikan
         local fishFullWithWeight
-        if category == "secret" or category == "megalodon" or category == "forgotten" then
+        if category == "secret" or category == "megalodon" or category == "forgotten" or category == "kraken" or category == "lochness" then
             fishFullWithWeight = cleanerText:match("obtained a (.-) with") or fishName or displayCategory
         else
             fishFullWithWeight = displayCategory
@@ -76,9 +76,10 @@ local function sendWebhook(fishName, fullText, category, isStart)
 
         content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** " .. suffix .. "!"
         
-        -- Player Records singkat
+        -- Player Records singkat dengan kata kerja sesuai suffix
         local pStats = playerCount[luckyPlayer][category]
-        local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. pStats .. " " .. displayCategory
+        local verb = (suffix == "Fish") and "Menangkap" or "Mendapatkan"
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah " .. verb .. " " .. pStats .. " " .. displayCategory
 
         -- Server Records lengkap
         local serverStats = "\nEvo: " .. serverCount.evo .. " | Runic: " .. serverCount.runic .. " | Withering: " .. serverCount.withering ..

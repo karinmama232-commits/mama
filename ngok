@@ -12,7 +12,7 @@ local serverCount = {
 -- Counter per Player
 local playerCount = {}
 
--- Daftar item per kategori
+-- Daftar item per kategori (untuk deteksi)
 local list_evo       = {"Evolved Enchant Stone"}
 local list_runic     = {"Runic Enchant Stone"}
 local list_withering = {"Withering Core"}
@@ -66,16 +66,19 @@ local function sendWebhook(fishName, fullText, category, isStart)
         local suffix = suffixMap[category] or "item"
         local displayCategory = category:gsub("^%l", string.upper)
 
-        -- ambil berat hanya untuk secret, megalodon, forgotten
-        local weight = nil
+        -- ambil nama ikan + berat langsung dari pesan server untuk secret, megalodon, forgotten
+        local fishFull, weight
         if category == "secret" or category == "megalodon" or category == "forgotten" then
-            weight = cleanerText:match("%(([%d%.]+kg)%)")
+            fishFull = cleanerText:match("obtained a (.-) %(") or fishName or displayCategory
+            weight   = cleanerText:match("%(([%d%.]+kg)%)")
+        else
+            fishFull = displayCategory
         end
 
         if weight then
-            content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishName .. " (" .. weight .. ")** " .. suffix .. "!"
+            content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFull .. " (" .. weight .. ")** " .. suffix .. "!"
         else
-            content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishName .. "** " .. suffix .. "!"
+            content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFull .. "** " .. suffix .. "!"
         end
         
         -- Format Player Records singkat
@@ -103,7 +106,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
         elseif category == "withering" then 
             color = 3447003
         elseif category == "megalodon" then 
-            color = 255
+            color = 10181046
         elseif category == "runic" or category == "kraken" or category == "lochness" then 
             color = 16766720
         else

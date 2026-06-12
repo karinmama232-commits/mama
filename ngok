@@ -99,7 +99,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
         elseif category == "ruby" then 
             color = 16711935
         elseif category == "withering" then 
-            color = 3447003
+            color = 16711680
         elseif category == "megalodon" then 
             color = 255
         elseif category == "runic" or category == "kraken" or category == "lochness" then 

@@ -69,7 +69,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
         -- ambil berat hanya untuk secret, megalodon, forgotten
         local weight = nil
         if category == "secret" or category == "megalodon" or category == "forgotten" then
-            weight = cleanerText:match("%((%d+kg)%)")
+            weight = cleanerText:match("%(([%d%.]+kg)%)")
         end
 
         if weight then

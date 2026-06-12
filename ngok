@@ -2,14 +2,14 @@
 local webhook_url = "https://discord.com/api/webhooks/1471473387120361573/OJN4BmXmdHbf89_fJ6oV-QRp7j0XVeQVR4mxYR_aIIZTwmaoHYxU9oYqsGK8OQRecxY4"
 local startTime = os.time()
 
--- Counter Server
+-- Counter hanya untuk Server
 local serverCount = {
     evo = 0, runic = 0, withering = 0, ruby = 0,
     kraken = 0, lochness = 0, secret = 0,
     megalodon = 0, forgotten = 0
 }
 
--- Counter Player
+-- Counter per Player
 local playerCount = {}
 
 -- Daftar item per kategori
@@ -21,12 +21,17 @@ local list_kraken    = {"Cursed Kraken"}
 local list_lochness  = {"Lochness Monster"}
 local list_megalodon = {"Megalodon"}
 
--- Daftar pesan hype acak
-local hype_messages = {
-    "Congratulations!! %s Get %s!",
-    "Congratulations!! %s Get %s!",
-    "Congratulations!! %s Get %s!",
-    "Congratulations!! %s Get %s!"
+-- Mapping suffix per kategori
+local suffixMap = {
+    evo = "Stone",
+    runic = "Stone",
+    withering = "item",
+    ruby = "Stone",
+    kraken = "Fish",
+    lochness = "Fish",
+    secret = "Fish",
+    megalodon = "Fish",
+    forgotten = "Fish"
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
@@ -43,11 +48,6 @@ local function sendWebhook(fishName, fullText, category, isStart)
     else
         local cleanerText = fullText:gsub("<[^>]*>", "") 
         local luckyPlayer = cleanerText:match("%[Server%]%: (.-) obtained") or "Unknown Player"
-        local fishName = cleanerText:match("obtained a (.-%))") or category:gsub("^%l", string.upper)
-
-        -- Pilih pesan acak
-        local randomMsg = hype_messages[math.random(1, #hype_messages)]
-        content = string.format(randomMsg, luckyPlayer, fishName)
 
         -- Update Counter Server
         serverCount[category] = (serverCount[category] or 0) + 1
@@ -63,21 +63,32 @@ local function sendWebhook(fishName, fullText, category, isStart)
         local s = os.time() - startTime
         local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
         
+        local suffix = suffixMap[category] or "item"
         local displayCategory = category:gsub("^%l", string.upper)
 
-        -- Format Player Records dulu
-        local pStats = playerCount[luckyPlayer]
-        local playerStats = "\nEvo: " .. pStats.evo .. " | Runic: " .. pStats.runic .. " | Withering: " .. pStats.withering ..
-            "\nRuby: " .. pStats.ruby .. " | Kraken: " .. pStats.kraken .. " | Lochness: " .. pStats.lochness ..
-            "\nSecret: " .. pStats.secret .. " | Megalodon: " .. pStats.megalodon .. " | Forgotten: " .. pStats.forgotten
+        -- ambil berat hanya untuk secret, megalodon, forgotten
+        local weight = nil
+        if category == "secret" or category == "megalodon" or category == "forgotten" then
+            weight = cleanerText:match("%((%d+kg)%)")
+        end
 
-        -- Format Server Records di bawah
+        if weight then
+            content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishName .. " (" .. weight .. ")** " .. suffix .. "!"
+        else
+            content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishName .. "** " .. suffix .. "!"
+        end
+        
+        -- Format Player Records singkat
+        local pStats = playerCount[luckyPlayer][category]
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. pStats .. " " .. displayCategory
+
+        -- Format Server Records lengkap
         local serverStats = "\nEvo: " .. serverCount.evo .. " | Runic: " .. serverCount.runic .. " | Withering: " .. serverCount.withering ..
             "\nRuby: " .. serverCount.ruby .. " | Kraken: " .. serverCount.kraken .. " | Lochness: " .. serverCount.lochness ..
             "\nSecret: " .. serverCount.secret .. " | Megalodon: " .. serverCount.megalodon .. " | Forgotten: " .. serverCount.forgotten
 
         description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
-            "\n\n**Player Records (" .. luckyPlayer .. ")**" .. playerStats ..
+            "\n\n" .. playerStats ..
             "\n\n**Server Records**" .. serverStats
         
         -- Warna embed per kategori

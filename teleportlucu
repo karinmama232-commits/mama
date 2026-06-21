@@ -3,201 +3,268 @@
 local player = game.Players.LocalPlayer
 local TweenService = game:GetService("TweenService")
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "TeleportGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = player:WaitForChild("PlayerGui")
+local TeleportRunning = false
+local TargetPos = nil
+local TargetPlayer = nil
 
--- Icon bulat kecil
-local icon = Instance.new("ImageButton")
-icon.Name = "TeleportIcon"
-icon.Size = UDim2.new(0,40,0,40)
-icon.Position = UDim2.new(0,100,0,100)
-icon.BackgroundColor3 = Color3.fromRGB(255,0,0)
-icon.Image = ""
-icon.Parent = screenGui
-Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
+-- GUI utama
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PociJumpUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
 
--- Menu kecil
-local menu = Instance.new("Frame")
-menu.Name = "TeleportMenu"
-menu.Size = UDim2.new(0,150,0,200)
-menu.Position = UDim2.new(0,150,0,100)
-menu.BackgroundColor3 = Color3.fromRGB(30,30,30)
-menu.Visible = false
-menu.Parent = screenGui
+-- Icon
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "PociIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(255,105,180) 
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "♡"
+IconButton.TextColor3 = Color3.new(1,1,1)
+IconButton.TextSize = 30
+IconButton.Font = Enum.Font.GothamBold
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 10)
 
--- Tombol Stingray Shores
-local btnStingray = Instance.new("TextButton")
-btnStingray.Size = UDim2.new(1,-10,0,30)
-btnStingray.Position = UDim2.new(0,5,0,10)
-btnStingray.Text = "Stingray Shores"
-btnStingray.Parent = menu
+-- Frame utama (2x lebar)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "PociMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(255,245,248) 
+MainFrame.BackgroundTransparency = 0.2 
+MainFrame.Position = UDim2.new(0.5, -220, 0.5, -120)
+MainFrame.Size = UDim2.new(0, 440, 0, 300) 
+MainFrame.Visible = false 
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 12)
 
--- Tombol Dark Megalodon
-local btnMegalodon = Instance.new("TextButton")
-btnMegalodon.Size = UDim2.new(1,-10,0,30)
-btnMegalodon.Position = UDim2.new(0,5,0,50)
-btnMegalodon.Text = "Dark Megalodon"
-btnMegalodon.Parent = menu
+-- Header
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(255, 105, 180)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 12)
 
--- Tombol Refresh
-local btnRefresh = Instance.new("TextButton")
-btnRefresh.Size = UDim2.new(1,-10,0,30)
-btnRefresh.Position = UDim2.new(0,5,0,90)
-btnRefresh.Text = "Refresh Players"
-btnRefresh.Parent = menu
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "POCI JUMP ♡" 
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
 
--- Dropdown speed multiplier
-local speedBox = Instance.new("TextBox")
-speedBox.Size = UDim2.new(1,-10,0,30)
-speedBox.Position = UDim2.new(0,5,0,130)
-speedBox.Text = "Speed x4" -- default
-speedBox.Parent = menu
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.94, 0, 0.15, 0) 
+CloseBtn.Size = UDim2.new(0, 25, 0, 25) 
+CloseBtn.BackgroundColor3 = Color3.new(1,1,1)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255,105,180)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- Tombol minimize (-)
-local btnMin = Instance.new("TextButton")
-btnMin.Size = UDim2.new(0,20,0,20)
-btnMin.Position = UDim2.new(1,-45,0,5)
-btnMin.Text = "-"
-btnMin.Parent = menu
+-- 3 tombol sebaris lokasi
+local function makeBtn(txt, pos, cf)
+    local b = Instance.new("TextButton", MainFrame)
+    b.Size = UDim2.new(0.25, 0, 0, 28)
+    b.Position = pos
+    b.BackgroundColor3 = Color3.fromRGB(255,105,180)
+    b.BackgroundTransparency = 0.4 
+    b.Text = txt
+    b.TextSize = 12
+    b.TextColor3 = Color3.new(1,1,1)
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    b.MouseButton1Click:Connect(function()
+        if TeleportRunning then return end
+        TargetPos = cf
+        b.BackgroundTransparency = 0 -- tanda aktif
+    end)
+    return b
+end
 
--- Tombol close (x)
-local btnClose = Instance.new("TextButton")
-btnClose.Size = UDim2.new(0,20,0,20)
-btnClose.Position = UDim2.new(1,-25,0,5)
-btnClose.Text = "x"
-btnClose.Parent = menu
+local btnDarkMega = makeBtn("DARK MEGA", UDim2.new(0.05,0,0.15,0),
+    Vector3.new(-2445.66187,4.8814559,-424.508728))
+local btnNew = makeBtn("NEW", UDim2.new(0.35,0,0.15,0),
+    Vector3.new(-1855.46497,118.944168,-806.095154))
+local btnMegalodon = makeBtn("MEGALODON", UDim2.new(0.65,0,0.15,0),
+    Vector3.new(-1086.03503,4.87964296,1719.71887))
 
--- Fungsi auto teleport loncat-loncat
+-- Input angka (speed multiplier)
+local speedBox = Instance.new("TextBox", MainFrame)
+speedBox.Position = UDim2.new(0.1,0,0.3,0)
+speedBox.Size = UDim2.new(0.8,0,0,25)
+speedBox.Text = "4"
+speedBox.BackgroundColor3 = Color3.fromRGB(255,105,180)
+speedBox.BackgroundTransparency = 0.6
+speedBox.TextColor3 = Color3.new(1,1,1)
+speedBox.Font = Enum.Font.GothamBold
+Instance.new("UICorner", speedBox)
+
+-- 3 tombol sebaris: TP ISLAND, STOP, TP PLAYER
+local btnIsland = Instance.new("TextButton", MainFrame)
+btnIsland.Size = UDim2.new(0.25,0,0,28)
+btnIsland.Position = UDim2.new(0.05,0,0.45,0)
+btnIsland.Text = "TP ISLAND"
+btnIsland.BackgroundColor3 = Color3.fromRGB(255,105,180)
+btnIsland.BackgroundTransparency = 0.4
+btnIsland.TextColor3 = Color3.new(1,1,1)
+btnIsland.Font = Enum.Font.GothamBold
+btnIsland.TextSize = 12
+Instance.new("UICorner", btnIsland).CornerRadius = UDim.new(0,6)
+
+local btnStop = Instance.new("TextButton", MainFrame)
+btnStop.Size = UDim2.new(0.25,0,0,28)
+btnStop.Position = UDim2.new(0.35,0,0.45,0)
+btnStop.Text = "STOP"
+btnStop.BackgroundColor3 = Color3.fromRGB(255,105,180)
+btnStop.BackgroundTransparency = 0.4
+btnStop.TextColor3 = Color3.new(1,1,1)
+btnStop.Font = Enum.Font.GothamBold
+btnStop.TextSize = 12
+Instance.new("UICorner", btnStop).CornerRadius = UDim.new(0,6)
+
+local btnPlayer = Instance.new("TextButton", MainFrame)
+btnPlayer.Size = UDim2.new(0.25,0,0,28)
+btnPlayer.Position = UDim2.new(0.65,0,0.45,0)
+btnPlayer.Text = "TP PLAYER"
+btnPlayer.BackgroundColor3 = Color3.fromRGB(255,105,180)
+btnPlayer.BackgroundTransparency = 0.4
+btnPlayer.TextColor3 = Color3.new(1,1,1)
+btnPlayer.Font = Enum.Font.GothamBold
+btnPlayer.TextSize = 12
+Instance.new("UICorner", btnPlayer).CornerRadius = UDim.new(0,6)
+
+-- Tombol REFRESH
+local btnRefresh = Instance.new("TextButton", MainFrame)
+btnRefresh.Size = UDim2.new(0.8,0,0,28)
+btnRefresh.Position = UDim2.new(0.1,0,0.6,0)
+btnRefresh.Text = "REFRESH"
+btnRefresh.BackgroundColor3 = Color3.fromRGB(255,105,180)
+btnRefresh.BackgroundTransparency = 0.4
+btnRefresh.TextColor3 = Color3.new(1,1,1)
+btnRefresh.Font = Enum.Font.GothamBold
+btnRefresh.TextSize = 12
+Instance.new("UICorner", btnRefresh).CornerRadius = UDim.new(0,6)
+
+-- Scroll daftar player
+local scroll = Instance.new("ScrollingFrame", MainFrame)
+scroll.Size = UDim2.new(0.9,0,0,80)
+scroll.Position = UDim2.new(0.05,0,0.7,0)
+scroll.CanvasSize = UDim2.new(0,0,0,0)
+scroll.ScrollBarThickness = 6
+scroll.BackgroundTransparency = 0.6
+scroll.BackgroundColor3 = Color3.fromRGB(255,245,248)
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,5)
+
+-- Fungsi teleport hop
 local function autoTeleport(targetPos, hopDist)
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-
+    TeleportRunning = true
     local currentPos = hrp.Position
     local direction = (targetPos - currentPos).Unit
     local distance = (targetPos - currentPos).Magnitude
     local traveled = 0
+    hrp.CanCollide = false
+    local mult = tonumber(speedBox.Text) or 4
 
-    hrp.CanCollide = false -- nembus bangunan
-
-    -- speed multiplier dari TextBox
-    local mult = tonumber(speedBox.Text:match("%d+")) or 4
-
-    while traveled < distance do
+    while traveled < distance and TeleportRunning do
         local moveDist = math.min(hopDist, distance - traveled)
         local nextPos = currentPos + direction * moveDist
-
-        -- BodyVelocity biar ngambang
         local bv = Instance.new("BodyVelocity")
         bv.Velocity = Vector3.new(0,5,0)
         bv.MaxForce = Vector3.new(1e5,1e5,1e5)
         bv.Parent = hrp
-
-        local tweenInfo = TweenInfo.new(
-            1/mult, -- makin besar multiplier makin cepat
-            Enum.EasingStyle.Linear,
-            Enum.EasingDirection.Out
-        )
+        local tweenInfo = TweenInfo.new(1/mult, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
         local goal = {CFrame = CFrame.new(nextPos)}
         local tween = TweenService:Create(hrp, tweenInfo, goal)
         tween:Play()
         tween.Completed:Wait()
-
-        traveled = traveled + moveDist
+        traveled += moveDist
         currentPos = nextPos
         bv:Destroy()
     end
-
-    hrp.CanCollide = true -- normal lagi
+    hrp.CanCollide = true
+    TeleportRunning = false
 end
 
--- Stingray Shores
-btnStingray.MouseButton1Click:Connect(function()
-    autoTeleport(Vector3.new(-1855.46497, 118.944168, -806.095154), 50)
-end)
-
--- Dark Megalodon
-btnMegalodon.MouseButton1Click:Connect(function()
-    autoTeleport(Vector3.new(-2445.66187, 4.8814559, -424.508728), 50)
-end)
-
--- Refresh Players
-btnRefresh.MouseButton1Click:Connect(function()
-    for _, child in ipairs(menu:GetChildren()) do
-        if child:IsA("TextButton") and child.Name:find("PlayerBtn") then
-            child:Destroy()
-        end
+-- TP ISLAND
+btnIsland.MouseButton1Click:Connect(function()
+    if TeleportRunning then return end
+    if TargetPos then
+        autoTeleport(TargetPos, 50)
+        btnDarkMega.BackgroundTransparency = 0.4
+        btnNew.BackgroundTransparency = 0.4
+        btnMegalodon.BackgroundTransparency = 0.4
+        TargetPos = nil
     end
+end)
 
-    local y = 170
+-- STOP
+btnStop.MouseButton1Click:Connect(function()
+    TeleportRunning = false
+    TargetPos = nil
+    TargetPlayer = nil
+    btnDarkMega.BackgroundTransparency = 0.4
+    btnNew.BackgroundTransparency = 0.4
+    btnMegalodon.BackgroundTransparency = 0.4
+end)
+
+-- TP PLAYER
+btnPlayer.MouseButton1Click:Connect(function()
+    if TeleportRunning then return end
+    if TargetPlayer and TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        autoTeleport(TargetPlayer.Character.HumanoidRootPart.Position, 50)
+        TargetPlayer = nil
+    end
+end)
+
+-- REFRESH
+btnRefresh.MouseButton1Click:Connect(function()
+    for _, child in ipairs(scroll:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    scroll.CanvasSize = UDim2.new(0,0,0,0)
+
+    local count = 0
     for _, plr in ipairs(game.Players:GetPlayers()) do
         if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            local btn = Instance.new("TextButton")
-            btn.Name = "PlayerBtn_"..plr.Name
+            local btn = Instance.new("TextButton", scroll)
             btn.Size = UDim2.new(1,-10,0,25)
-            btn.Position = UDim2.new(0,5,0,y)
-            btn.Text = "To "..plr.Name
-            btn.Parent = menu
-            y = y + 30
+            btn.Text = string.upper(plr.Name)
+            btn.BackgroundColor3 = Color3.fromRGB(255,105,180)
+            btn.BackgroundTransparency = 0.4
+            btn.TextColor3 = Color3.new(1,1,1)
+            btn.Font = Enum.Font.GothamBold
+            btn.TextSize = 12
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
 
             btn.MouseButton1Click:Connect(function()
-                autoTeleport(plr.Character.HumanoidRootPart.Position, 50)
+                TargetPlayer = plr
+                btn.BackgroundTransparency = 0 -- tanda aktif player
             end)
+            count += 1
         end
     end
+    scroll.CanvasSize = UDim2.new(0,0,0,count*30)
 end)
 
--- Klik icon toggle menu
-icon.MouseButton1Click:Connect(function()
-    menu.Visible = not menu.Visible
+-- CLOSE
+CloseBtn.MouseButton1Click:Connect(function()
+    TeleportRunning = false
+    TargetPos = nil
+    TargetPlayer = nil
+    ScreenGui:Destroy()
 end)
 
--- Tombol minimize
-btnMin.MouseButton1Click:Connect(function()
-    menu.Visible = false
-end)
-
--- Tombol close
-btnClose.MouseButton1Click:Connect(function()
-    menu.Visible = false
-    icon.Visible = false
-end)
-
--- Draggable icon
-local UserInputService = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
-
-local function update(input)
-    local delta = input.Position - dragStart
-    icon.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
-                              startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-end
-
-icon.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or 
-       input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = icon.Position
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-icon.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or 
-       input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
+-- ICON toggle
+IconButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
 end)

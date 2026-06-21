@@ -1,6 +1,8 @@
 -- LocalScript di StarterPlayerScripts
 
 local player = game.Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "TeleportGui"
 screenGui.ResetOnSpawn = false
@@ -19,7 +21,7 @@ Instance.new("UICorner", icon).CornerRadius = UDim.new(1,0)
 -- Menu kecil
 local menu = Instance.new("Frame")
 menu.Name = "TeleportMenu"
-menu.Size = UDim2.new(0,150,0,160)
+menu.Size = UDim2.new(0,150,0,200)
 menu.Position = UDim2.new(0,150,0,100)
 menu.BackgroundColor3 = Color3.fromRGB(30,30,30)
 menu.Visible = false
@@ -46,6 +48,13 @@ btnRefresh.Position = UDim2.new(0,5,0,90)
 btnRefresh.Text = "Refresh Players"
 btnRefresh.Parent = menu
 
+-- Dropdown speed multiplier
+local speedBox = Instance.new("TextBox")
+speedBox.Size = UDim2.new(1,-10,0,30)
+speedBox.Position = UDim2.new(0,5,0,130)
+speedBox.Text = "Speed x4" -- default
+speedBox.Parent = menu
+
 -- Tombol minimize (-)
 local btnMin = Instance.new("TextButton")
 btnMin.Size = UDim2.new(0,20,0,20)
@@ -60,23 +69,36 @@ btnClose.Position = UDim2.new(1,-25,0,5)
 btnClose.Text = "x"
 btnClose.Parent = menu
 
--- Fungsi fly mode bertahap
-local TweenService = game:GetService("TweenService")
-local function flyTo(targetPos)
+-- Fungsi auto teleport loncat-loncat
+local function autoTeleport(targetPos, hopDist)
     local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
 
     local currentPos = hrp.Position
     local direction = (targetPos - currentPos).Unit
     local distance = (targetPos - currentPos).Magnitude
-
-    local step = 99
     local traveled = 0
 
+    hrp.CanCollide = false -- nembus bangunan
+
+    -- speed multiplier dari TextBox
+    local mult = tonumber(speedBox.Text:match("%d+")) or 4
+
     while traveled < distance do
-        local moveDist = math.min(step, distance - traveled)
+        local moveDist = math.min(hopDist, distance - traveled)
         local nextPos = currentPos + direction * moveDist
-        local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+
+        -- BodyVelocity biar ngambang
+        local bv = Instance.new("BodyVelocity")
+        bv.Velocity = Vector3.new(0,5,0)
+        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bv.Parent = hrp
+
+        local tweenInfo = TweenInfo.new(
+            1/mult, -- makin besar multiplier makin cepat
+            Enum.EasingStyle.Linear,
+            Enum.EasingDirection.Out
+        )
         local goal = {CFrame = CFrame.new(nextPos)}
         local tween = TweenService:Create(hrp, tweenInfo, goal)
         tween:Play()
@@ -84,30 +106,31 @@ local function flyTo(targetPos)
 
         traveled = traveled + moveDist
         currentPos = nextPos
-        wait(2) -- berhenti 2 detik tiap hop
+        bv:Destroy()
     end
+
+    hrp.CanCollide = true -- normal lagi
 end
 
 -- Stingray Shores
 btnStingray.MouseButton1Click:Connect(function()
-    flyTo(Vector3.new(-1855.46497, 118.944168, -806.095154))
+    autoTeleport(Vector3.new(-1855.46497, 118.944168, -806.095154), 50)
 end)
 
 -- Dark Megalodon
 btnMegalodon.MouseButton1Click:Connect(function()
-    flyTo(Vector3.new(-2445.66187, 4.8814559, -424.508728))
+    autoTeleport(Vector3.new(-2445.66187, 4.8814559, -424.508728), 50)
 end)
 
 -- Refresh Players
 btnRefresh.MouseButton1Click:Connect(function()
-    -- Hapus tombol lama
     for _, child in ipairs(menu:GetChildren()) do
         if child:IsA("TextButton") and child.Name:find("PlayerBtn") then
             child:Destroy()
         end
     end
 
-    local y = 130
+    local y = 170
     for _, plr in ipairs(game.Players:GetPlayers()) do
         if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
             local btn = Instance.new("TextButton")
@@ -119,7 +142,7 @@ btnRefresh.MouseButton1Click:Connect(function()
             y = y + 30
 
             btn.MouseButton1Click:Connect(function()
-                flyTo(plr.Character.HumanoidRootPart.Position)
+                autoTeleport(plr.Character.HumanoidRootPart.Position, 50)
             end)
         end
     end

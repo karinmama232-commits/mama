@@ -93,7 +93,7 @@ local btnDarkMega = makeBtn("DARK MEGA", UDim2.new(0.05,0,0.15,0),
 local btnNew = makeBtn("NEW", UDim2.new(0.35,0,0.15,0),
     Vector3.new(-1855.46497,118.944168,-806.095154))
 local btnMegalodon = makeBtn("MEGALODON", UDim2.new(0.65,0,0.15,0),
-    Vector3.new(-1086.03503,4.87964296,1719.71887))
+    Vector3.new(-1197.11255, 4.88084364, 3593.02075, -0.934569955, 3.55928242e-09, -0.355779439, 1.25435697e-08, 1, -2.29455672e-08, 0.355779439, -2.59069814e-08, -0.934569955))
 
 -- Input angka (speed multiplier)
 local speedBox = Instance.new("TextBox", MainFrame)

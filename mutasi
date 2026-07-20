@@ -34,7 +34,7 @@ local list_demonic    = {"Demonic","Infernal"}
 local list_divine     = {"Divine","Celestial"}
 local list_atlantis   = {"Atlantis","Oceanic"}
 
--- Mapping suffix (supaya format ucapan sama seperti acuan lama)
+-- Mapping suffix
 local suffixMap = {
     galaxy="Fish", corrupt="Fish", gemstone="Fish", lightning="Fish",
     radioactive="Fish", holographic="Fish", golden="Fish", midnight="Fish",
@@ -43,7 +43,7 @@ local suffixMap = {
     divine="Fish", atlantis="Fish"
 }
 
--- Mapping warna embed Discord
+-- Mapping warna embed
 local colorMap = {
     galaxy = 16711935, corrupt = 8388608, gemstone = 16733695, lightning = 65535,
     radioactive = 65280, holographic = 3066993, golden = 16766720, midnight = 2105376,
@@ -86,17 +86,15 @@ local function sendWebhook(fishName, fullText, category, isStart)
         local suffix = suffixMap[category] or "item"
         local displayCategory = category:gsub("^%l", string.upper)
 
-        -- ambil nama ikan + berat langsung dari pesan server
         local fishFullWithWeight = cleanerText:match("obtained a (.-) with") or fishName or displayCategory
 
         content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** " .. suffix .. "!"
         
-        -- Player Records singkat
         local pStats = playerCount[luckyPlayer][category]
         local verb = (suffix == "Fish") and "Menangkap" or "Mendapatkan"
         local playerStats = "Player " .. luckyPlayer .. "\nSudah " .. verb .. " " .. pStats .. " " .. displayCategory
 
-        -- Server Records dinamis (hanya tampilkan yang >0)
+        -- Server Records dinamis
         local serverStats = {}
         for k,v in pairs(serverCount) do
             if v > 0 then
@@ -109,7 +107,6 @@ local function sendWebhook(fishName, fullText, category, isStart)
             "\n\n" .. playerStats ..
             "\n\n**Server Records**\n" .. serverStatsText
 
-        -- Warna embed sesuai mutasi
         color = colorMap[category] or 8421504
     end
 

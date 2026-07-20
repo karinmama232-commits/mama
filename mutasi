@@ -1,0 +1,144 @@
+-- [[ CONFIG ]] --
+local webhook_url = "https://discord.com/api/webhooks/1494291511192588440/3UhNha6dM5i13ImvtaaPbjFodIno5w4TkgPpHT0UkavnJRqkxhWV8BiE6YJazyNZbLKa"
+local startTime = os.time()
+
+-- Counter Server (mutasi)
+local serverCount = {
+    galaxy=0, corrupt=0, gemstone=0, lightning=0,
+    radioactive=0, holographic=0, golden=0, midnight=0,
+    fairydust=0, ghost=0, albino=0, stone=0,
+    aurora=0, shadow=0, glitch=0, demonic=0,
+    divine=0, atlantis=0
+}
+
+-- Counter Player
+local playerCount = {}
+
+-- Daftar mutasi untuk deteksi
+local list_mutasi = {
+    galaxy = {"Galaxy"},
+    corrupt = {"Corrupt"},
+    gemstone = {"Gemstone"},
+    lightning = {"Lightning"},
+    radioactive = {"Radioactive"},
+    holographic = {"Holographic"},
+    golden = {"Golden","Gold"},
+    midnight = {"Midnight"},
+    fairydust = {"Fairy Dust"},
+    ghost = {"Ghost"},
+    albino = {"Albino"},
+    stone = {"Stone","Big"},
+    aurora = {"Aurora"},
+    shadow = {"Shadow"},
+    glitch = {"Glitch","Error"},
+    demonic = {"Demonic","Infernal"},
+    divine = {"Divine","Celestial"},
+    atlantis = {"Atlantis","Oceanic"}
+}
+
+-- Mapping warna embed Discord (unik & sesuai deskripsi)
+local colorMap = {
+    galaxy = 16711935,      -- Magenta
+    corrupt = 8388608,      -- Maroon
+    gemstone = 16733695,    -- Pink cerah
+    lightning = 65535,      -- Cyan
+    radioactive = 65280,    -- Lime
+    holographic = 3066993,  -- Teal
+    golden = 16766720,      -- Gold
+    midnight = 2105376,     -- Dark gray
+    fairydust = 16776960,   -- Pastel yellow
+    ghost = 12303291,       -- Light gray
+    albino = 16777215,      -- White
+    stone = 8421504,        -- Gray
+    aurora = 43175,         -- Teal/aurora
+    shadow = 4210752,       -- Dark purple/black
+    glitch = 255,           -- Bold red-blue (approx)
+    demonic = 16711680,     -- Crimson
+    divine = 16777215,      -- White + gold border (approx)
+    atlantis = 3447003      -- Deep sea blue
+}
+
+-- [[ FUNGSI KIRIM WEBHOOK ]] --
+local function sendWebhook(fishName, fullText, category, isStart)
+    local req = request or http_request or (http and http.request)
+    if not req then return end
+
+    local content, description, color
+    
+    if isStart then
+        content = "🔔 **Webhook Fishit Aktif!**"
+        description = "Script running di akun: **" .. game.Players.LocalPlayer.Name .. "**\nMenunggu kabar dari server..."
+        color = 65535 
+    else
+        local cleanerText = fullText:gsub("<[^>]*>", "") 
+        local luckyPlayer = cleanerText:match("%[Server%]%: (.-) obtained") or "Unknown Player"
+
+        -- Update Counter Server
+        serverCount[category] = (serverCount[category] or 0) + 1
+
+        -- Update Counter Player
+        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {}
+        playerCount[luckyPlayer][category] = (playerCount[luckyPlayer][category] or 0) + 1
+
+        local s = os.time() - startTime
+        local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
+
+        -- ambil nama ikan + berat langsung dari pesan server
+        local fishFullWithWeight = cleanerText:match("obtained (.-)$") or fishName or category
+
+        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** Fish!"
+
+        -- Player Records singkat
+        local pStats = playerCount[luckyPlayer][category]
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. pStats .. " " .. category:gsub("^%l", string.upper)
+
+        -- Server Records dinamis (hanya tampilkan yang >0)
+        local serverStats = {}
+        for k,v in pairs(serverCount) do
+            if v > 0 then
+                table.insert(serverStats, k:gsub("^%l", string.upper) .. ": " .. v)
+            end
+        end
+        local serverStatsText = table.concat(serverStats, " | ")
+
+        description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
+            "\n\n" .. playerStats ..
+            "\n\n**Server Records**\n" .. serverStatsText
+
+        -- Warna embed sesuai mutasi
+        color = colorMap[category] or 8421504
+    end
+
+    req({
+        Url = webhook_url,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode({
+            ["content"] = content,
+            ["embeds"] = {{
+                ["description"] = description,
+                ["color"] = color,
+                ["footer"] = {["text"] = "Server Mybubub • " .. os.date("%X", os.time() - 3600)}
+            }}
+        })
+    })
+end
+
+-- [[ STARTUP ]] --
+sendWebhook(nil, nil, nil, true)
+
+-- [[ DETEKSI CHAT ]] --
+game:GetService("TextChatService").OnIncomingMessage = function(message)
+    local txt = message.Text:lower()
+    
+    if txt:find("%[server%]:") and txt:find("obtained") then
+        for category, list in pairs(list_mutasi) do
+            for _, n in pairs(list) do
+                if txt:find(n:lower()) then
+                    sendWebhook(n, message.Text, category, false)
+                    return
+                end
+            end
+        end
+    end
+end

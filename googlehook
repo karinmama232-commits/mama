@@ -35,7 +35,7 @@ local suffixMap = {
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
-local function sendWebhook(fishName, fullText, category, isStart)
+local function sendWebhook(fishName, fullText, category, isStart, luckyPlayer)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
@@ -47,8 +47,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
         color = 65535 
     else
         local cleanerText = fullText:gsub("<[^>]*>", "") 
-        -- FIX: ambil nama player langsung sebelum kata obtained
-        local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
+        luckyPlayer = luckyPlayer or "Unknown Player"
 
         -- Update Counter Server
         serverCount[category] = (serverCount[category] or 0) + 1
@@ -126,18 +125,20 @@ end
 sendWebhook(nil, nil, nil, true)
 
 -- [[ DETEKSI CHAT ]] --
-game:GetService("TextChatService").OnIncomingMessage = function(message)
-    local txt = message.Text:lower()
-    
+local TextChatService = game:GetService("TextChatService")
+TextChatService.MessageReceived:Connect(function(message)
+    local txt = (message.Text or ""):lower()
+    local luckyPlayer = message.TextSource and message.TextSource.Name or "Unknown"
+
     if txt:find("obtained") then
         
-        for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "evo", false) return end end
-        for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false) return end end
-        for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false) return end end
-        for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false) return end end
-        for _, n in pairs(list_kraken) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "kraken", false) return end end
-        for _, n in pairs(list_lochness) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lochness", false) return end end
-        for _, n in pairs(list_megalodon) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "megalodon", false) return end end
+        for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "evo", false, luckyPlayer) return end end
+        for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false, luckyPlayer) return end end
+        for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false, luckyPlayer) return end end
+        for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false, luckyPlayer) return end end
+        for _, n in pairs(list_kraken) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "kraken", false, luckyPlayer) return end end
+        for _, n in pairs(list_lochness) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lochness", false, luckyPlayer) return end end
+        for _, n in pairs(list_megalodon) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "megalodon", false, luckyPlayer) return end end
         
         local chanceNum, chanceUnit = txt:match("1 in ([%d%.]+)([km]) chance")
         if chanceNum and chanceUnit then
@@ -147,10 +148,10 @@ game:GetService("TextChatService").OnIncomingMessage = function(message)
             if chanceUnit == "m" then val = val * 1000000 end
             
             if val >= 246000 and val <= 10000000 then
-                sendWebhook(nil, message.Text, "secret", false)
+                sendWebhook(nil, message.Text, "secret", false, luckyPlayer)
             elseif val > 10000000 then
-                sendWebhook(nil, message.Text, "forgotten", false)
+                sendWebhook(nil, message.Text, "forgotten", false, luckyPlayer)
             end
         end
     end
-end
+end)

@@ -14,48 +14,42 @@ local serverCount = {
 -- Counter Player
 local playerCount = {}
 
--- Daftar mutasi untuk deteksi (alias sesuai daftar kamu)
-local list_mutasi = {
-    galaxy = {"Galaxy"},
-    corrupt = {"Corrupt"},
-    gemstone = {"Gemstone"},
-    lightning = {"Lightning"},
-    radioactive = {"Radioactive"},
-    holographic = {"Holographic"},
-    golden = {"Golden","Gold"},
-    midnight = {"Midnight"},
-    fairydust = {"Fairy Dust"},
-    ghost = {"Ghost"},
-    albino = {"Albino"},
-    stone = {"Stone"},
-    aurora = {"Aurora"},
-    shadow = {"Shadow"},
-    glitch = {"Glitch","Error"},
-    demonic = {"Demonic","Infernal"},
-    divine = {"Divine","Celestial"},
-    atlantis = {"Atlantis","Oceanic"}
+-- Daftar mutasi untuk deteksi (list per kategori, sama formatnya dengan acuan lama)
+local list_galaxy     = {"Galaxy"}
+local list_corrupt    = {"Corrupt"}
+local list_gemstone   = {"Gemstone"}
+local list_lightning  = {"Lightning"}
+local list_radioactive= {"Radioactive"}
+local list_holographic= {"Holographic"}
+local list_golden     = {"Golden","Gold"}
+local list_midnight   = {"Midnight"}
+local list_fairydust  = {"Fairy Dust"}
+local list_ghost      = {"Ghost"}
+local list_albino     = {"Albino"}
+local list_stone      = {"Stone"}
+local list_aurora     = {"Aurora"}
+local list_shadow     = {"Shadow"}
+local list_glitch     = {"Glitch","Error"}
+local list_demonic    = {"Demonic","Infernal"}
+local list_divine     = {"Divine","Celestial"}
+local list_atlantis   = {"Atlantis","Oceanic"}
+
+-- Mapping suffix (supaya format ucapan sama seperti acuan lama)
+local suffixMap = {
+    galaxy="Fish", corrupt="Fish", gemstone="Fish", lightning="Fish",
+    radioactive="Fish", holographic="Fish", golden="Fish", midnight="Fish",
+    fairydust="Fish", ghost="Fish", albino="Fish", stone="Fish",
+    aurora="Fish", shadow="Fish", glitch="Fish", demonic="Fish",
+    divine="Fish", atlantis="Fish"
 }
 
--- Mapping warna embed Discord (unik & sesuai deskripsi)
+-- Mapping warna embed Discord
 local colorMap = {
-    galaxy = 16711935,      -- Magenta
-    corrupt = 8388608,      -- Maroon
-    gemstone = 16733695,    -- Pink cerah
-    lightning = 65535,      -- Cyan
-    radioactive = 65280,    -- Lime
-    holographic = 3066993,  -- Teal
-    golden = 16766720,      -- Gold
-    midnight = 2105376,     -- Dark gray
-    fairydust = 16776960,   -- Pastel yellow
-    ghost = 12303291,       -- Light gray
-    albino = 16777215,      -- White
-    stone = 8421504,        -- Gray
-    aurora = 43175,         -- Teal/aurora
-    shadow = 4210752,       -- Dark purple/black
-    glitch = 255,           -- Bold red-blue (approx)
-    demonic = 16711680,     -- Crimson
-    divine = 16777215,      -- White (approx)
-    atlantis = 3447003      -- Deep sea blue
+    galaxy = 16711935, corrupt = 8388608, gemstone = 16733695, lightning = 65535,
+    radioactive = 65280, holographic = 3066993, golden = 16766720, midnight = 2105376,
+    fairydust = 16776960, ghost = 12303291, albino = 16777215, stone = 8421504,
+    aurora = 43175, shadow = 4210752, glitch = 255, demonic = 16711680,
+    divine = 16777215, atlantis = 3447003
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
@@ -77,20 +71,30 @@ local function sendWebhook(fishName, fullText, category, isStart)
         serverCount[category] = (serverCount[category] or 0) + 1
 
         -- Update Counter Player
-        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {}
-        playerCount[luckyPlayer][category] = (playerCount[luckyPlayer][category] or 0) + 1
+        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {
+            galaxy=0, corrupt=0, gemstone=0, lightning=0,
+            radioactive=0, holographic=0, golden=0, midnight=0,
+            fairydust=0, ghost=0, albino=0, stone=0,
+            aurora=0, shadow=0, glitch=0, demonic=0,
+            divine=0, atlantis=0
+        }
+        playerCount[luckyPlayer][category] = playerCount[luckyPlayer][category] + 1
 
         local s = os.time() - startTime
         local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
+        
+        local suffix = suffixMap[category] or "item"
+        local displayCategory = category:gsub("^%l", string.upper)
 
         -- ambil nama ikan + berat langsung dari pesan server
-        local fishFullWithWeight = cleanerText:match("obtained (.-)$") or fishName or category
+        local fishFullWithWeight = cleanerText:match("obtained a (.-) with") or fishName or displayCategory
 
-        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** Fish!"
-
+        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** " .. suffix .. "!"
+        
         -- Player Records singkat
         local pStats = playerCount[luckyPlayer][category]
-        local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. pStats .. " " .. category:gsub("^%l", string.upper)
+        local verb = (suffix == "Fish") and "Menangkap" or "Mendapatkan"
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah " .. verb .. " " .. pStats .. " " .. displayCategory
 
         -- Server Records dinamis (hanya tampilkan yang >0)
         local serverStats = {}
@@ -132,14 +136,23 @@ game:GetService("TextChatService").OnIncomingMessage = function(message)
     local txt = message.Text:lower()
     
     if txt:find("%[server%]:") and txt:find("obtained") then
-        for category, list in pairs(list_mutasi) do
-            for _, n in pairs(list) do
-                -- logika sama seperti Evo: asal ada kata kunci mutasi di teks, langsung match
-                if string.find(txt, n:lower(), 1, true) then
-                    sendWebhook(n, message.Text, category, false)
-                    return
-                end
-            end
-        end
+        for _, n in pairs(list_galaxy)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "galaxy", false) return end end
+        for _, n in pairs(list_corrupt)    do if txt:find(n:lower()) then sendWebhook(n, message.Text, "corrupt", false) return end end
+        for _, n in pairs(list_gemstone)   do if txt:find(n:lower()) then sendWebhook(n, message.Text, "gemstone", false) return end end
+        for _, n in pairs(list_lightning)  do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lightning", false) return end end
+        for _, n in pairs(list_radioactive)do if txt:find(n:lower()) then sendWebhook(n, message.Text, "radioactive", false) return end end
+        for _, n in pairs(list_holographic)do if txt:find(n:lower()) then sendWebhook(n, message.Text, "holographic", false) return end end
+        for _, n in pairs(list_golden)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "golden", false) return end end
+        for _, n in pairs(list_midnight)   do if txt:find(n:lower()) then sendWebhook(n, message.Text, "midnight", false) return end end
+        for _, n in pairs(list_fairydust)  do if txt:find(n:lower()) then sendWebhook(n, message.Text, "fairydust", false) return end end
+        for _, n in pairs(list_ghost)      do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ghost", false) return end end
+        for _, n in pairs(list_albino)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "albino", false) return end end
+        for _, n in pairs(list_stone)      do if txt:find(n:lower()) then sendWebhook(n, message.Text, "stone", false) return end end
+        for _, n in pairs(list_aurora)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "aurora", false) return end end
+        for _, n in pairs(list_shadow)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "shadow", false) return end end
+        for _, n in pairs(list_glitch)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "glitch", false) return end end
+        for _, n in pairs(list_demonic)    do if txt:find(n:lower()) then sendWebhook(n, message.Text, "demonic", false) return end end
+        for _, n in pairs(list_divine)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "divine", false) return end end
+        for _, n in pairs(list_atlantis)   do if txt:find(n:lower()) then sendWebhook(n, message.Text, "atlantis", false) return end end
     end
 end

@@ -14,7 +14,7 @@ local serverCount = {
 -- Counter Player
 local playerCount = {}
 
--- Daftar mutasi untuk deteksi (alias untuk fleksibilitas)
+-- Daftar mutasi untuk deteksi (alias sesuai daftar kamu)
 local list_mutasi = {
     galaxy = {"Galaxy"},
     corrupt = {"Corrupt"},
@@ -27,7 +27,7 @@ local list_mutasi = {
     fairydust = {"Fairy Dust"},
     ghost = {"Ghost"},
     albino = {"Albino"},
-    stone = {"Stone"}, -- hanya Stone, Big dihapus
+    stone = {"Stone"},
     aurora = {"Aurora"},
     shadow = {"Shadow"},
     glitch = {"Glitch","Error"},
@@ -134,7 +134,8 @@ game:GetService("TextChatService").OnIncomingMessage = function(message)
     if txt:find("%[server%]:") and txt:find("obtained") then
         for category, list in pairs(list_mutasi) do
             for _, n in pairs(list) do
-                if txt:find(n:lower()) then
+                -- logika sama seperti Evo: asal ada kata kunci mutasi di teks, langsung match
+                if string.find(txt, n:lower(), 1, true) then
                     sendWebhook(n, message.Text, category, false)
                     return
                 end

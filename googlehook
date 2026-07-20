@@ -126,9 +126,11 @@ sendWebhook(nil, nil, nil, true)
 
 -- [[ DETEKSI CHAT ]] --
 local TextChatService = game:GetService("TextChatService")
-TextChatService.MessageReceived:Connect(function(message)
+local channel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXSystem")
+
+channel.MessageReceived:Connect(function(message)
     local txt = (message.Text or ""):lower()
-    local luckyPlayer = message.TextSource and message.TextSource.Name or "Unknown"
+    local luckyPlayer = (message.TextSource and message.TextSource.Name) or (message.Text:match("^(.-) obtained")) or "Unknown"
 
     if txt:find("obtained") then
         

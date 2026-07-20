@@ -14,7 +14,7 @@ local serverCount = {
 -- Counter Player
 local playerCount = {}
 
--- Daftar mutasi untuk deteksi
+-- Daftar mutasi untuk deteksi (alias untuk fleksibilitas)
 local list_mutasi = {
     galaxy = {"Galaxy"},
     corrupt = {"Corrupt"},
@@ -27,7 +27,7 @@ local list_mutasi = {
     fairydust = {"Fairy Dust"},
     ghost = {"Ghost"},
     albino = {"Albino"},
-    stone = {"Stone","Big"},
+    stone = {"Stone"}, -- hanya Stone, Big dihapus
     aurora = {"Aurora"},
     shadow = {"Shadow"},
     glitch = {"Glitch","Error"},
@@ -54,7 +54,7 @@ local colorMap = {
     shadow = 4210752,       -- Dark purple/black
     glitch = 255,           -- Bold red-blue (approx)
     demonic = 16711680,     -- Crimson
-    divine = 16777215,      -- White + gold border (approx)
+    divine = 16777215,      -- White (approx)
     atlantis = 3447003      -- Deep sea blue
 }
 

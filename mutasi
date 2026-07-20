@@ -14,7 +14,7 @@ local serverCount = {
 -- Counter Player
 local playerCount = {}
 
--- Daftar mutasi untuk deteksi (list per kategori, sama formatnya dengan acuan lama)
+-- Daftar mutasi (list per kategori, persis format acuan)
 local list_galaxy     = {"Galaxy"}
 local list_corrupt    = {"Corrupt"}
 local list_gemstone   = {"Gemstone"}

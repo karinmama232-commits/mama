@@ -1,159 +1,24 @@
--- [[ CONFIG ]] --
-local webhook_url = "https://discord.com/api/webhooks/1471473387120361573/OJN4BmXmdHbf89_fJ6oV-QRp7j0XVeQVR4mxYR_aIIZTwmaoHYxU9oYqsGK8OQRecxY4"
-local startTime = os.time()
-
--- Counter Server
-local serverCount = {
-    evo = 0, runic = 0, withering = 0, ruby = 0,
-    kraken = 0, lochness = 0, secret = 0,
-    megalodon = 0, forgotten = 0
-}
-
--- Counter Player
-local playerCount = {}
-
--- Daftar item untuk deteksi
-local list_evo       = {"Evolved Enchant Stone"}
-local list_runic     = {"Runic Enchant Stone"}
-local list_withering = {"Withering Core"}
-local list_ruby      = {"GEMSTONE Ruby"}
-local list_kraken    = {"Cursed Kraken"}
-local list_lochness  = {"Lochness Monster"}
-local list_megalodon = {"Megalodon"}
-
--- Mapping suffix
-local suffixMap = {
-    evo = "Stone",
-    runic = "Stone",
-    withering = "item",
-    ruby = "Stone",
-    kraken = "Fish",
-    lochness = "Fish",
-    secret = "Fish",
-    megalodon = "Fish",
-    forgotten = "Fish"
-}
-
--- [[ FUNGSI KIRIM WEBHOOK ]] --
-local function sendWebhook(fishName, fullText, category, isStart, luckyPlayer)
-    local req = request or http_request or (http and http.request)
-    if not req then return end
-
-    local content, description, color
-    
-    if isStart then
-        content = "🔔 **Webhook Fishit Aktif!**"
-        description = "Script running di akun: **" .. game.Players.LocalPlayer.Name .. "**\nMenunggu kabar dari server..."
-        color = 65535 
-    else
-        local cleanerText = fullText:gsub("<[^>]*>", "") 
-        luckyPlayer = luckyPlayer or "Unknown Player"
-
-        -- Update Counter Server
-        serverCount[category] = (serverCount[category] or 0) + 1
-
-        -- Update Counter Player
-        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {
-            evo=0, runic=0, withering=0, ruby=0,
-            kraken=0, lochness=0, secret=0,
-            megalodon=0, forgotten=0
-        }
-        playerCount[luckyPlayer][category] = playerCount[luckyPlayer][category] + 1
-
-        local s = os.time() - startTime
-        local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
-        
-        local suffix = suffixMap[category] or "item"
-        local displayCategory = category:gsub("^%l", string.upper)
-
-        local fishFullWithWeight
-        if category == "secret" or category == "megalodon" or category == "forgotten" or category == "kraken" or category == "lochness" then
-            fishFullWithWeight = cleanerText:match("obtained a (.-) with") or fishName or displayCategory
-        else
-            fishFullWithWeight = displayCategory
-        end
-
-        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** " .. suffix .. "!"
-        
-        local pStats = playerCount[luckyPlayer][category]
-        local verb = (suffix == "Fish") and "Menangkap" or "Mendapatkan"
-        local playerStats = "Player " .. luckyPlayer .. "\nSudah " .. verb .. " " .. pStats .. " " .. displayCategory
-
-        local serverStats = "\nEvo: " .. serverCount.evo .. " | Runic: " .. serverCount.runic .. " | Withering: " .. serverCount.withering ..
-            "\nRuby: " .. serverCount.ruby .. " | Kraken: " .. serverCount.kraken .. " | Lochness: " .. serverCount.lochness ..
-            "\nSecret: " .. serverCount.secret .. " | Megalodon: " .. serverCount.megalodon .. " | Forgotten: " .. serverCount.forgotten
-
-        description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
-            "\n\n" .. playerStats ..
-            "\n\n**Server Records**" .. serverStats
-        
-        if category == "forgotten" then 
-            color = 16777215
-        elseif category == "secret" then 
-            color = 65280
-        elseif category == "evo" then 
-            color = 0
-        elseif category == "ruby" then 
-            color = 16711935
-        elseif category == "withering" then 
-            color = 16711680
-        elseif category == "megalodon" then 
-            color = 255
-        elseif category == "runic" or category == "kraken" or category == "lochness" then 
-            color = 16766720
-        else
-            color = 8421504
-        end
-    end
-
-    req({
-        Url = webhook_url,
-        Method = "POST",
-        Headers = {["Content-Type"] = "application/json"},
-        Body = game:GetService("HttpService"):JSONEncode({
-            ["content"] = content,
-            ["embeds"] = {{
-                ["description"] = description,
-                ["color"] = color,
-                ["footer"] = {["text"] = "Server Mybubub • " .. os.date("%X", os.time() - 3600)}
-            }}
-        })
-    })
-end
-
--- [[ STARTUP ]] --
-sendWebhook(nil, nil, nil, true)
-
--- [[ DETEKSI CHAT ]] --
+-- Ambil service yang diperlukan
 local TextChatService = game:GetService("TextChatService")
-local channel = TextChatService:WaitForChild("TextChannels"):WaitForChild("RBXSystem")
+local HttpService = game:GetService("HttpService")
 
-channel.MessageReceived:Connect(function(message)
-    local txt = (message.Text or ""):lower()
-    local luckyPlayer = (message.TextSource and message.TextSource.Name) or (message.Text:match("^(.-) obtained")) or "Unknown"
+-- Ganti dengan URL webhook Discord kamu
+local webhookUrl = "https://discord.com/api/webhooks/1471473387120361573/OJN4BmXmdHbf89_fJ6oV-QRp7j0XVeQVR4mxYR_aIIZTwmaoHYxU9oYqsGK8OQRecxY4"
 
-    if txt:find("obtained") then
-        
-        for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "evo", false, luckyPlayer) return end end
-        for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false, luckyPlayer) return end end
-        for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false, luckyPlayer) return end end
-        for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false, luckyPlayer) return end end
-        for _, n in pairs(list_kraken) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "kraken", false, luckyPlayer) return end end
-        for _, n in pairs(list_lochness) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lochness", false, luckyPlayer) return end end
-        for _, n in pairs(list_megalodon) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "megalodon", false, luckyPlayer) return end end
-        
-        local chanceNum, chanceUnit = txt:match("1 in ([%d%.]+)([km]) chance")
-        if chanceNum and chanceUnit then
-            local val = tonumber(chanceNum)
-            if not val then return end
-            if chanceUnit == "k" then val = val * 1000 end
-            if chanceUnit == "m" then val = val * 1000000 end
-            
-            if val >= 246000 and val <= 10000000 then
-                sendWebhook(nil, message.Text, "secret", false, luckyPlayer)
-            elseif val > 10000000 then
-                sendWebhook(nil, message.Text, "forgotten", false, luckyPlayer)
-            end
-        end
-    end
+-- Listener untuk semua pesan chat
+TextChatService.MessageReceived:Connect(function(message)
+    local playerName = message.TextSource and message.TextSource.Name or "Server"
+    local chatText = message.Text
+
+    -- Format payload ke Discord
+    local payload = {
+        ["content"] = "💬 Chat dari **" .. playerName .. "**: " .. chatText
+    }
+
+    -- Kirim ke webhook
+    HttpService:PostAsync(
+        webhookUrl,
+        HttpService:JSONEncode(payload),
+        Enum.HttpContentType.ApplicationJson
+    )
 end)

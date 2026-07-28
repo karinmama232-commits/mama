@@ -55,21 +55,22 @@ local function sendWebhook(mutationName, fullText, isStart)
         local s = os.time() - startTime
         local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
 
-        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. mutationName .. "** Fish!"
+        -- Notif utama → pakai mutation
+        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. mutationName .. " mutation!**"
 
         local pStats = playerCount[luckyPlayer][mutationName]
         local playerStats = "Player " .. luckyPlayer .. "\nSudah Mendapatkan " .. pStats .. " " .. mutationName
 
-        -- Server Records dinamis
-        local serverStats = {}
-        for mut, count in pairs(serverCount) do
-            table.insert(serverStats, mut .. ": " .. count)
+        -- Player Records dinamis
+        local playerRecords = {}
+        for mut, count in pairs(playerCount[luckyPlayer]) do
+            table.insert(playerRecords, mut .. ": " .. count)
         end
-        local serverStatsText = table.concat(serverStats, " | ")
+        local playerRecordsText = table.concat(playerRecords, " | ")
 
         description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
             "\n\n" .. playerStats ..
-            "\n\n**Server Records**\n" .. serverStatsText
+            "\n\n**Player Records**\n" .. playerRecordsText
 
         color = mutationColors[mutationName] or 8421504
     end

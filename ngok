@@ -47,7 +47,8 @@ local function sendWebhook(fishName, fullText, category, isStart)
         color = 65535 
     else
         local cleanerText = fullText:gsub("<[^>]*>", "") 
-        local luckyPlayer = cleanerText:match("%[Server%]%: (.-) obtained") or "Unknown Player"
+        -- format baru: langsung "PlayerX obtained ..."
+        local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
 
         -- Update Counter Server
         serverCount[category] = (serverCount[category] or 0) + 1
@@ -66,7 +67,6 @@ local function sendWebhook(fishName, fullText, category, isStart)
         local suffix = suffixMap[category] or "item"
         local displayCategory = category:gsub("^%l", string.upper)
 
-        -- ambil nama ikan + berat langsung dari pesan server untuk kategori ikan
         local fishFullWithWeight
         if category == "secret" or category == "megalodon" or category == "forgotten" or category == "kraken" or category == "lochness" then
             fishFullWithWeight = cleanerText:match("obtained a (.-) with") or fishName or displayCategory
@@ -76,12 +76,10 @@ local function sendWebhook(fishName, fullText, category, isStart)
 
         content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** " .. suffix .. "!"
         
-        -- Player Records singkat dengan kata kerja sesuai suffix
         local pStats = playerCount[luckyPlayer][category]
         local verb = (suffix == "Fish") and "Menangkap" or "Mendapatkan"
         local playerStats = "Player " .. luckyPlayer .. "\nSudah " .. verb .. " " .. pStats .. " " .. displayCategory
 
-        -- Server Records lengkap
         local serverStats = "\nEvo: " .. serverCount.evo .. " | Runic: " .. serverCount.runic .. " | Withering: " .. serverCount.withering ..
             "\nRuby: " .. serverCount.ruby .. " | Kraken: " .. serverCount.kraken .. " | Lochness: " .. serverCount.lochness ..
             "\nSecret: " .. serverCount.secret .. " | Megalodon: " .. serverCount.megalodon .. " | Forgotten: " .. serverCount.forgotten
@@ -90,7 +88,6 @@ local function sendWebhook(fishName, fullText, category, isStart)
             "\n\n" .. playerStats ..
             "\n\n**Server Records**" .. serverStats
         
-        -- Warna embed
         if category == "forgotten" then 
             color = 16777215
         elseif category == "secret" then 
@@ -128,32 +125,36 @@ end
 -- [[ STARTUP ]] --
 sendWebhook(nil, nil, nil, true)
 
--- [[ DETEKSI CHAT ]] --
-game:GetService("TextChatService").OnIncomingMessage = function(message)
-    local txt = message.Text:lower()
-    
-    if txt:find("%[server%]:") and txt:find("obtained") then
+-- [[ DETEKSI CHAT UPDATE BARU ]] --
+local TextChatService = game:GetService("TextChatService")
+local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+
+if channel then
+    channel.MessageReceived:Connect(function(message)
+        local txt = message.Text:lower()
         
-        for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "evo", false) return end end
-        for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false) return end end
-        for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false) return end end
-        for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false) return end end
-        for _, n in pairs(list_kraken) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "kraken", false) return end end
-        for _, n in pairs(list_lochness) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lochness", false) return end end
-        for _, n in pairs(list_megalodon) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "megalodon", false) return end end
-        
-        local chanceNum, chanceUnit = txt:match("1 in ([%d%.]+)([km]) chance")
-        if chanceNum and chanceUnit then
-            local val = tonumber(chanceNum)
-            if not val then return end
-            if chanceUnit == "k" then val = val * 1000 end
-            if chanceUnit == "m" then val = val * 1000000 end
+        if txt:find("obtained") then
+            for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "evo", false) return end end
+            for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false) return end end
+            for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false) return end end
+            for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false) return end end
+            for _, n in pairs(list_kraken) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "kraken", false) return end end
+            for _, n in pairs(list_lochness) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lochness", false) return end end
+            for _, n in pairs(list_megalodon) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "megalodon", false) return end end
             
-            if val >= 246000 and val <= 10000000 then
-                sendWebhook(nil, message.Text, "secret", false)
-            elseif val > 10000000 then
-                sendWebhook(nil, message.Text, "forgotten", false)
+            local chanceNum, chanceUnit = txt:match("1 in ([%d%.]+)([km]) chance")
+            if chanceNum and chanceUnit then
+                local val = tonumber(chanceNum)
+                if not val then return end
+                if chanceUnit == "k" then val = val * 1000 end
+                if chanceUnit == "m" then val = val * 1000000 end
+                
+                if val >= 246000 and val <= 10000000 then
+                    sendWebhook(nil, message.Text, "secret", false)
+                elseif val > 10000000 then
+                    sendWebhook(nil, message.Text, "forgotten", false)
+                end
             end
         end
-    end
+    end)
 end

@@ -1,5 +1,5 @@
 -- [[ CONFIG ]] --
-local webhook_url = "https://discord.com/api/webhooks/1494291392485265518/pgb8lhoELStGE82QhN1PQjQu32wHrRvLbUdYx2gEFTcURVV5cJXovG5Zypg5Nw-Jtzri"
+local webhook_url = "https://discord.com/api/webhooks/1531748844839239900/uJRORcLF4R19OaC7XMW2Qdj1G2Dz3j6kWJ2445fCYpepF56-JNUw9otOni426TeSP9D-"
 local startTime = os.time()
 
 -- Counter Player

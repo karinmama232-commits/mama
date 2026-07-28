@@ -1,59 +1,37 @@
 -- [[ CONFIG ]] --
-local webhook_url = "https://discord.com/api/webhooks/1494291511192588440/3UhNha6dM5i13ImvtaaPbjFodIno5w4TkgPpHT0UkavnJRqkxhWV8BiE6YJazyNZbLKa"
+local webhook_url = "https://discord.com/api/webhooks/1531621031138037830/ju6NgD5A-tL2rkx3007U1jf8f2_x1jwyMrOvS_lvUD9lMwdWTqOXIuAO5p4p4_k8cXIx"
 local startTime = os.time()
 
--- Counter Server (mutasi)
-local serverCount = {
-    galaxy=0, corrupt=0, gemstone=0, lightning=0,
-    radioactive=0, holographic=0, golden=0, midnight=0,
-    fairydust=0, ghost=0, albino=0, stone=0,
-    aurora=0, shadow=0, glitch=0, demonic=0,
-    divine=0, atlantis=0
-}
+-- Counter Server (dinamis)
+local serverCount = {}
 
 -- Counter Player
 local playerCount = {}
 
--- Daftar mutasi (list per kategori, persis format acuan)
-local list_galaxy     = {"Galaxy"}
-local list_corrupt    = {"Corrupt"}
-local list_gemstone   = {"Gemstone"}
-local list_lightning  = {"Lightning"}
-local list_radioactive= {"Radioactive"}
-local list_holographic= {"Holographic"}
-local list_golden     = {"Golden","Gold"}
-local list_midnight   = {"Midnight"}
-local list_fairydust  = {"Fairy Dust"}
-local list_ghost      = {"Ghost"}
-local list_albino     = {"Albino"}
-local list_stone      = {"Stone"}
-local list_aurora     = {"Aurora"}
-local list_shadow     = {"Shadow"}
-local list_glitch     = {"Glitch","Error"}
-local list_demonic    = {"Demonic","Infernal"}
-local list_divine     = {"Divine","Celestial"}
-local list_atlantis   = {"Atlantis","Oceanic"}
-
--- Mapping suffix
-local suffixMap = {
-    galaxy="Fish", corrupt="Fish", gemstone="Fish", lightning="Fish",
-    radioactive="Fish", holographic="Fish", golden="Fish", midnight="Fish",
-    fairydust="Fish", ghost="Fish", albino="Fish", stone="Fish",
-    aurora="Fish", shadow="Fish", glitch="Fish", demonic="Fish",
-    divine="Fish", atlantis="Fish"
+-- Daftar Mutasi
+local mutations = {
+    "Abyssal","Albino","Arctic Frost","Aurora","Binary","Bloodmoon","Carrot","Celestial",
+    "Color Burn","Corrupt","Cosmic","Crystalized","Cupid","Disco","Fairy Dust","Festive",
+    "Fire","Frozen","Galaxy","Gemstone","Ghost","Gold","Heartbreaker","Holographic",
+    "Leviathan Rage","Lightning","Midnight","Moon Fragment","Noob","Pastel","Radioactive",
+    "Sandy","Stone"
 }
 
--- Mapping warna embed
-local colorMap = {
-    galaxy = 16711935, corrupt = 8388608, gemstone = 16733695, lightning = 65535,
-    radioactive = 65280, holographic = 3066993, golden = 16766720, midnight = 2105376,
-    fairydust = 16776960, ghost = 12303291, albino = 16777215, stone = 8421504,
-    aurora = 43175, shadow = 4210752, glitch = 255, demonic = 16711680,
-    divine = 16777215, atlantis = 3447003
+-- Warna embed per mutasi (unik)
+local mutationColors = {
+    Abyssal = 0x00008B, Albino = 0xFFFFFF, ["Arctic Frost"] = 0xADD8E6, Aurora = 0x00FFFF,
+    Binary = 0x808080, Bloodmoon = 0x8B0000, Carrot = 0xFFA500, Celestial = 0x9370DB,
+    ["Color Burn"] = 0xFF4500, Corrupt = 0x4B0082, Cosmic = 0x1E90FF, Crystalized = 0x7FFFD4,
+    Cupid = 0xFF69B4, Disco = 0xFFD700, ["Fairy Dust"] = 0xDA70D6, Festive = 0x32CD32,
+    Fire = 0xFF0000, Frozen = 0x00BFFF, Galaxy = 0x800080, Gemstone = 0xFF00FF,
+    Ghost = 0xC0C0C0, Gold = 0xFFD700, Heartbreaker = 0xDC143C, Holographic = 0x00CED1,
+    ["Leviathan Rage"] = 0x8B0000, Lightning = 0xFFFF00, Midnight = 0x191970,
+    ["Moon Fragment"] = 0xF0E68C, Noob = 0x00FF00, Pastel = 0xFFB6C1,
+    Radioactive = 0x7FFF00, Sandy = 0xDEB887, Stone = 0xA9A9A9
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
-local function sendWebhook(fishName, fullText, category, isStart)
+local function sendWebhook(mutationName, fullText, isStart)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
@@ -65,41 +43,27 @@ local function sendWebhook(fishName, fullText, category, isStart)
         color = 65535 
     else
         local cleanerText = fullText:gsub("<[^>]*>", "") 
-        local luckyPlayer = cleanerText:match("%[Server%]%: (.-) obtained") or "Unknown Player"
+        local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
 
         -- Update Counter Server
-        serverCount[category] = (serverCount[category] or 0) + 1
+        serverCount[mutationName] = (serverCount[mutationName] or 0) + 1
 
         -- Update Counter Player
-        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {
-            galaxy=0, corrupt=0, gemstone=0, lightning=0,
-            radioactive=0, holographic=0, golden=0, midnight=0,
-            fairydust=0, ghost=0, albino=0, stone=0,
-            aurora=0, shadow=0, glitch=0, demonic=0,
-            divine=0, atlantis=0
-        }
-        playerCount[luckyPlayer][category] = playerCount[luckyPlayer][category] + 1
+        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {}
+        playerCount[luckyPlayer][mutationName] = (playerCount[luckyPlayer][mutationName] or 0) + 1
 
         local s = os.time() - startTime
         local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
-        
-        local suffix = suffixMap[category] or "item"
-        local displayCategory = category:gsub("^%l", string.upper)
 
-        local fishFullWithWeight = cleanerText:match("obtained a (.-) with") or fishName or displayCategory
+        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. mutationName .. "** Fish!"
 
-        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** " .. suffix .. "!"
-        
-        local pStats = playerCount[luckyPlayer][category]
-        local verb = (suffix == "Fish") and "Menangkap" or "Mendapatkan"
-        local playerStats = "Player " .. luckyPlayer .. "\nSudah " .. verb .. " " .. pStats .. " " .. displayCategory
+        local pStats = playerCount[luckyPlayer][mutationName]
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah Mendapatkan " .. pStats .. " " .. mutationName
 
         -- Server Records dinamis
         local serverStats = {}
-        for k,v in pairs(serverCount) do
-            if v > 0 then
-                table.insert(serverStats, k:gsub("^%l", string.upper) .. ": " .. v)
-            end
+        for mut, count in pairs(serverCount) do
+            table.insert(serverStats, mut .. ": " .. count)
         end
         local serverStatsText = table.concat(serverStats, " | ")
 
@@ -107,7 +71,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
             "\n\n" .. playerStats ..
             "\n\n**Server Records**\n" .. serverStatsText
 
-        color = colorMap[category] or 8421504
+        color = mutationColors[mutationName] or 8421504
     end
 
     req({
@@ -126,30 +90,23 @@ local function sendWebhook(fishName, fullText, category, isStart)
 end
 
 -- [[ STARTUP ]] --
-sendWebhook(nil, nil, nil, true)
+sendWebhook(nil, nil, true)
 
--- [[ DETEKSI CHAT ]] --
-game:GetService("TextChatService").OnIncomingMessage = function(message)
-    local txt = message.Text:lower()
-    
-    if txt:find("%[server%]:") and txt:find("obtained") then
-        for _, n in pairs(list_galaxy)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "galaxy", false) return end end
-        for _, n in pairs(list_corrupt)    do if txt:find(n:lower()) then sendWebhook(n, message.Text, "corrupt", false) return end end
-        for _, n in pairs(list_gemstone)   do if txt:find(n:lower()) then sendWebhook(n, message.Text, "gemstone", false) return end end
-        for _, n in pairs(list_lightning)  do if txt:find(n:lower()) then sendWebhook(n, message.Text, "lightning", false) return end end
-        for _, n in pairs(list_radioactive)do if txt:find(n:lower()) then sendWebhook(n, message.Text, "radioactive", false) return end end
-        for _, n in pairs(list_holographic)do if txt:find(n:lower()) then sendWebhook(n, message.Text, "holographic", false) return end end
-        for _, n in pairs(list_golden)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "golden", false) return end end
-        for _, n in pairs(list_midnight)   do if txt:find(n:lower()) then sendWebhook(n, message.Text, "midnight", false) return end end
-        for _, n in pairs(list_fairydust)  do if txt:find(n:lower()) then sendWebhook(n, message.Text, "fairydust", false) return end end
-        for _, n in pairs(list_ghost)      do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ghost", false) return end end
-        for _, n in pairs(list_albino)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "albino", false) return end end
-        for _, n in pairs(list_stone)      do if txt:find(n:lower()) then sendWebhook(n, message.Text, "stone", false) return end end
-        for _, n in pairs(list_aurora)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "aurora", false) return end end
-        for _, n in pairs(list_shadow)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "shadow", false) return end end
-        for _, n in pairs(list_glitch)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "glitch", false) return end end
-        for _, n in pairs(list_demonic)    do if txt:find(n:lower()) then sendWebhook(n, message.Text, "demonic", false) return end end
-        for _, n in pairs(list_divine)     do if txt:find(n:lower()) then sendWebhook(n, message.Text, "divine", false) return end end
-        for _, n in pairs(list_atlantis)   do if txt:find(n:lower()) then sendWebhook(n, message.Text, "atlantis", false) return end end
-    end
+-- [[ DETEKSI CHAT UPDATE BARU ]] --
+local TextChatService = game:GetService("TextChatService")
+local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+
+if channel then
+    channel.MessageReceived:Connect(function(message)
+        local txt = message.Text:lower()
+        
+        if txt:find("obtained") then
+            for _, mut in pairs(mutations) do
+                if txt:find(mut:lower()) then
+                    sendWebhook(mut, message.Text, false)
+                    return
+                end
+            end
+        end
+    end)
 end

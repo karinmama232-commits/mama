@@ -11,7 +11,7 @@ local maxton_weights = {
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
-local function sendWebhookMaxton(fishName, fullText, luckyPlayer, isStart)
+local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
@@ -32,18 +32,10 @@ local function sendWebhookMaxton(fishName, fullText, luckyPlayer, isStart)
         -- Content sesuai format yang diminta
         content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **Maxton** Fish!"
 
-        local playerStats = "Player " .. luckyPlayer .. "\nMenangkap " .. fishName .. " Maxton"
-
-        -- Build Server Records string
-        local serverStats = {}
-        for p, data in pairs(playerCount) do
-            table.insert(serverStats, p .. ": " .. data.maxton .. " Maxton")
-        end
-        local serverStatsStr = table.concat(serverStats, " | ")
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah Mendapatkan " .. playerCount[luckyPlayer].maxton .. " Stone"
 
         description = "**" .. fullText .. "**\n\n**Script Runtime:** " .. runtime ..
-            "\n\n" .. playerStats ..
-            "\n\n**Server Records**\n" .. serverStatsStr
+            "\n\n" .. playerStats
 
         color = 16711680 -- Merah khusus Maxton
     end
@@ -51,7 +43,7 @@ local function sendWebhookMaxton(fishName, fullText, luckyPlayer, isStart)
     req({
         Url = webhook_url,
         Method = "POST",
-        Headers = {["Content-Type"] = "application/json"},
+        Headers = {["Content-Type"]] = "application/json"},
         Body = game:GetService("HttpService"):JSONEncode({
             ["content"] = content,
             ["embeds"] = {{
@@ -64,7 +56,7 @@ local function sendWebhookMaxton(fishName, fullText, luckyPlayer, isStart)
 end
 
 -- [[ STARTUP ]] --
-sendWebhookMaxton(nil, nil, nil, true)
+sendWebhookMaxton(nil, game.Players.LocalPlayer.Name, true)
 
 -- [[ DETEKSI CHAT ]] --
 local TextChatService = game:GetService("TextChatService")
@@ -79,8 +71,7 @@ if channel then
                 if txt:find(weight:lower()) then
                     local cleanerText = message.Text:gsub("<[^>]*>", "")
                     local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
-                    local fishName = cleanerText:match("obtained a (.-) %(" .. weight .. "%)") or "Unknown Fish"
-                    sendWebhookMaxton(fishName .. " (" .. weight .. ")", message.Text, luckyPlayer, false)
+                    sendWebhookMaxton(message.Text, luckyPlayer, false)
                     return
                 end
             end

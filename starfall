@@ -8,6 +8,11 @@ local Player = Players.LocalPlayer
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
 -- ==========================================
+-- KOORDINAT TELEPORT EXAK
+-- ==========================================
+local STARFALL_CFRAME = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
+
+-- ==========================================
 -- FUNGSI GLOBAL & HELPER
 -- ==========================================
 local function secureClick()
@@ -27,7 +32,7 @@ local function secureClick()
     end)
 end
 
--- Helper: Eksekusi berulang selama 'duration' detik (mencegah terlewat karena lag)
+-- Helper: Eksekusi berulang selama 'duration' detik (mencegah terlewat akibat lag)
 local function repeatActionForDuration(duration, actionFunc)
     local startTime = tick()
     while tick() - startTime < duration do
@@ -36,7 +41,7 @@ local function repeatActionForDuration(duration, actionFunc)
     end
 end
 
--- Remote Actions Baru
+-- Remote Actions
 local function equipRod()
     repeatActionForDuration(2, function()
         local RE_Equip = Net:WaitForChild("RE/8bcc943fdd2a5c5d99f3d4f4e0f5ff1066f256a8b0e96cb5e919c897885d3895")
@@ -130,12 +135,12 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 -- State Variables
 local isAutoSell = false
-local isCharm = false
+local isCharmRunning = false
 local isFishing = false
 local isX2 = false
 
 local function resetAll()
-    isAutoSell = false; isCharm = false; isFishing = false; isX2 = false
+    isAutoSell = false; isCharmRunning = false; isFishing = false; isX2 = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -181,23 +186,30 @@ BtnSell.MouseButton1Click:Connect(function()
     end
 end)
 
--- Charm (Loop 10 Menit)
+-- Charm (Beli 100 sekaligus + 5 per detik, lalu otomatis mati)
 BtnCharm.MouseButton1Click:Connect(function()
-    isCharm = not isCharm
-    BtnCharm.BackgroundTransparency = isCharm and 0 or 0.4
-    if isCharm then
-        task.spawn(function()
-            local RF_Charm = Net:WaitForChild("RF/a992a185faf069a341b5472b72f92a19e0b8dbff2aaff20ca6d0d628591ebb2f")
-            while isCharm do
-                pcall(function() RF_Charm:InvokeServer(21) end)
-                
-                for i = 600, 1, -1 do 
-                    if not isCharm then break end 
-                    task.wait(1) 
-                end
-            end
-        end)
-    end
+    if isCharmRunning then return end
+    isCharmRunning = true
+    BtnCharm.BackgroundTransparency = 0
+
+    task.spawn(function()
+        local RF_Charm = Net:WaitForChild("RF/a992a185faf069a341b5472b72f92a19e0b8dbff2aaff20ca6d0d628591ebb2f")
+        
+        -- 1. Beli 100 Sekaligus
+        for i = 1, 100 do
+            pcall(function() RF_Charm:InvokeServer(21) end)
+        end
+        
+        -- 2. Beli 5 dengan jeda 1 detik per charm
+        for i = 1, 5 do
+            pcall(function() RF_Charm:InvokeServer(21) end)
+            task.wait(1)
+        end
+        
+        -- Selesai -> Otomatis Mati
+        isCharmRunning = false
+        BtnCharm.BackgroundTransparency = 0.4
+    end)
 end)
 
 -- ==========================================
@@ -240,32 +252,30 @@ BtnFishing.MouseButton1Click:Connect(function()
     end
 end)
 
--- X2 (Teleport, Star Fragment & Interactive Loop - 19m Loop)
+-- X2 (Teleport Ke Lokasi Eksak Starfall, Equip Fragment, Interaksi, Kembali, Buka Rod - Siklus 19 Menit)
 BtnX2.MouseButton1Click:Connect(function()
     isX2 = not isX2
     BtnX2.BackgroundTransparency = isX2 and 0 or 0.4
     if isX2 then
         task.spawn(function()
-            local targetCFrame = CFrame.new(1322.31042, 48.0009918, 2758.5249, 0.0847494006, -5.52437704e-08, 0.996402323, -2.10848263e-08, 1, 5.72366154e-08, -0.996402323, -2.58597375e-08, 0.0847494006)
-            
             while isX2 do
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    -- 1. Tutup pancing (spam 2 dtk)
+                    -- 1. Tutup pancing (spam 2 detik)
                     unequipRod()
                     
-                    -- 2. Save posisi awal
+                    -- 2. Save posisi asal
                     local saved = hrp.CFrame
                     task.wait(0.5)
                     
-                    -- 3. Teleport ke target
-                    hrp.CFrame = targetCFrame
+                    -- 3. Teleport ke target CFrame eksak Starfall
+                    hrp.CFrame = STARFALL_CFRAME
                     task.wait(1.5)
                     
-                    -- 4. Pegang Star Fragment (spam 2 dtk)
+                    -- 4. Pegang Star Fragment (spam 2 detik)
                     equipStarFragment()
                     
-                    -- 5. Interaksi ProximityPrompt
+                    -- 5. Klik Interaksi ProximityPrompt
                     for i = 1, 2 do 
                         if not isX2 then break end 
                         secureClick() 
@@ -274,11 +284,11 @@ BtnX2.MouseButton1Click:Connect(function()
                     
                     task.wait(0.5)
                     
-                    -- 6. Balik ke lokasi saved
+                    -- 6. Balik ke posisi asal
                     if hrp then hrp.CFrame = saved end
                     task.wait(0.5)
                     
-                    -- 7. Buka pancing kembali (spam 2 dtk)
+                    -- 7. Buka pancing kembali (spam 2 detik)
                     equipRod()
                 end
                 
@@ -304,6 +314,6 @@ styleBtn(BtnTeleport, 10)
 BtnTeleport.MouseButton1Click:Connect(function()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 
-        hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532) 
+        hrp.CFrame = STARFALL_CFRAME
     end
 end)

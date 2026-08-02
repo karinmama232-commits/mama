@@ -1,0 +1,309 @@
+-- [[ STARFALL GARDENS - pociXkarin GLOBAL EDITION (UPDATE) ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- ==========================================
+-- FUNGSI GLOBAL & HELPER
+-- ==========================================
+local function secureClick()
+    pcall(function()
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") then
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
+                    if dist < 25 then
+                        task.wait(0.2)
+                        fireproximityprompt(obj)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Helper: Eksekusi berulang selama 'duration' detik (mencegah terlewat karena lag)
+local function repeatActionForDuration(duration, actionFunc)
+    local startTime = tick()
+    while tick() - startTime < duration do
+        pcall(actionFunc)
+        task.wait(0.1)
+    end
+end
+
+-- Remote Actions Baru
+local function equipRod()
+    repeatActionForDuration(2, function()
+        local RE_Equip = Net:WaitForChild("RE/8bcc943fdd2a5c5d99f3d4f4e0f5ff1066f256a8b0e96cb5e919c897885d3895")
+        RE_Equip:FireServer(1)
+    end)
+end
+
+local function unequipRod()
+    repeatActionForDuration(2, function()
+        local RE_Unequip = Net:WaitForChild("RE/e31c8899347a50b774cd9bd408089f116dff6afab7f681072962fdff8763fa78")
+        RE_Unequip:FireServer()
+    end)
+end
+
+local function equipStarFragment()
+    repeatActionForDuration(2, function()
+        local RE_Equip = Net:WaitForChild("RE/8bcc943fdd2a5c5d99f3d4f4e0f5ff1066f256a8b0e96cb5e919c897885d3895")
+        RE_Equip:FireServer(2)
+    end)
+end
+
+-- ==========================================
+-- 1. SETUP UI COMPACT
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "StarfallGardensUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "StarfallIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "⭐"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 25
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "StarfallMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Starfall Gardens ⭐"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 13
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local HideBtn = Instance.new("TextButton", Header)
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
+HideBtn.Size = UDim2.new(0, 25, 0, 25)
+HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HideBtn.BackgroundTransparency = 0.4
+HideBtn.Text = "-"
+HideBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+HideBtn.TextSize = 18
+HideBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
+
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+
+-- State Variables
+local isAutoSell = false
+local isCharm = false
+local isFishing = false
+local isX2 = false
+
+local function resetAll()
+    isAutoSell = false; isCharm = false; isFishing = false; isX2 = false
+end
+
+IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() resetAll() ScreenGui:Destroy() end)
+
+local function styleBtn(b, fSize)
+    b.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+    b.BackgroundTransparency = 0.4
+    b.TextColor3 = Color3.new(1,1,1)
+    b.TextSize = fSize
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
+
+-- ==========================================
+-- 2. TOMBOL & LOGIKA (BARIS ATAS)
+-- ==========================================
+local BtnSell = Instance.new("TextButton", MainFrame)
+BtnSell.Size = UDim2.new(0, 95, 0, 28)
+BtnSell.Position = UDim2.new(0, 10, 0, 45)
+BtnSell.Text = "AUTO SELL"
+styleBtn(BtnSell, 9)
+
+local BtnCharm = Instance.new("TextButton", MainFrame)
+BtnCharm.Size = UDim2.new(0, 95, 0, 28)
+BtnCharm.Position = UDim2.new(0, 115, 0, 45)
+BtnCharm.Text = "CHARM"
+styleBtn(BtnCharm, 9)
+
+-- Auto Sell
+BtnSell.MouseButton1Click:Connect(function()
+    isAutoSell = not isAutoSell
+    BtnSell.BackgroundTransparency = isAutoSell and 0 or 0.4
+    if isAutoSell then
+        task.spawn(function()
+            local RF_Sell = Net:WaitForChild("RF/2661254d77beed6b5db333d8cf1b40f060f9d433aaf0ea402b0a8524470b3469")
+            while isAutoSell do
+                pcall(function() RF_Sell:InvokeServer() end)
+                task.wait(10)
+            end
+        end)
+    end
+end)
+
+-- Charm (Loop 10 Menit)
+BtnCharm.MouseButton1Click:Connect(function()
+    isCharm = not isCharm
+    BtnCharm.BackgroundTransparency = isCharm and 0 or 0.4
+    if isCharm then
+        task.spawn(function()
+            local RF_Charm = Net:WaitForChild("RF/a992a185faf069a341b5472b72f92a19e0b8dbff2aaff20ca6d0d628591ebb2f")
+            while isCharm do
+                pcall(function() RF_Charm:InvokeServer(21) end)
+                
+                for i = 600, 1, -1 do 
+                    if not isCharm then break end 
+                    task.wait(1) 
+                end
+            end
+        end)
+    end
+end)
+
+-- ==========================================
+-- 3. TOMBOL & LOGIKA (BARIS TENGAH)
+-- ==========================================
+local BtnFishing = Instance.new("TextButton", MainFrame)
+BtnFishing.Size = UDim2.new(0, 95, 0, 28)
+BtnFishing.Position = UDim2.new(0, 10, 0, 80)
+BtnFishing.Text = "FISHING"
+styleBtn(BtnFishing, 9)
+
+local BtnX2 = Instance.new("TextButton", MainFrame)
+BtnX2.Size = UDim2.new(0, 95, 0, 28)
+BtnX2.Position = UDim2.new(0, 115, 0, 80)
+BtnX2.Text = "X2"
+styleBtn(BtnX2, 9)
+
+-- Fishing
+BtnFishing.MouseButton1Click:Connect(function()
+    isFishing = not isFishing
+    BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
+    if isFishing then
+        task.spawn(function()
+            local RF_Fish1 = Net:WaitForChild("RF/4c0a268e9d67eeacbf5fe5913c0b7cca423b18938c322ea04b7f30787e44ce75")
+            local RF_Fish2 = Net:WaitForChild("RF/018b57d152e91fef579c18031df46a6249c78f1293bea51f4a02f6f4bfee9c3e")
+            local RE_Catch = Net:WaitForChild("RE/e97898ee3ad6610c52f6438ddd4686843b8c98e38583aef023c1ca34c3d5b2cf")
+            
+            while isFishing do
+                pcall(function()
+                    RF_Fish1:InvokeServer()
+                    task.wait(0.01)
+                    RF_Fish2:InvokeServer(-167.33497619628906, 0.424327725736671, 1785691697.021775)
+                    task.wait(0.08)
+                    RE_Catch:FireServer()
+                    RE_Catch:FireServer()
+                end)
+                task.wait(0.05)
+            end
+        end)
+    end
+end)
+
+-- X2 (Teleport, Star Fragment & Interactive Loop - 19m Loop)
+BtnX2.MouseButton1Click:Connect(function()
+    isX2 = not isX2
+    BtnX2.BackgroundTransparency = isX2 and 0 or 0.4
+    if isX2 then
+        task.spawn(function()
+            local targetCFrame = CFrame.new(1322.31042, 48.0009918, 2758.5249, 0.0847494006, -5.52437704e-08, 0.996402323, -2.10848263e-08, 1, 5.72366154e-08, -0.996402323, -2.58597375e-08, 0.0847494006)
+            
+            while isX2 do
+                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    -- 1. Tutup pancing (spam 2 dtk)
+                    unequipRod()
+                    
+                    -- 2. Save posisi awal
+                    local saved = hrp.CFrame
+                    task.wait(0.5)
+                    
+                    -- 3. Teleport ke target
+                    hrp.CFrame = targetCFrame
+                    task.wait(1.5)
+                    
+                    -- 4. Pegang Star Fragment (spam 2 dtk)
+                    equipStarFragment()
+                    
+                    -- 5. Interaksi ProximityPrompt
+                    for i = 1, 2 do 
+                        if not isX2 then break end 
+                        secureClick() 
+                        task.wait(0.8) 
+                    end
+                    
+                    task.wait(0.5)
+                    
+                    -- 6. Balik ke lokasi saved
+                    if hrp then hrp.CFrame = saved end
+                    task.wait(0.5)
+                    
+                    -- 7. Buka pancing kembali (spam 2 dtk)
+                    equipRod()
+                end
+                
+                -- Loop 19 Menit (1140 Detik)
+                for i = 1140, 1, -1 do 
+                    if not isX2 then break end 
+                    task.wait(1) 
+                end
+            end
+        end)
+    end
+end)
+
+-- ==========================================
+-- 4. TOMBOL TELEPORT (BARIS BAWAH)
+-- ==========================================
+local BtnTeleport = Instance.new("TextButton", MainFrame)
+BtnTeleport.Size = UDim2.new(0, 200, 0, 28)
+BtnTeleport.Position = UDim2.new(0, 10, 0, 118)
+BtnTeleport.Text = "TELEPORT STARFALL"
+styleBtn(BtnTeleport, 10)
+
+BtnTeleport.MouseButton1Click:Connect(function()
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then 
+        hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532) 
+    end
+end)

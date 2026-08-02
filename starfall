@@ -8,11 +8,6 @@ local Player = Players.LocalPlayer
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
 -- ==========================================
--- KOORDINAT TELEPORT EXAK
--- ==========================================
-local STARFALL_CFRAME = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
-
--- ==========================================
 -- FUNGSI GLOBAL & HELPER
 -- ==========================================
 local function secureClick()
@@ -186,7 +181,7 @@ BtnSell.MouseButton1Click:Connect(function()
     end
 end)
 
--- Charm (Beli 100 sekaligus + 5 per detik, lalu otomatis mati)
+-- Charm (Beli 5 per detik hingga total 100 pcs = 20 detik, lalu mati & tombol reset)
 BtnCharm.MouseButton1Click:Connect(function()
     if isCharmRunning then return end
     isCharmRunning = true
@@ -195,18 +190,15 @@ BtnCharm.MouseButton1Click:Connect(function()
     task.spawn(function()
         local RF_Charm = Net:WaitForChild("RF/a992a185faf069a341b5472b72f92a19e0b8dbff2aaff20ca6d0d628591ebb2f")
         
-        -- 1. Beli 100 Sekaligus
-        for i = 1, 100 do
-            pcall(function() RF_Charm:InvokeServer(21) end)
-        end
-        
-        -- 2. Beli 5 dengan jeda 1 detik per charm
-        for i = 1, 5 do
-            pcall(function() RF_Charm:InvokeServer(21) end)
+        -- Loop 20 detik x 5 pcs/detik = 100 pcs
+        for sec = 1, 20 do
+            for i = 1, 5 do
+                pcall(function() RF_Charm:InvokeServer(21) end)
+            end
             task.wait(1)
         end
         
-        -- Selesai -> Otomatis Mati
+        -- Selesai -> Reset tombol ke semula
         isCharmRunning = false
         BtnCharm.BackgroundTransparency = 0.4
     end)
@@ -252,7 +244,7 @@ BtnFishing.MouseButton1Click:Connect(function()
     end
 end)
 
--- X2 (Teleport Ke Lokasi Eksak Starfall, Equip Fragment, Interaksi, Kembali, Buka Rod - Siklus 19 Menit)
+-- X2 (Menggunakan CFrame Eksak Langsung Tanpa Variabel External)
 BtnX2.MouseButton1Click:Connect(function()
     isX2 = not isX2
     BtnX2.BackgroundTransparency = isX2 and 0 or 0.4
@@ -269,7 +261,7 @@ BtnX2.MouseButton1Click:Connect(function()
                     task.wait(0.5)
                     
                     -- 3. Teleport ke target CFrame eksak Starfall
-                    hrp.CFrame = STARFALL_CFRAME
+                    hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
                     task.wait(1.5)
                     
                     -- 4. Pegang Star Fragment (spam 2 detik)
@@ -314,6 +306,6 @@ styleBtn(BtnTeleport, 10)
 BtnTeleport.MouseButton1Click:Connect(function()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 
-        hrp.CFrame = STARFALL_CFRAME
+        hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
     end
 end)

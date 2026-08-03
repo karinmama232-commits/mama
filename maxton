@@ -1,12 +1,12 @@
 -- [[ CONFIG ]] --
-local webhook_url = "https://discord.com/api/webhooks/1471473387120361573/OJN4BmXmdHbf89_fJ6oV-QRp7j0XVeQVR4mxYR_aIIZTwmaoHYxU9oYqsGK8OQRecxY4"
+local webhook_url = "https://discord.com/api/webhooks/1531748844839239900/uJRORcLF4R19OaC7XMW2Qdj1G2Dz3j6kWJ2445fCYpepF56-JNUw9otOni426TeSP9D-"
 local startTime = os.time()
 
 -- Counter Player
 local playerCount = {}
 
 -- Daftar berat Maxton
-local list_maxton = {
+local maxton_weights = {
     "600K kg","650K kg","450K kg","25K kg","381K kg","333.33K kg","300K kg",
     "1.05M kg","1.20M kg","1.25M kg","220kg","1.30M kg","1.10M kg","720K kg",
     "825.25K kg","880K kg","1.08M kg","500K kg","920K kg","890K kg","245K kg",
@@ -18,7 +18,7 @@ local list_maxton = {
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
-local function sendWebhook(fishName, fullText, category, isStart)
+local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
@@ -29,9 +29,6 @@ local function sendWebhook(fishName, fullText, category, isStart)
         description = "Script running di akun: **" .. game.Players.LocalPlayer.Name .. "**\nMenunggu kabar dari server..."
         color = 65535 
     else
-        local cleanerText = fullText:gsub("<[^>]*>", "") 
-        local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
-
         -- Update Counter Player
         playerCount[luckyPlayer] = playerCount[luckyPlayer] or {maxton=0}
         playerCount[luckyPlayer].maxton = playerCount[luckyPlayer].maxton + 1
@@ -43,6 +40,9 @@ local function sendWebhook(fishName, fullText, category, isStart)
         content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **Maxton** Fish!"
 
         local playerStats = "Player " .. luckyPlayer .. "\nSudah Mendapatkan " .. playerCount[luckyPlayer].maxton .. " Maxton"
+
+        -- Bersihkan tag HTML dari pesan
+        local cleanerText = fullText:gsub("<[^>]*>", "")
 
         description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
             "\n\n" .. playerStats
@@ -59,16 +59,16 @@ local function sendWebhook(fishName, fullText, category, isStart)
             ["embeds"] = {{
                 ["description"] = description,
                 ["color"] = color,
-                ["footer"] = {["text"] = "Server Mybubub • " .. os.date("%X", os.time() - 3600)}
+                ["footer"] = {["text"] = "Server Mybubub • " .. os.date("%X")}
             }}
         })
     })
 end
 
 -- [[ STARTUP ]] --
-sendWebhook(nil, nil, nil, true)
+sendWebhookMaxton(nil, nil, true)
 
--- [[ DETEKSI CHAT UPDATE BARU ]] --
+-- [[ DETEKSI CHAT ]] --
 local TextChatService = game:GetService("TextChatService")
 local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
 
@@ -77,9 +77,11 @@ if channel then
         local txt = message.Text:lower()
         
         if txt:find("obtained") then
-            for _, weight in pairs(list_maxton) do
+            for _, weight in pairs(maxton_weights) do
                 if txt:find(weight:lower()) then
-                    sendWebhook(weight, message.Text, "maxton", false)
+                    local cleanerText = message.Text:gsub("<[^>]*>", "")
+                    local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
+                    sendWebhookMaxton(message.Text, luckyPlayer, false)
                     return
                 end
             end

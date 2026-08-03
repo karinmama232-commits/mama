@@ -59,7 +59,7 @@ local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
 end
 
 -- [[ STARTUP ]] --
-sendWebhookMaxton(nil, game.Players.LocalPlayer.Name, true)
+sendWebhookMaxton(nil, nil, true)
 
 -- [[ DETEKSI CHAT ]] --
 local TextChatService = game:GetService("TextChatService")

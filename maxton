@@ -7,7 +7,7 @@ local playerCount = {}
 
 -- Daftar berat Maxton
 local maxton_weights = {
-    "600K kg","650K kg","450K kg","25K kg","381K kg","333.33K kg","300K kg","1.05M kg","1.20M kg","220kg","1.30M kg","1.10M kg","720K kg","825.25K kg","880K kg","1.08M kg","500K kg","920K kg","890K kg","245K kg","310.37K kg","410.94K kg","132.26K kg","200K kg","680K kg","753.3K kg","1.69K kg","700kg","640K kg","145.85K kg","192.31K kg","17.20K kg","146.85K kg","140.61K kg","205K kg","165.87K kg","620K kg","1.40M kg","131.40K kg","138K kg","31.46K kg","212.01K kg","2.81K kg","245.17K kg","860K kg","990K kg","525.58K kg","753.3kg","155.31K kg","175.81K kg"
+    "600K kg","650K kg","450K kg","25K kg","381K kg","333.33K kg","300K kg","1.05M kg","1.20M kg","1.25M kg","220kg","1.30M kg","1.10M kg","720K kg","825.25K kg","880K kg","1.08M kg","500K kg","920K kg","890K kg","245K kg","310.37K kg","410.94K kg","132.26K kg","200K kg","680K kg","753.3K kg","1.69K kg","700kg","640K kg","145.85K kg","192.31K kg","17.20K kg","146.85K kg","140.61K kg","205K kg","165.87K kg","620K kg","1.40M kg","131.40K kg","138K kg","31.46K kg","212.01K kg","2.81K kg","245.17K kg","860K kg","990K kg","525.58K kg","753.3kg","155.31K kg","175.81K kg"
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
@@ -32,9 +32,12 @@ local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
         -- Content sesuai format yang diminta
         content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **Maxton** Fish!"
 
-        local playerStats = "Player " .. luckyPlayer .. "\nSudah Mendapatkan " .. playerCount[luckyPlayer].maxton .. " Stone"
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah Mendapatkan " .. playerCount[luckyPlayer].maxton .. " Maxton"
 
-        description = "**" .. fullText .. "**\n\n**Script Runtime:** " .. runtime ..
+        -- Bersihkan tag HTML dari pesan
+        local cleanerText = fullText:gsub("<[^>]*>", "")
+
+        description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
             "\n\n" .. playerStats
 
         color = 16711680 -- Merah khusus Maxton
@@ -43,7 +46,7 @@ local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
     req({
         Url = webhook_url,
         Method = "POST",
-        Headers = {["Content-Type"]] = "application/json"},
+        Headers = {["Content-Type"] = "application/json"},
         Body = game:GetService("HttpService"):JSONEncode({
             ["content"] = content,
             ["embeds"] = {{

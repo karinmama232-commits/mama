@@ -18,7 +18,7 @@ local maxton_weights = {
 }
 
 -- [[ FUNGSI KIRIM WEBHOOK ]] --
-local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
+local function sendWebhook(fishName, fullText, category, isStart)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
@@ -29,6 +29,9 @@ local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
         description = "Script running di akun: **" .. game.Players.LocalPlayer.Name .. "**\nMenunggu kabar dari server..."
         color = 65535 
     else
+        local cleanerText = fullText:gsub("<[^>]*>", "") 
+        local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
+
         -- Update Counter Player
         playerCount[luckyPlayer] = playerCount[luckyPlayer] or {maxton=0}
         playerCount[luckyPlayer].maxton = playerCount[luckyPlayer].maxton + 1
@@ -40,9 +43,6 @@ local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
         content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **Maxton** Fish!"
 
         local playerStats = "Player " .. luckyPlayer .. "\nSudah Mendapatkan " .. playerCount[luckyPlayer].maxton .. " Maxton"
-
-        -- Bersihkan tag HTML dari pesan
-        local cleanerText = fullText:gsub("<[^>]*>", "")
 
         description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
             "\n\n" .. playerStats
@@ -66,7 +66,7 @@ local function sendWebhookMaxton(fullText, luckyPlayer, isStart)
 end
 
 -- [[ STARTUP ]] --
-sendWebhookMaxton(nil, nil, true)
+sendWebhook(nil, nil, nil, true)
 
 -- [[ DETEKSI CHAT ]] --
 local TextChatService = game:GetService("TextChatService")
@@ -79,9 +79,7 @@ if channel then
         if txt:find("obtained") then
             for _, weight in pairs(maxton_weights) do
                 if txt:find(weight:lower()) then
-                    local cleanerText = message.Text:gsub("<[^>]*>", "")
-                    local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
-                    sendWebhookMaxton(message.Text, luckyPlayer, false)
+                    sendWebhook(weight, message.Text, "maxton", false)
                     return
                 end
             end

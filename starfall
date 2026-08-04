@@ -36,23 +36,32 @@ local function repeatActionForDuration(duration, actionFunc)
     end
 end
 
--- Remote Actions
+-- Helper: Interaksi (Klik) berulang selama durasi tertentu
+local function interactForDuration(duration)
+    local startTime = tick()
+    while tick() - startTime < duration do
+        secureClick()
+        task.wait(0.1)
+    end
+end
+
+-- Remote Actions (Spam 5 Detik)
 local function equipRod()
-    repeatActionForDuration(2, function()
+    repeatActionForDuration(5, function()
         local RE_Equip = Net:WaitForChild("RE/8bcc943fdd2a5c5d99f3d4f4e0f5ff1066f256a8b0e96cb5e919c897885d3895")
         RE_Equip:FireServer(1)
     end)
 end
 
 local function unequipRod()
-    repeatActionForDuration(2, function()
+    repeatActionForDuration(5, function()
         local RE_Unequip = Net:WaitForChild("RE/e31c8899347a50b774cd9bd408089f116dff6afab7f681072962fdff8763fa78")
         RE_Unequip:FireServer()
     end)
 end
 
 local function equipStarFragment()
-    repeatActionForDuration(2, function()
+    repeatActionForDuration(5, function()
         local RE_Equip = Net:WaitForChild("RE/8bcc943fdd2a5c5d99f3d4f4e0f5ff1066f256a8b0e96cb5e919c897885d3895")
         RE_Equip:FireServer(2)
     end)
@@ -133,9 +142,10 @@ local isAutoSell = false
 local isCharmRunning = false
 local isFishing = false
 local isX2 = false
+local isFishingPausedByX2 = false -- Flag khusus pause otomatis dari X2
 
 local function resetAll()
-    isAutoSell = false; isCharmRunning = false; isFishing = false; isX2 = false
+    isAutoSell = false; isCharmRunning = false; isFishing = false; isX2 = false; isFishingPausedByX2 = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -230,21 +240,24 @@ BtnFishing.MouseButton1Click:Connect(function()
             local RE_Catch = Net:WaitForChild("RE/e97898ee3ad6610c52f6438ddd4686843b8c98e38583aef023c1ca34c3d5b2cf")
             
             while isFishing do
-                pcall(function()
-                    RF_Fish1:InvokeServer()
-                    task.wait(0.01)
-                    RF_Fish2:InvokeServer(-167.33497619628906, 0.424327725736671, 1785691697.021775)
-                    task.wait(0.08)
-                    RE_Catch:FireServer()
-                    RE_Catch:FireServer()
-                end)
+                -- Eksekusi fishing hanya jika TIDAK dipause oleh X2
+                if not isFishingPausedByX2 then
+                    pcall(function()
+                        RF_Fish1:InvokeServer()
+                        task.wait(0.01)
+                        RF_Fish2:InvokeServer(-167.33497619628906, 0.424327725736671, 1785691697.021775)
+                        task.wait(0.08)
+                        RE_Catch:FireServer()
+                        RE_Catch:FireServer()
+                    end)
+                end
                 task.wait(0.05)
             end
         end)
     end
 end)
 
--- X2 (Menggunakan CFrame Eksak Langsung Tanpa Variabel External)
+-- X2 (Sinkronisasi dengan Fishing, Skema Interaksi Baru, Loop 2 Jam 1 Menit)
 BtnX2.MouseButton1Click:Connect(function()
     isX2 = not isX2
     BtnX2.BackgroundTransparency = isX2 and 0 or 0.4
@@ -253,7 +266,20 @@ BtnX2.MouseButton1Click:Connect(function()
             while isX2 do
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    -- 1. Tutup pancing (spam 2 detik)
+                    -- ============================================
+                    -- SYNC FISHING: Pause
+                    -- ============================================
+                    local wasFishingActive = isFishing
+                    if wasFishingActive then
+                        isFishingPausedByX2 = true
+                        task.wait(5) -- Jeda 5 detik sebelum masuk ke step 1
+                    end
+                    
+                    -- ============================================
+                    -- PROSES X2 (7 STEP)
+                    -- ============================================
+                    
+                    -- 1. Tutup pancing (spam 5 detik)
                     unequipRod()
                     
                     -- 2. Save posisi asal
@@ -264,15 +290,20 @@ BtnX2.MouseButton1Click:Connect(function()
                     hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
                     task.wait(1.5)
                     
-                    -- 4. Pegang Star Fragment (spam 2 detik)
-                    equipStarFragment()
+                    -- 4 & 5. Skema Equip Star Fragment & Klik Interaksi Proximity Bertahap
+                    -- Tahap A
+                    equipStarFragment()       -- Spam Star Fragment 5 detik
+                    interactForDuration(3)    -- Klik interaksi 3 detik
+                    task.wait(1)              -- Jeda 1 detik
                     
-                    -- 5. Klik Interaksi ProximityPrompt
-                    for i = 1, 2 do 
-                        if not isX2 then break end 
-                        secureClick() 
-                        task.wait(0.8) 
-                    end
+                    -- Tahap B
+                    equipStarFragment()       -- Spam Star Fragment 5 detik
+                    interactForDuration(4)    -- Klik interaksi 4 detik
+                    task.wait(1)              -- Jeda 1 detik
+                    
+                    -- Tahap C
+                    equipStarFragment()       -- Spam Star Fragment 5 detik
+                    interactForDuration(5)    -- Klik interaksi 5 detik
                     
                     task.wait(0.5)
                     
@@ -280,12 +311,20 @@ BtnX2.MouseButton1Click:Connect(function()
                     if hrp then hrp.CFrame = saved end
                     task.wait(0.5)
                     
-                    -- 7. Buka pancing kembali (spam 2 detik)
+                    -- 7. Buka pancing kembali (spam 5 detik)
                     equipRod()
+                    
+                    -- ============================================
+                    -- SYNC FISHING: Resume
+                    -- ============================================
+                    if wasFishingActive and isFishing then
+                        task.wait(5) -- Jeda 5 detik setelah step 7 selesai
+                        isFishingPausedByX2 = false
+                    end
                 end
                 
-                -- Loop 19 Menit (1140 Detik)
-                for i = 1140, 1, -1 do 
+                -- Loop 2 Jam 1 Menit (7260 Detik)
+                for i = 7260, 1, -1 do 
                     if not isX2 then break end 
                     task.wait(1) 
                 end

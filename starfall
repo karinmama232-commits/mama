@@ -48,21 +48,21 @@ end
 -- Remote Actions (Spam 5 Detik)
 local function equipRod()
     repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/3f421f45909fe76370f1e3b7529410d9974adc3fe141f24ccf24ab347c152506")
+        local RE_Equip = Net:WaitForChild("RE/313c4d9e829a15bc519468f760101a49ab8a9d50f581b35dd19df11f8b42a710")
         RE_Equip:FireServer(1)
     end)
 end
 
 local function unequipRod()
     repeatActionForDuration(5, function()
-        local RE_Unequip = Net:WaitForChild("RE/6fff580bc15d2029bac8f56f3826f1f74d72e5589769fb655e633304f58bda10")
+        local RE_Unequip = Net:WaitForChild("RE/70e89175c2465993f2677ed3e9e13c3b2420a64e6e17bc5b7239b8803c17c183")
         RE_Unequip:FireServer()
     end)
 end
 
 local function equipStarFragment()
     repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/3f421f45909fe76370f1e3b7529410d9974adc3fe141f24ccf24ab347c152506")
+        local RE_Equip = Net:WaitForChild("RE/313c4d9e829a15bc519468f760101a49ab8a9d50f581b35dd19df11f8b42a710")
         RE_Equip:FireServer(2)
     end)
 end
@@ -182,7 +182,7 @@ BtnSell.MouseButton1Click:Connect(function()
     BtnSell.BackgroundTransparency = isAutoSell and 0 or 0.4
     if isAutoSell then
         task.spawn(function()
-            local RF_Sell = Net:WaitForChild("RF/89419397da9f5bb549245413971f567069759ddab36cb3e7175ea4d5ef29bf3d")
+            local RF_Sell = Net:WaitForChild("RF/b8bb38d30a1900f1d5fcf06c85de8e4cad00fc5bf6f812688bfc89f0f533913b")
             while isAutoSell do
                 pcall(function() RF_Sell:InvokeServer() end)
                 task.wait(10)
@@ -198,7 +198,7 @@ BtnCharm.MouseButton1Click:Connect(function()
     BtnCharm.BackgroundTransparency = 0
 
     task.spawn(function()
-        local RF_Charm = Net:WaitForChild("RF/64ff9d1bb65d6539b022005bf2ac39d918b65d7062ad737dc81b90c1d2040d55")
+        local RF_Charm = Net:WaitForChild("RF/2259f98773b7c1a5ab9039ddcf1f54da81149983cb0baf90098c3a9dc1846089")
         
         -- Loop 20 detik x 5 pcs/detik = 100 pcs
         for sec = 1, 20 do
@@ -235,9 +235,9 @@ BtnFishing.MouseButton1Click:Connect(function()
     BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
     if isFishing then
         task.spawn(function()
-            local RF_Fish1 = Net:WaitForChild("RF/ce7240551fd00873fe883afbbed456de0dd4d0ed57cbe6faa8c0661adcf51066")
-            local RF_Fish2 = Net:WaitForChild("RF/0cbb19425e18e160aaff7cf89562ae6b3e8e74c888858ad50d8957c2373b3013")
-            local RE_Catch = Net:WaitForChild("RE/92da9958e43861768831c941b91614bc7f0003edc8f719fae63041c35c898750")
+            local RF_Fish1 = Net:WaitForChild("RF/87726f95d8d037b305c4a524e477615caded20a0f7e436adcd6de843e496c615")
+            local RF_Fish2 = Net:WaitForChild("RF/b20c7150036a396e8eaa4238ee05345e2338595f6d2f6f6c000dfa0a360ee88e")
+            local RE_Catch = Net:WaitForChild("RE/ca0af0f31b68b911836a1e4fd1742eca85f93e68cff05475f584d701d425f7d2")
             
             while isFishing do
                 -- Eksekusi fishing hanya jika TIDAK dipause oleh X2
@@ -245,8 +245,9 @@ BtnFishing.MouseButton1Click:Connect(function()
                     pcall(function()
                         RF_Fish1:InvokeServer()
                         task.wait(0.01)
-                        RF_Fish2:InvokeServer(-255.77151489257812, 0.8852135297602738, 1785997977.212267)
+                        RF_Fish2:InvokeServer(-255.77151489257812, 0.9779095588584559, 1786101223.404125)
                         task.wait(0.08)
+                        RE_Catch:FireServer()
                         RE_Catch:FireServer()
                         RE_Catch:FireServer()
                     end)

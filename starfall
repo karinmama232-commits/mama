@@ -1,4 +1,4 @@
--- [[ STARFALL GARDENS - pociXkarin GLOBAL EDITION (UPDATED HASHES) ]] --
+-- [[ STARFALL GARDENS - pociXkarin GLOBAL EDITION (UPDATED HASHES & COSMIC) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -27,7 +27,7 @@ local function secureClick()
     end)
 end
 
--- Helper: Eksekusi berulang selama 'duration' detik (mencegah terlewat akibat lag)
+-- Helper: Eksekusi berulang selama 'duration' detik
 local function repeatActionForDuration(duration, actionFunc)
     local startTime = tick()
     while tick() - startTime < duration do
@@ -138,14 +138,14 @@ CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 -- State Variables
-local isAutoSell = false
+local isCosmic = false
 local isCharmRunning = false
 local isFishing = false
 local isX2 = false
-local isFishingPausedByX2 = false -- Flag khusus pause otomatis dari X2
+local isFishingPaused = false
 
 local function resetAll()
-    isAutoSell = false; isCharmRunning = false; isFishing = false; isX2 = false; isFishingPausedByX2 = false
+    isCosmic = false; isCharmRunning = false; isFishing = false; isX2 = false; isFishingPaused = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -164,11 +164,11 @@ end
 -- ==========================================
 -- 2. TOMBOL & LOGIKA (BARIS ATAS)
 -- ==========================================
-local BtnSell = Instance.new("TextButton", MainFrame)
-BtnSell.Size = UDim2.new(0, 95, 0, 28)
-BtnSell.Position = UDim2.new(0, 10, 0, 45)
-BtnSell.Text = "AUTO SELL"
-styleBtn(BtnSell, 9)
+local BtnCosmic = Instance.new("TextButton", MainFrame)
+BtnCosmic.Size = UDim2.new(0, 95, 0, 28)
+BtnCosmic.Position = UDim2.new(0, 10, 0, 45)
+BtnCosmic.Text = "COSMIC"
+styleBtn(BtnCosmic, 9)
 
 local BtnCharm = Instance.new("TextButton", MainFrame)
 BtnCharm.Size = UDim2.new(0, 95, 0, 28)
@@ -176,22 +176,71 @@ BtnCharm.Position = UDim2.new(0, 115, 0, 45)
 BtnCharm.Text = "CHARM"
 styleBtn(BtnCharm, 9)
 
--- Auto Sell
-BtnSell.MouseButton1Click:Connect(function()
-    isAutoSell = not isAutoSell
-    BtnSell.BackgroundTransparency = isAutoSell and 0 or 0.4
-    if isAutoSell then
+-- Cosmic (Pengganti Auto Sell) - Loop 2 Jam 1 Menit
+BtnCosmic.MouseButton1Click:Connect(function()
+    isCosmic = not isCosmic
+    BtnCosmic.BackgroundTransparency = isCosmic and 0 or 0.4
+    if isCosmic then
         task.spawn(function()
-            local RF_Sell = Net:WaitForChild("RF/b8bb38d30a1900f1d5fcf06c85de8e4cad00fc5bf6f812688bfc89f0f533913b")
-            while isAutoSell do
-                pcall(function() RF_Sell:InvokeServer() end)
-                task.wait(10)
+            local RE_Cosmic = Net:WaitForChild("RE/c0fc304a1259f86803814ac63ad59a52c2e3dd150cdaf322b384e089798b2c9e")
+            
+            while isCosmic do
+                -- 1. Pause mancing jika sedang aktif
+                local wasFishingActive = isFishing
+                if wasFishingActive then
+                    isFishingPaused = true
+                    task.wait(3)
+                end
+
+                -- 2. Unequip rod
+                unequipRod()
+                task.wait(2)
+
+                -- 3. Pegang Star Fragment
+                equipStarFragment()
+                task.wait(2)
+
+                -- 4. Trigger awal Cosmic (Azorath 1, 1)
+                pcall(function()
+                    RE_Cosmic:FireServer("Azorath", 1, 1)
+                end)
+                task.wait(2)
+
+                -- 5. Spam trigger kedua (Azorath 1, 2) - 10x dalam 5 detik
+                local startTime = tick()
+                while tick() - startTime < 5 do
+                    pcall(function()
+                        RE_Cosmic:FireServer("Azorath", 1, 2)
+                    end)
+                    task.wait(0.5)
+                end
+                task.wait(2)
+
+                -- 6. Un-equip / Tutup Star Fragment
+                unequipRod()
+                task.wait(2)
+
+                -- 7. Pegang pancing kembali
+                equipRod()
+                task.wait(2)
+
+                -- 8. Resume mancing
+                if wasFishingActive and isFishing then
+                    task.wait(3)
+                    isFishingPaused = false
+                end
+
+                -- Loop 2 Jam 1 Menit (7260 Detik)
+                for i = 7260, 1, -1 do
+                    if not isCosmic then break end
+                    task.wait(1)
+                end
             end
         end)
     end
 end)
 
--- Charm (Beli 5 per detik hingga total 100 pcs = 20 detik, lalu mati & tombol reset)
+-- Charm
 BtnCharm.MouseButton1Click:Connect(function()
     if isCharmRunning then return end
     isCharmRunning = true
@@ -199,16 +248,12 @@ BtnCharm.MouseButton1Click:Connect(function()
 
     task.spawn(function()
         local RF_Charm = Net:WaitForChild("RF/2259f98773b7c1a5ab9039ddcf1f54da81149983cb0baf90098c3a9dc1846089")
-        
-        -- Loop 20 detik x 5 pcs/detik = 100 pcs
         for sec = 1, 20 do
             for i = 1, 5 do
                 pcall(function() RF_Charm:InvokeServer(21) end)
             end
             task.wait(1)
         end
-        
-        -- Selesai -> Reset tombol ke semula
         isCharmRunning = false
         BtnCharm.BackgroundTransparency = 0.4
     end)
@@ -240,8 +285,7 @@ BtnFishing.MouseButton1Click:Connect(function()
             local RE_Catch = Net:WaitForChild("RE/c98ba9851ae971a3814d2cf95524cf787bf59e17c5ecb4248bb516c3aba91d69")
             
             while isFishing do
-                -- Eksekusi fishing hanya jika TIDAK dipause oleh X2
-                if not isFishingPausedByX2 then
+                if not isFishingPaused then
                     pcall(function()
                         RF_Fish1:InvokeServer()
                         task.wait(0.01)
@@ -258,7 +302,7 @@ BtnFishing.MouseButton1Click:Connect(function()
     end
 end)
 
--- X2 (Sinkronisasi dengan Fishing, Skema Interaksi Baru, Loop 2 Jam 1 Menit)
+-- X2 Logic
 BtnX2.MouseButton1Click:Connect(function()
     isX2 = not isX2
     BtnX2.BackgroundTransparency = isX2 and 0 or 0.4
@@ -267,64 +311,44 @@ BtnX2.MouseButton1Click:Connect(function()
             while isX2 do
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
-                    -- ============================================
-                    -- SYNC FISHING: Pause
-                    -- ============================================
                     local wasFishingActive = isFishing
                     if wasFishingActive then
-                        isFishingPausedByX2 = true
-                        task.wait(5) -- Jeda 5 detik sebelum masuk ke step 1
+                        isFishingPaused = true
+                        task.wait(5)
                     end
                     
-                    -- ============================================
-                    -- PROSES X2 (7 STEP)
-                    -- ============================================
-                    
-                    -- 1. Tutup pancing (spam 5 detik)
                     unequipRod()
                     
-                    -- 2. Save posisi asal
                     local saved = hrp.CFrame
                     task.wait(0.5)
                     
-                    -- 3. Teleport ke target CFrame eksak Starfall
                     hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
                     task.wait(1.5)
                     
-                    -- 4 & 5. Skema Equip Star Fragment & Klik Interaksi Proximity Bertahap
-                    -- Tahap A
-                    equipStarFragment()       -- Spam Star Fragment 5 detik
-                    interactForDuration(3)    -- Klik interaksi 3 detik
-                    task.wait(1)              -- Jeda 1 detik
+                    equipStarFragment()
+                    interactForDuration(3)
+                    task.wait(1)
                     
-                    -- Tahap B
-                    equipStarFragment()       -- Spam Star Fragment 5 detik
-                    interactForDuration(4)    -- Klik interaksi 4 detik
-                    task.wait(1)              -- Jeda 1 detik
+                    equipStarFragment()
+                    interactForDuration(4)
+                    task.wait(1)
                     
-                    -- Tahap C
-                    equipStarFragment()       -- Spam Star Fragment 5 detik
-                    interactForDuration(5)    -- Klik interaksi 5 detik
+                    equipStarFragment()
+                    interactForDuration(5)
                     
                     task.wait(0.5)
                     
-                    -- 6. Balik ke posisi asal
                     if hrp then hrp.CFrame = saved end
                     task.wait(0.5)
                     
-                    -- 7. Buka pancing kembali (spam 5 detik)
                     equipRod()
                     
-                    -- ============================================
-                    -- SYNC FISHING: Resume
-                    -- ============================================
                     if wasFishingActive and isFishing then
-                        task.wait(5) -- Jeda 5 detik setelah step 7 selesai
-                        isFishingPausedByX2 = false
+                        task.wait(5)
+                        isFishingPaused = false
                     end
                 end
                 
-                -- Loop 2 Jam 1 Menit (7260 Detik)
                 for i = 7260, 1, -1 do 
                     if not isX2 then break end 
                     task.wait(1) 

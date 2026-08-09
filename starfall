@@ -48,21 +48,21 @@ end
 -- Remote Actions (Spam 5 Detik)
 local function equipRod()
     repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/313c4d9e829a15bc519468f760101a49ab8a9d50f581b35dd19df11f8b42a710")
+        local RE_Equip = Net:WaitForChild("RE/e7a68a113904522faf8977ca73f3162fdbf284f025e99afd2740779fce667395")
         RE_Equip:FireServer(1)
     end)
 end
 
 local function unequipRod()
     repeatActionForDuration(5, function()
-        local RE_Unequip = Net:WaitForChild("RE/70e89175c2465993f2677ed3e9e13c3b2420a64e6e17bc5b7239b8803c17c183")
+        local RE_Unequip = Net:WaitForChild("RE/4b197f5d9c77477b2d475102deb4658948777f38926e954527ab4fdfa5b19493")
         RE_Unequip:FireServer()
     end)
 end
 
 local function equipStarFragment()
     repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/313c4d9e829a15bc519468f760101a49ab8a9d50f581b35dd19df11f8b42a710")
+        local RE_Equip = Net:WaitForChild("RE/e7a68a113904522faf8977ca73f3162fdbf284f025e99afd2740779fce667395")
         RE_Equip:FireServer(2)
     end)
 end
@@ -235,9 +235,9 @@ BtnFishing.MouseButton1Click:Connect(function()
     BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
     if isFishing then
         task.spawn(function()
-            local RF_Fish1 = Net:WaitForChild("RF/87726f95d8d037b305c4a524e477615caded20a0f7e436adcd6de843e496c615")
-            local RF_Fish2 = Net:WaitForChild("RF/b20c7150036a396e8eaa4238ee05345e2338595f6d2f6f6c000dfa0a360ee88e")
-            local RE_Catch = Net:WaitForChild("RE/ca0af0f31b68b911836a1e4fd1742eca85f93e68cff05475f584d701d425f7d2")
+            local RF_Fish1 = Net:WaitForChild("RF/c5b551dc171319fa4b980adb545012b30fae0e5e59a5246b77dee3e99fd77a75")
+            local RF_Fish2 = Net:WaitForChild("RF/c494c79715f28fb55b3ed48c8a18ffbdff42d9cd4939efda3d359be5858bb170")
+            local RE_Catch = Net:WaitForChild("RE/c98ba9851ae971a3814d2cf95524cf787bf59e17c5ecb4248bb516c3aba91d69")
             
             while isFishing do
                 -- Eksekusi fishing hanya jika TIDAK dipause oleh X2
@@ -245,7 +245,7 @@ BtnFishing.MouseButton1Click:Connect(function()
                     pcall(function()
                         RF_Fish1:InvokeServer()
                         task.wait(0.01)
-                        RF_Fish2:InvokeServer(-255.77151489257812, 0.9779095588584559, 1786101223.404125)
+                        RF_Fish2:InvokeServer(-255.77151489257812, 0.5782785366765053, 1786262695.263793)
                         task.wait(0.08)
                         RE_Catch:FireServer()
                         RE_Catch:FireServer()

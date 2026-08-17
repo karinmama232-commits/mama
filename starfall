@@ -48,21 +48,21 @@ end
 -- Remote Actions (Spam 5 Detik)
 local function equipRod()
     repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/8efa9fb4e05867d26e239ac3e3ae34d2be97f895088f0ea2f68a25876c5444e3")
+        local RE_Equip = Net:WaitForChild("RE/25d0772b772e3f496deaeaf6935986250faf60ad59a676bac7a6cdb0afc8576b")
         RE_Equip:FireServer(1)
     end)
 end
 
 local function unequipRod()
     repeatActionForDuration(5, function()
-        local RE_Unequip = Net:WaitForChild("RE/97e52a87e942f2a53337efee079c5e9c9d6901c4e76017d1abfa2782ce85b260")
+        local RE_Unequip = Net:WaitForChild("RE/fcca871a4e284f386e95d56db82a02358fcec919d9c5df2604bee3fb9cb9d8cb")
         RE_Unequip:FireServer()
     end)
 end
 
 local function equipStarFragment()
     repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/8efa9fb4e05867d26e239ac3e3ae34d2be97f895088f0ea2f68a25876c5444e3")
+        local RE_Equip = Net:WaitForChild("RE/25d0772b772e3f496deaeaf6935986250faf60ad59a676bac7a6cdb0afc8576b")
         RE_Equip:FireServer(2)
     end)
 end
@@ -182,7 +182,7 @@ BtnCosmic.MouseButton1Click:Connect(function()
     BtnCosmic.BackgroundTransparency = isCosmic and 0 or 0.4
     if isCosmic then
         task.spawn(function()
-            local RE_Cosmic = Net:WaitForChild("RE/f2ba8c614418547fef812060d4f8bb89b31d8c2ffd14a23ce54d5561d55b21bf")
+            local RE_Cosmic = Net:WaitForChild("RE/b3a05f2104fe273f927e349f37509df6cad1080b14c81e1855a0c09996b063af")
             
             while isCosmic do
                 -- 1. Pause mancing jika sedang aktif
@@ -247,7 +247,7 @@ BtnCharm.MouseButton1Click:Connect(function()
     BtnCharm.BackgroundTransparency = 0
 
     task.spawn(function()
-        local RF_Charm = Net:WaitForChild("RF/8584c98bd6e291a933f13bf2cd1fca88515b2e2b9b52443830acbc91b41dfd61")
+        local RF_Charm = Net:WaitForChild("RF/05026cb7566034d530a5adba893c6a1424a066096e977c1678e5151d854fbcba")
         for sec = 1, 20 do
             for i = 1, 5 do
                 pcall(function() RF_Charm:InvokeServer(21) end)
@@ -280,16 +280,16 @@ BtnFishing.MouseButton1Click:Connect(function()
     BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
     if isFishing then
         task.spawn(function()
-            local RF_Fish1 = Net:WaitForChild("RF/84927147d5f03965ee63a268fbfa19f4078c366e51834c7b11810a579aae1206")
-            local RF_Fish2 = Net:WaitForChild("RF/5b8b2891ace8f0afef2235c47d22c28f52b0e1639ca7f7706a13243b0c91dabe")
-            local RE_Catch = Net:WaitForChild("RE/b04ed49801ac9cb6f4a9e47fd1eb110fa19137c3eb884dd08a4ab1d8817edf18")
+            local RF_Fish1 = Net:WaitForChild("RF/457ad0a196d898bf5b6cf0a7ee1100ef79cd6818c3c47e258df5460ab255fa12")
+            local RF_Fish2 = Net:WaitForChild("RF/ca92d5f71bf09e1582ee263435b4d911e25f9de92c56b3f6fe0ef1f613fe2617")
+            local RE_Catch = Net:WaitForChild("RE/2c044a577d6212752e580381e9e6eebd5748894ea13f9f5bac2401b476bfb505")
             
             while isFishing do
                 if not isFishingPaused then
                     pcall(function()
                         RF_Fish1:InvokeServer()
                         task.wait(0.01)
-                        RF_Fish2:InvokeServer(-255.77151489257812, 0.8820215350064208, 1786414365.340511)
+                        RF_Fish2:InvokeServer(-167.33497619628906, 0.9999488218217041, 1787000867.75926)
                         task.wait(0.08)
                         RE_Catch:FireServer()
                         RE_Catch:FireServer()

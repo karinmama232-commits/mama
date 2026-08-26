@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (FIXED) ]] --
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (FIXED LOOP) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -26,14 +26,14 @@ local eventLocations = {
     }
 }
 
--- Target Single CFrame Teleport Manual
+-- CFrame Manual
 local cframeBlizzard = CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862)
 local cframeStorm = CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529)
 local cframeVolcano = CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922)
 
 -- Variables State Auto Event
 local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
-local originalPosition = nil
+local homePosition = nil -- Menyimpan posisi awal player sebelum ikut event pertama
 local activeEventName = nil
 local isAutoEventEnabled = false
 
@@ -42,39 +42,48 @@ local function getRoot()
     return char:FindFirstChild("HumanoidRootPart")
 end
 
--- Fungsi Cek & Teleport Otomatis (SUDAH DIPERBAIKI)
+-- ==========================================
+-- FUNGSI CEK & TELEPORT (KONTINU / TANPA MATI)
+-- ==========================================
 local function checkAndTeleport()
     if not isAutoEventEnabled or not eventsFolder then return end
     
     local foundEvent = nil
+    
+    -- Cari event yang cocok di folder Events
     for _, child in ipairs(eventsFolder:GetChildren()) do
         if eventLocations[child.Name] then
             foundEvent = child.Name
             break
         end
     end
-    
+
     local root = getRoot()
     if not root then return end
 
-    -- Kasus 1: Event Baru Muncul / Event Berganti
+    -- KONDISI 1: Event Aktif Baru Muncul ATAU Berganti ke Event Lain
     if foundEvent and foundEvent ~= activeEventName then
-        -- Hanya simpan posisi asal PERTAMA KALI sebelum teleport ke event mana pun
-        if not originalPosition then
-            originalPosition = root.CFrame
+        -- Simpan posisi tempat asal player HANYA jika belum pernah disimpan sebelumnya
+        if not homePosition then
+            homePosition = root.CFrame
         end
-        
+
         activeEventName = foundEvent
+
+        -- Teleport ke lokasi event yang baru ditemukan
         local coords = eventLocations[foundEvent]
         local randomCFrame = coords[math.random(1, #coords)]
         root.CFrame = randomCFrame
 
-    -- Kasus 2: Event Selesai dan Tidak Ada Event Lain
+    -- KONDISI 2: Event Berakhir & Tidak Ada Event Lagi yang Aktif
     elseif not foundEvent and activeEventName then
-        if originalPosition then
-            root.CFrame = originalPosition
+        -- Pulangkan player ke tempat asal
+        if homePosition then
+            root.CFrame = homePosition
         end
-        originalPosition = nil
+
+        -- Reset state agar siap mendeteksi event berikutnya (misal Volcano lagi atau Storm)
+        homePosition = nil
         activeEventName = nil
     end
 end
@@ -163,7 +172,7 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. TOMBOL TELEPORT (3 TOMBOL SEBARIS)
+-- 2. TOMBOL TELEPORT MANUAL
 -- ==========================================
 local BtnBlizzard = Instance.new("TextButton", MainFrame)
 BtnBlizzard.Size = UDim2.new(0, 68, 0, 28)
@@ -199,7 +208,7 @@ BtnVolcano.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 3. TOMBOL AUTO EVENT
+-- 3. TOMBOL TOGGLE AUTO EVENT
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
 BtnAutoEvent.Size = UDim2.new(0, 210, 0, 45)
@@ -215,17 +224,17 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
     if isAutoEventEnabled then
         checkAndTeleport()
     else
-        if originalPosition then
+        if homePosition then
             local root = getRoot()
-            if root then root.CFrame = originalPosition end
+            if root then root.CFrame = homePosition end
         end
-        originalPosition = nil
+        homePosition = nil
         activeEventName = nil
     end
 end)
 
 -- ==========================================
--- 4. BACKGROUND LOOP & EVENT LISTENER
+-- 4. LOOPING DETEKSI CONTINUOUS (SELAMANYA)
 -- ==========================================
 task.spawn(function()
     while true do
@@ -239,11 +248,11 @@ end)
 if eventsFolder then
     eventsFolder.ChildAdded:Connect(function()
         task.wait(0.2)
-        checkAndTeleport()
+        if isAutoEventEnabled then checkAndTeleport() end
     end)
 
     eventsFolder.ChildRemoved:Connect(function()
         task.wait(0.2)
-        checkAndTeleport()
+        if isAutoEventEnabled then checkAndTeleport() end
     end)
 end

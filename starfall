@@ -6,9 +6,9 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- ==========================================
--- DATA EVENT & C FRAME LOKASI (EXACT MATCH & FILTER)
+-- DATA EVENT & C FRAME LOKASI (EXACT NAME)
 -- ==========================================
-local eventLocations = {
+local validEvents = {
     ["Volcano Elemental Event"] = {
         CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922),
         CFrame.new(-829.322937, 69.4343567, 5324.67871, 0.163617462, -2.55531969e-08, -0.986523867, -2.07891926e-08, 1, -2.93501987e-08, 0.986523867, 2.53112393e-08, 0.163617462),
@@ -42,40 +42,30 @@ local function getRoot()
     return char:WaitForChild("HumanoidRootPart", 5)
 end
 
--- Fungsi Cek & Teleport Super Ketat (Hanya mendeteksi event yang berakhiran "Elemental Event")
+-- Fungsi Cek & Teleport (100% Akurat, hanya membaca nama yang benar-benar ada di dalam tabel validEvents)
 local function checkAndTeleport()
     if not isAutoEventEnabled then return end
     if not eventsFolder then return end
     
     local foundEvent = nil
     for _, child in ipairs(eventsFolder:GetChildren()) do
-        local childName = child.Name
-        
-        -- SYARAT KETAT: 
-        -- 1. Harus ada di dalam tabel data event utama kita.
-        -- 2. Nama string-nya wajib berakhiran persis dengan "Elemental Event" 
-        --    sehingga "Admin - Galaxy Storm" atau "Storm" biasa akan otomatis diabaikan!
-        if eventLocations[childName] and string.match(childName, "Elemental Event$") then
-            foundEvent = childName
+        -- Hanya akan merespons jika nama anak di folder persis sama dengan key tabel (misal: "Storm Elemental Event")
+        if validEvents[child.Name] then
+            foundEvent = child.Name
             break
         end
     end
     
-    -- Jika ada Event Element Asli yang Aktif
     if foundEvent and not activeEventName then
         local root = getRoot()
         if root then
             savedPosition = root.CFrame
             activeEventName = foundEvent
             
-            -- Pilih 1 CFrame secara acak dari 3 lokasi event tersebut
-            local coords = eventLocations[foundEvent]
+            local coords = validEvents[foundEvent]
             local randomCFrame = coords[math.random(1, #coords)]
-            
             root.CFrame = randomCFrame
         end
-        
-    -- Jika Event sudah selesai / hilang dari folder, karakter balik ke posisi awal
     elseif not foundEvent and activeEventName then
         local root = getRoot()
         if root and savedPosition then
@@ -134,7 +124,7 @@ Title.TextSize = 13
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
-val HideBtn = Instance.new("TextButton", Header)
+local HideBtn = Instance.new("TextButton", Header)
 HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
 HideBtn.Size = UDim2.new(0, 25, 0, 25)
 HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -206,7 +196,7 @@ BtnVolcano.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 3. TOMBOL AUTO EVENT (AGAK BESAR)
+-- 3. TOMBOL AUTO EVENT
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
 BtnAutoEvent.Size = UDim2.new(0, 210, 0, 45)
@@ -245,16 +235,14 @@ end)
 
 if eventsFolder then
     eventsFolder.ChildAdded:Connect(function(child)
-        local childName = child.Name
-        if eventLocations[childName] and string.match(childName, "Elemental Event$") then
+        if validEvents[child.Name] then
             task.wait(0.2)
             checkAndTeleport()
         end
     end)
 
     eventsFolder.ChildRemoved:Connect(function(child)
-        local childName = child.Name
-        if eventLocations[childName] and string.match(childName, "Elemental Event$") then
+        if validEvents[child.Name] then
             task.wait(0.2)
             checkAndTeleport()
         end

@@ -41,15 +41,22 @@ end
 -- FUNGSI CEK STATUS EVENT
 -- ==========================================
 local function isEventReallyActive(eventObj)
-    -- fallback: kalau tidak ada Duration child, tetap anggap aktif
-    local ok = false
+    -- whitelist hanya event elemental
+    if not eventLocations[eventObj.Name] then return false end
+    
+    -- cek AreaConfiguration
+    local area = eventObj:GetAttribute("AreaConfiguration")
+    if area and tostring(area):find("Elemental Island") then
+        return true
+    end
+    
+    -- cek Duration
     local dur = eventObj:GetAttribute("Duration")
     if dur and dur > 0 then
-        ok = true
-    else
-        ok = true -- fallback supaya UI tetap update
+        return true
     end
-    return ok
+    
+    return false
 end
 
 -- Fungsi Cek & Teleport Otomatis
@@ -86,12 +93,13 @@ local function checkAndTeleport(statusLabel)
         activeEventName = nil
     end
     
-    -- Update status label
+    -- Update status label (durasi dalam menit)
     if statusLabel then
         if foundEvent then
             local dur = foundObj:GetAttribute("Duration")
             if dur then
-                statusLabel.Text = "⚡ Event Aktif: "..foundEvent.." ("..dur.."s)"
+                local menit = math.floor(dur / 60)
+                statusLabel.Text = "⚡ Event Aktif: "..foundEvent.." ("..menit.." menit)"
             else
                 statusLabel.Text = "⚡ Event Aktif: "..foundEvent
             end

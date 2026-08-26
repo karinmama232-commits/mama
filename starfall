@@ -47,9 +47,9 @@ local function checkAndTeleport()
     if not eventsFolder then return end
     
     local foundEvent = nil
-    for eventName, _ in pairs(eventLocations) do
-        if eventsFolder:FindFirstChild(eventName) then
-            foundEvent = eventName
+    for _, child in ipairs(eventsFolder:GetChildren()) do
+        if eventLocations[child.Name] then
+            foundEvent = child.Name
             break
         end
     end
@@ -80,7 +80,7 @@ local function checkAndTeleport()
 end
 
 -- ==========================================
--- 1. SETUP UI COMPACT
+-- 1. SETUP UI COMPACT (DIPERBESAR SEDIKIT)
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ElementalIslandUI"
@@ -105,8 +105,8 @@ MainFrame.Name = "ElementalMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
 MainFrame.BackgroundTransparency = 0.1
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
-MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -115, 0.5, -85)
+MainFrame.Size = UDim2.new(0, 230, 0, 165)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -163,25 +163,25 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. TOMBOL TELEPORT
+-- 2. TOMBOL TELEPORT (3 TOMBOL SEBARIS)
 -- ==========================================
 local BtnBlizzard = Instance.new("TextButton", MainFrame)
-BtnBlizzard.Size = UDim2.new(0, 95, 0, 28)
+BtnBlizzard.Size = UDim2.new(0, 68, 0, 28)
 BtnBlizzard.Position = UDim2.new(0, 10, 0, 45)
-BtnBlizzard.Text = "BLIZZARD"
-styleBtn(BtnBlizzard, 9)
+BtnBlizzard.Text = "BLIZZ"
+styleBtn(BtnBlizzard, 8)
 
 local BtnStorm = Instance.new("TextButton", MainFrame)
-BtnStorm.Size = UDim2.new(0, 95, 0, 28)
-BtnStorm.Position = UDim2.new(0, 115, 0, 45)
+BtnStorm.Size = UDim2.new(0, 68, 0, 28)
+BtnStorm.Position = UDim2.new(0, 81, 0, 45)
 BtnStorm.Text = "STORM"
-styleBtn(BtnStorm, 9)
+styleBtn(BtnStorm, 8)
 
 local BtnVolcano = Instance.new("TextButton", MainFrame)
-BtnVolcano.Size = UDim2.new(0, 200, 0, 28)
-BtnVolcano.Position = UDim2.new(0, 10, 0, 80)
-BtnVolcano.Text = "VOLCANO"
-styleBtn(BtnVolcano, 9)
+BtnVolcano.Size = UDim2.new(0, 68, 0, 28)
+BtnVolcano.Position = UDim2.new(0, 152, 0, 45)
+BtnVolcano.Text = "VOLC"
+styleBtn(BtnVolcano, 8)
 
 BtnBlizzard.MouseButton1Click:Connect(function()
     local root = getRoot()
@@ -199,17 +199,18 @@ BtnVolcano.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 3. TOMBOL AUTO EVENT
+-- 3. TOMBOL AUTO EVENT (AGAK BESAR)
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
-BtnAutoEvent.Size = UDim2.new(0, 200, 0, 28)
-BtnAutoEvent.Position = UDim2.new(0, 10, 0, 118)
-BtnAutoEvent.Text = "AUTO EVENT"
-styleBtn(BtnAutoEvent, 10)
+BtnAutoEvent.Size = UDim2.new(0, 210, 0, 45)
+BtnAutoEvent.Position = UDim2.new(0, 10, 0, 85)
+BtnAutoEvent.Text = "AUTO EVENT [ OFF ]"
+styleBtn(BtnAutoEvent, 11)
 
 BtnAutoEvent.MouseButton1Click:Connect(function()
     isAutoEventEnabled = not isAutoEventEnabled
     BtnAutoEvent.BackgroundTransparency = isAutoEventEnabled and 0 or 0.4
+    BtnAutoEvent.Text = isAutoEventEnabled and "AUTO EVENT [ ON ]" or "AUTO EVENT [ OFF ]"
     
     if isAutoEventEnabled then
         checkAndTeleport()

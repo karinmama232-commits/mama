@@ -6,7 +6,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- ==========================================
--- DATA EVENT & C FRAME LOKASI (EXACT NAME)
+-- DATA EVENT & C FRAME LOKASI (EXACT MATCH & FILTER)
 -- ==========================================
 local eventLocations = {
     ["Volcano Elemental Event"] = {
@@ -42,7 +42,7 @@ local function getRoot()
     return char:WaitForChild("HumanoidRootPart", 5)
 end
 
--- Fungsi Cek & Teleport Otomatis (Strict / Ketat sesuai nama persis)
+-- Fungsi Cek & Teleport Super Ketat (Hanya mendeteksi event yang berakhiran "Elemental Event")
 local function checkAndTeleport()
     if not isAutoEventEnabled then return end
     if not eventsFolder then return end
@@ -50,14 +50,18 @@ local function checkAndTeleport()
     local foundEvent = nil
     for _, child in ipairs(eventsFolder:GetChildren()) do
         local childName = child.Name
-        -- Pengecekan ketat: Hanya valid jika nama persis cocok dengan salah satu key di tabel eventLocations
-        if eventLocations[childName] then
+        
+        -- SYARAT KETAT: 
+        -- 1. Harus ada di dalam tabel data event utama kita.
+        -- 2. Nama string-nya wajib berakhiran persis dengan "Elemental Event" 
+        --    sehingga "Admin - Galaxy Storm" atau "Storm" biasa akan otomatis diabaikan!
+        if eventLocations[childName] and string.match(childName, "Elemental Event$") then
             foundEvent = childName
             break
         end
     end
     
-    -- Jika ada Event Aktif yang valid dan karakter belum dipindah
+    -- Jika ada Event Element Asli yang Aktif
     if foundEvent and not activeEventName then
         local root = getRoot()
         if root then
@@ -130,7 +134,7 @@ Title.TextSize = 13
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
-local HideBtn = Instance.new("TextButton", Header)
+val HideBtn = Instance.new("TextButton", Header)
 HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
 HideBtn.Size = UDim2.new(0, 25, 0, 25)
 HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -241,14 +245,16 @@ end)
 
 if eventsFolder then
     eventsFolder.ChildAdded:Connect(function(child)
-        if eventLocations[child.Name] then
+        local childName = child.Name
+        if eventLocations[childName] and string.match(childName, "Elemental Event$") then
             task.wait(0.2)
             checkAndTeleport()
         end
     end)
 
     eventsFolder.ChildRemoved:Connect(function(child)
-        if eventLocations[child.Name] then
+        local childName = child.Name
+        if eventLocations[childName] and string.match(childName, "Elemental Event$") then
             task.wait(0.2)
             checkAndTeleport()
         end

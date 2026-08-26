@@ -26,7 +26,7 @@ local eventLocations = {
     }
 }
 
--- Target Single CFrame Teleport
+-- Target Single CFrame Teleport Manual
 local cframeBlizzard = CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862)
 local cframeStorm = CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529)
 local cframeVolcano = CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922)
@@ -42,6 +42,7 @@ local function getRoot()
     return char:WaitForChild("HumanoidRootPart", 5)
 end
 
+-- Fungsi Cek & Teleport Otomatis
 local function checkAndTeleport()
     if not isAutoEventEnabled then return end
     if not eventsFolder then return end
@@ -54,7 +55,7 @@ local function checkAndTeleport()
         end
     end
     
-    -- Jika ada Event Aktif dan belum teleport
+    -- Jika ada Event Aktif dan karakter belum dipindah ke lokasi event
     if foundEvent and not activeEventName then
         local root = getRoot()
         if root then
@@ -68,7 +69,7 @@ local function checkAndTeleport()
             root.CFrame = randomCFrame
         end
         
-    -- Jika Event Selesai / Hilang
+    -- Jika Event sudah selesai / hilang dari folder
     elseif not foundEvent and activeEventName then
         local root = getRoot()
         if root and savedPosition then
@@ -80,7 +81,7 @@ local function checkAndTeleport()
 end
 
 -- ==========================================
--- 1. SETUP UI COMPACT (DIPERBESAR SEDIKIT)
+-- 1. SETUP UI COMPACT
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ElementalIslandUI"
@@ -224,18 +225,31 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
     end
 end)
 
--- Listener Event Folder
+-- ==========================================
+-- 4. BACKGROUND LOOP & EVENT LISTENER
+-- ==========================================
+-- Loop pengecekan otomatis setiap 1 detik untuk mendeteksi event muncul atau habis
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if isAutoEventEnabled then
+            checkAndTeleport()
+        end
+    end
+end)
+
+-- Listener Tambahan (ChildAdded & ChildRemoved)
 if eventsFolder then
     eventsFolder.ChildAdded:Connect(function(child)
         if eventLocations[child.Name] then
-            task.wait(0.5)
+            task.wait(0.2)
             checkAndTeleport()
         end
     end)
 
     eventsFolder.ChildRemoved:Connect(function(child)
         if eventLocations[child.Name] then
-            task.wait(0.5)
+            task.wait(0.2)
             checkAndTeleport()
         end
     end)

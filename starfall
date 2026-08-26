@@ -6,7 +6,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- ==========================================
--- DATA EVENT & C FRAME LOKASI
+-- DATA EVENT & C FRAME LOKASI (EXACT NAME)
 -- ==========================================
 local eventLocations = {
     ["Volcano Elemental Event"] = {
@@ -42,20 +42,22 @@ local function getRoot()
     return char:WaitForChild("HumanoidRootPart", 5)
 end
 
--- Fungsi Cek & Teleport Otomatis
+-- Fungsi Cek & Teleport Otomatis (Strict / Ketat sesuai nama persis)
 local function checkAndTeleport()
     if not isAutoEventEnabled then return end
     if not eventsFolder then return end
     
     local foundEvent = nil
     for _, child in ipairs(eventsFolder:GetChildren()) do
-        if eventLocations[child.Name] then
-            foundEvent = child.Name
+        local childName = child.Name
+        -- Pengecekan ketat: Hanya valid jika nama persis cocok dengan salah satu key di tabel eventLocations
+        if eventLocations[childName] then
+            foundEvent = childName
             break
         end
     end
     
-    -- Jika ada Event Aktif dan karakter belum dipindah ke lokasi event
+    -- Jika ada Event Aktif yang valid dan karakter belum dipindah
     if foundEvent and not activeEventName then
         local root = getRoot()
         if root then
@@ -69,7 +71,7 @@ local function checkAndTeleport()
             root.CFrame = randomCFrame
         end
         
-    -- Jika Event sudah selesai / hilang dari folder
+    -- Jika Event sudah selesai / hilang dari folder, karakter balik ke posisi awal
     elseif not foundEvent and activeEventName then
         local root = getRoot()
         if root and savedPosition then
@@ -228,7 +230,6 @@ end)
 -- ==========================================
 -- 4. BACKGROUND LOOP & EVENT LISTENER
 -- ==========================================
--- Loop pengecekan otomatis setiap 1 detik untuk mendeteksi event muncul atau habis
 task.spawn(function()
     while true do
         task.wait(1)
@@ -238,7 +239,6 @@ task.spawn(function()
     end
 end)
 
--- Listener Tambahan (ChildAdded & ChildRemoved)
 if eventsFolder then
     eventsFolder.ChildAdded:Connect(function(child)
         if eventLocations[child.Name] then

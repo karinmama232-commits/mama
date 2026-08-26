@@ -1,87 +1,99 @@
--- [[ STARFALL GARDENS - pociXkarin GLOBAL EDITION (UPDATED HASHES & COSMIC) ]] --
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-
-local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+local LocalPlayer = Players.LocalPlayer
 
 -- ==========================================
--- FUNGSI GLOBAL & HELPER
+-- DATA EVENT & C FRAME LOKASI
 -- ==========================================
-local function secureClick()
-    pcall(function()
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("ProximityPrompt") then
-                local char = Player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
-                    if dist < 25 then
-                        task.wait(0.2)
-                        fireproximityprompt(obj)
-                    end
-                end
-            end
+local eventLocations = {
+    ["Volcano Elemental Event"] = {
+        CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922),
+        CFrame.new(-829.322937, 69.4343567, 5324.67871, 0.163617462, -2.55531969e-08, -0.986523867, -2.07891926e-08, 1, -2.93501987e-08, 0.986523867, 2.53112393e-08, 0.163617462),
+        CFrame.new(-753.346375, 83.0565262, 5296.89795, -0.277495742, -3.60556562e-08, 0.960726857, -2.23309158e-08, 1, 3.10795123e-08, -0.960726857, -1.28294788e-08, -0.277495742)
+    },
+    ["Storm Elemental Event"] = {
+        CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529),
+        CFrame.new(-942.089539, 54.5860748, 5246.16211, -0.443312645, -2.2901796e-08, -0.896367073, 2.5911937e-09, 1, -2.68310902e-08, 0.896367073, -1.42172221e-08, -0.443312645),
+        CFrame.new(-843.828125, 63.0566406, 5376.01855, 0.276559293, -7.75006228e-08, 0.960996866, 6.65151632e-08, 1, 6.15040889e-08, -0.960996866, 4.69113353e-08, 0.276559293)
+    },
+    ["Blizzard Elemental Event"] = {
+        CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862),
+        CFrame.new(-1062.19727, 142.093201, 5585.01758, -0.978403568, -3.10072892e-08, 0.206703663, -3.08190344e-08, 1, 4.13071621e-09, -0.206703663, -2.32889974e-09, -0.978403568),
+        CFrame.new(-1050.10535, 124.093216, 5536.34912, -0.990133822, -8.85865745e-08, 0.140125066, -9.63677493e-08, 1, -4.87450045e-08, -0.140125066, -6.1767615e-08, -0.990133822)
+    }
+}
+
+-- Target Single CFrame Teleport
+local cframeBlizzard = CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862)
+local cframeStorm = CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529)
+local cframeVolcano = CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922)
+
+-- Variables State Auto Event
+local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
+local savedPosition = nil
+local activeEventName = nil
+local isAutoEventEnabled = false
+
+local function getRoot()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart", 5)
+end
+
+local function checkAndTeleport()
+    if not isAutoEventEnabled then return end
+    if not eventsFolder then return end
+    
+    local foundEvent = nil
+    for eventName, _ in pairs(eventLocations) do
+        if eventsFolder:FindFirstChild(eventName) then
+            foundEvent = eventName
+            break
         end
-    end)
-end
-
--- Helper: Eksekusi berulang selama 'duration' detik
-local function repeatActionForDuration(duration, actionFunc)
-    local startTime = tick()
-    while tick() - startTime < duration do
-        pcall(actionFunc)
-        task.wait(0.1)
     end
-end
-
--- Helper: Interaksi (Klik) berulang selama durasi tertentu
-local function interactForDuration(duration)
-    local startTime = tick()
-    while tick() - startTime < duration do
-        secureClick()
-        task.wait(0.1)
+    
+    -- Jika ada Event Aktif dan belum teleport
+    if foundEvent and not activeEventName then
+        local root = getRoot()
+        if root then
+            savedPosition = root.CFrame
+            activeEventName = foundEvent
+            
+            -- Pilih 1 CFrame secara acak dari 3 lokasi event tersebut
+            local coords = eventLocations[foundEvent]
+            local randomCFrame = coords[math.random(1, #coords)]
+            
+            root.CFrame = randomCFrame
+        end
+        
+    -- Jika Event Selesai / Hilang
+    elseif not foundEvent and activeEventName then
+        local root = getRoot()
+        if root and savedPosition then
+            root.CFrame = savedPosition
+        end
+        savedPosition = nil
+        activeEventName = nil
     end
-end
-
--- Remote Actions (Spam 5 Detik)
-local function equipRod()
-    repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/33c52bd98522f3f7719dc125da413c5b9ac69866e4bdae73c8dc7c101dbdc2c6")
-        RE_Equip:FireServer(1)
-    end)
-end
-
-local function unequipRod()
-    repeatActionForDuration(5, function()
-        local RE_Unequip = Net:WaitForChild("RE/99c9a5c7eb276de5c645e9526a46526c285b6fe4725285f124f15ac6d369c930")
-        RE_Unequip:FireServer()
-    end)
-end
-
-local function equipStarFragment()
-    repeatActionForDuration(5, function()
-        local RE_Equip = Net:WaitForChild("RE/33c52bd98522f3f7719dc125da413c5b9ac69866e4bdae73c8dc7c101dbdc2c6")
-        RE_Equip:FireServer(2)
-    end)
 end
 
 -- ==========================================
 -- 1. SETUP UI COMPACT
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StarfallGardensUI"
+ScreenGui.Name = "ElementalIslandUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
 local IconButton = Instance.new("TextButton")
-IconButton.Name = "StarfallIcon"
+IconButton.Name = "ElementalIcon"
 IconButton.Parent = ScreenGui
 IconButton.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
 IconButton.Position = UDim2.new(0, 15, 0.5, -22)
 IconButton.Size = UDim2.new(0, 45, 0, 45)
-IconButton.Text = "⭐"
+IconButton.Text = "⚡"
 IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 IconButton.TextSize = 25
 IconButton.Active = true
@@ -89,7 +101,7 @@ IconButton.Draggable = true
 Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "StarfallMain"
+MainFrame.Name = "ElementalMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
 MainFrame.BackgroundTransparency = 0.1
@@ -109,7 +121,7 @@ local Title = Instance.new("TextLabel", Header)
 Title.Size = UDim2.new(0.6, 0, 1, 0)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "Starfall Gardens ⭐"
+Title.Text = "Elemental Island ⚡"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 13
 Title.Font = Enum.Font.GothamBold
@@ -137,20 +149,9 @@ CloseBtn.TextSize = 16
 CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- State Variables
-local isCosmic = false
-local isCharmRunning = false
-local isFishing = false
-local isX2 = false
-local isFishingPaused = false
-
-local function resetAll()
-    isCosmic = false; isCharmRunning = false; isFishing = false; isX2 = false; isFishingPaused = false
-end
-
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
-CloseBtn.MouseButton1Click:Connect(function() resetAll() ScreenGui:Destroy() end)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local function styleBtn(b, fSize)
     b.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
@@ -162,214 +163,79 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. TOMBOL & LOGIKA (BARIS ATAS)
+-- 2. TOMBOL TELEPORT
 -- ==========================================
-local BtnCosmic = Instance.new("TextButton", MainFrame)
-BtnCosmic.Size = UDim2.new(0, 95, 0, 28)
-BtnCosmic.Position = UDim2.new(0, 10, 0, 45)
-BtnCosmic.Text = "COSMIC"
-styleBtn(BtnCosmic, 9)
+local BtnBlizzard = Instance.new("TextButton", MainFrame)
+BtnBlizzard.Size = UDim2.new(0, 95, 0, 28)
+BtnBlizzard.Position = UDim2.new(0, 10, 0, 45)
+BtnBlizzard.Text = "BLIZZARD"
+styleBtn(BtnBlizzard, 9)
 
-local BtnCharm = Instance.new("TextButton", MainFrame)
-BtnCharm.Size = UDim2.new(0, 95, 0, 28)
-BtnCharm.Position = UDim2.new(0, 115, 0, 45)
-BtnCharm.Text = "CHARM"
-styleBtn(BtnCharm, 9)
+local BtnStorm = Instance.new("TextButton", MainFrame)
+BtnStorm.Size = UDim2.new(0, 95, 0, 28)
+BtnStorm.Position = UDim2.new(0, 115, 0, 45)
+BtnStorm.Text = "STORM"
+styleBtn(BtnStorm, 9)
 
--- Cosmic (Pengganti Auto Sell) - Loop 2 Jam 1 Menit
-BtnCosmic.MouseButton1Click:Connect(function()
-    isCosmic = not isCosmic
-    BtnCosmic.BackgroundTransparency = isCosmic and 0 or 0.4
-    if isCosmic then
-        task.spawn(function()
-            local RE_Cosmic = Net:WaitForChild("RE/8440c644d59e8e62532793c51a2eb7f0b0ff64defaf67aebaee389897b5406f4")
-            
-            while isCosmic do
-                -- 1. Pause mancing jika sedang aktif
-                local wasFishingActive = isFishing
-                if wasFishingActive then
-                    isFishingPaused = true
-                    task.wait(3)
-                end
+local BtnVolcano = Instance.new("TextButton", MainFrame)
+BtnVolcano.Size = UDim2.new(0, 200, 0, 28)
+BtnVolcano.Position = UDim2.new(0, 10, 0, 80)
+BtnVolcano.Text = "VOLCANO"
+styleBtn(BtnVolcano, 9)
 
-                -- 2. Unequip rod
-                unequipRod()
-                task.wait(2)
-
-                -- 3. Pegang Star Fragment
-                equipStarFragment()
-                task.wait(2)
-
-                -- 4. Trigger awal Cosmic (Azorath 1, 1)
-                pcall(function()
-                    RE_Cosmic:FireServer("Azorath", 1, 1)
-                end)
-                task.wait(2)
-
-                -- 5. Spam trigger kedua (Azorath 1, 2) - 10x dalam 5 detik
-                local startTime = tick()
-                while tick() - startTime < 5 do
-                    pcall(function()
-                        RE_Cosmic:FireServer("Azorath", 1, 2)
-                    end)
-                    task.wait(0.5)
-                end
-                task.wait(2)
-
-                -- 6. Un-equip / Tutup Star Fragment
-                unequipRod()
-                task.wait(2)
-
-                -- 7. Pegang pancing kembali
-                equipRod()
-                task.wait(2)
-
-                -- 8. Resume mancing
-                if wasFishingActive and isFishing then
-                    task.wait(3)
-                    isFishingPaused = false
-                end
-
-                -- Loop 2 Jam 1 Menit (7260 Detik)
-                for i = 7260, 1, -1 do
-                    if not isCosmic then break end
-                    task.wait(1)
-                end
-            end
-        end)
-    end
+BtnBlizzard.MouseButton1Click:Connect(function()
+    local root = getRoot()
+    if root then root.CFrame = cframeBlizzard end
 end)
 
--- Charm
-BtnCharm.MouseButton1Click:Connect(function()
-    if isCharmRunning then return end
-    isCharmRunning = true
-    BtnCharm.BackgroundTransparency = 0
+BtnStorm.MouseButton1Click:Connect(function()
+    local root = getRoot()
+    if root then root.CFrame = cframeStorm end
+end)
 
-    task.spawn(function()
-        local RF_Charm = Net:WaitForChild("RF/decea9bc302c71da797a814ef41c18dea1cb48e0ebc25eed6b9a1b834eb8dfd7")
-        for sec = 1, 20 do
-            for i = 1, 5 do
-                pcall(function() RF_Charm:InvokeServer(21) end)
-            end
-            task.wait(1)
+BtnVolcano.MouseButton1Click:Connect(function()
+    local root = getRoot()
+    if root then root.CFrame = cframeVolcano end
+end)
+
+-- ==========================================
+-- 3. TOMBOL AUTO EVENT
+-- ==========================================
+local BtnAutoEvent = Instance.new("TextButton", MainFrame)
+BtnAutoEvent.Size = UDim2.new(0, 200, 0, 28)
+BtnAutoEvent.Position = UDim2.new(0, 10, 0, 118)
+BtnAutoEvent.Text = "AUTO EVENT"
+styleBtn(BtnAutoEvent, 10)
+
+BtnAutoEvent.MouseButton1Click:Connect(function()
+    isAutoEventEnabled = not isAutoEventEnabled
+    BtnAutoEvent.BackgroundTransparency = isAutoEventEnabled and 0 or 0.4
+    
+    if isAutoEventEnabled then
+        checkAndTeleport()
+    else
+        if savedPosition then
+            local root = getRoot()
+            if root then root.CFrame = savedPosition end
         end
-        isCharmRunning = false
-        BtnCharm.BackgroundTransparency = 0.4
+        savedPosition = nil
+        activeEventName = nil
+    end
+end)
+
+-- Listener Event Folder
+if eventsFolder then
+    eventsFolder.ChildAdded:Connect(function(child)
+        if eventLocations[child.Name] then
+            task.wait(0.5)
+            checkAndTeleport()
+        end
     end)
-end)
 
--- ==========================================
--- 3. TOMBOL & LOGIKA (BARIS TENGAH)
--- ==========================================
-local BtnFishing = Instance.new("TextButton", MainFrame)
-BtnFishing.Size = UDim2.new(0, 95, 0, 28)
-BtnFishing.Position = UDim2.new(0, 10, 0, 80)
-BtnFishing.Text = "FISHING"
-styleBtn(BtnFishing, 9)
-
-local BtnX2 = Instance.new("TextButton", MainFrame)
-BtnX2.Size = UDim2.new(0, 95, 0, 28)
-BtnX2.Position = UDim2.new(0, 115, 0, 80)
-BtnX2.Text = "X2"
-styleBtn(BtnX2, 9)
-
--- Fishing
-BtnFishing.MouseButton1Click:Connect(function()
-    isFishing = not isFishing
-    BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
-    if isFishing then
-        task.spawn(function()
-            local RF_Fish1 = Net:WaitForChild("RF/5ab7cc5aac159478af0552b781897e384a4da8059444be12bc6cb7a651a1245d")
-            local RF_Fish2 = Net:WaitForChild("RF/1632b1006790791e103fc664827d699dd5cf8f511fc6a55e26147e5c468d3f51")
-            local RE_Catch = Net:WaitForChild("RE/43351bbe9492e3dc0c8159f4e0d04764cdb9913617b0a743191aa0cb57f46e40")
-            
-            while isFishing do
-                if not isFishingPaused then
-                    pcall(function()
-                        RF_Fish1:InvokeServer()
-                        task.wait(0.01)
-                        RF_Fish2:InvokeServer(-167.33497619628906, 0.8356398731793021, 1787303509.075809)
-                        task.wait(0.08)
-                        RE_Catch:FireServer()
-                        RE_Catch:FireServer()
-                        RE_Catch:FireServer()
-                    end)
-                end
-                task.wait(0.05)
-            end
-        end)
-    end
-end)
-
--- X2 Logic
-BtnX2.MouseButton1Click:Connect(function()
-    isX2 = not isX2
-    BtnX2.BackgroundTransparency = isX2 and 0 or 0.4
-    if isX2 then
-        task.spawn(function()
-            while isX2 do
-                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local wasFishingActive = isFishing
-                    if wasFishingActive then
-                        isFishingPaused = true
-                        task.wait(5)
-                    end
-                    
-                    unequipRod()
-                    
-                    local saved = hrp.CFrame
-                    task.wait(0.5)
-                    
-                    hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
-                    task.wait(1.5)
-                    
-                    equipStarFragment()
-                    interactForDuration(3)
-                    task.wait(1)
-                    
-                    equipStarFragment()
-                    interactForDuration(4)
-                    task.wait(1)
-                    
-                    equipStarFragment()
-                    interactForDuration(5)
-                    
-                    task.wait(0.5)
-                    
-                    if hrp then hrp.CFrame = saved end
-                    task.wait(0.5)
-                    
-                    equipRod()
-                    
-                    if wasFishingActive and isFishing then
-                        task.wait(5)
-                        isFishingPaused = false
-                    end
-                end
-                
-                for i = 7260, 1, -1 do 
-                    if not isX2 then break end 
-                    task.wait(1) 
-                end
-            end
-        end)
-    end
-end)
-
--- ==========================================
--- 4. TOMBOL TELEPORT (BARIS BAWAH)
--- ==========================================
-local BtnTeleport = Instance.new("TextButton", MainFrame)
-BtnTeleport.Size = UDim2.new(0, 200, 0, 28)
-BtnTeleport.Position = UDim2.new(0, 10, 0, 118)
-BtnTeleport.Text = "TELEPORT STARFALL"
-styleBtn(BtnTeleport, 10)
-
-BtnTeleport.MouseButton1Click:Connect(function()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then 
-        hrp.CFrame = CFrame.new(-28371.5762, -154.020416, -8135.30469, -0.794967532, -3.61108086e-08, 0.606652021, -7.83715279e-08, 1, -4.31746905e-08, -0.606652021, -8.18667232e-08, -0.794967532)
-    end
-end)
+    eventsFolder.ChildRemoved:Connect(function(child)
+        if eventLocations[child.Name] then
+            task.wait(0.5)
+            checkAndTeleport()
+        end
+    end)
+end

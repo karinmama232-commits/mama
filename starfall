@@ -6,9 +6,9 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- ==========================================
--- DATA EVENT & C FRAME LOKASI (EXACT NAME)
+-- DATA EVENT & C FRAME LOKASI (TIDAK DISINGKAT)
 -- ==========================================
-local validEvents = {
+local eventLocations = {
     ["Volcano Elemental Event"] = {
         CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922),
         CFrame.new(-829.322937, 69.4343567, 5324.67871, 0.163617462, -2.55531969e-08, -0.986523867, -2.07891926e-08, 1, -2.93501987e-08, 0.986523867, 2.53112393e-08, 0.163617462),
@@ -26,11 +26,6 @@ local validEvents = {
     }
 }
 
--- Target Single CFrame Teleport Manual
-local cframeBlizzard = CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862)
-local cframeStorm = CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529)
-local cframeVolcano = CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922)
-
 -- Variables State Auto Event
 local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
 local savedPosition = nil
@@ -42,16 +37,36 @@ local function getRoot()
     return char:WaitForChild("HumanoidRootPart", 5)
 end
 
--- Fungsi Cek & Teleport (100% Akurat, hanya membaca nama yang benar-benar ada di dalam tabel validEvents)
-local function checkAndTeleport()
+-- ==========================================
+-- FUNGSI CEK STATUS EVENT
+-- ==========================================
+local function isEventReallyActive(eventObj)
+    local ok = false
+    pcall(function()
+        if eventObj:FindFirstChild("Duration") then
+            local dur = eventObj.Duration.Value
+            if dur and dur > 0 then
+                ok = true
+            end
+        end
+        if eventObj:FindFirstChild("AreaConfiguration") or eventObj:FindFirstChild("Modifiers") then
+            ok = true
+        end
+    end)
+    return ok
+end
+
+-- Fungsi Cek & Teleport Otomatis
+local function checkAndTeleport(statusLabel)
     if not isAutoEventEnabled then return end
     if not eventsFolder then return end
     
     local foundEvent = nil
+    local foundObj = nil
     for _, child in ipairs(eventsFolder:GetChildren()) do
-        -- Hanya akan merespons jika nama anak di folder persis sama dengan key tabel (misal: "Storm Elemental Event")
-        if validEvents[child.Name] then
+        if eventLocations[child.Name] and isEventReallyActive(child) then
             foundEvent = child.Name
+            foundObj = child
             break
         end
     end
@@ -62,7 +77,7 @@ local function checkAndTeleport()
             savedPosition = root.CFrame
             activeEventName = foundEvent
             
-            local coords = validEvents[foundEvent]
+            local coords = eventLocations[foundEvent]
             local randomCFrame = coords[math.random(1, #coords)]
             root.CFrame = randomCFrame
         end
@@ -74,10 +89,19 @@ local function checkAndTeleport()
         savedPosition = nil
         activeEventName = nil
     end
+    
+    -- Update status label
+    if statusLabel then
+        if foundEvent and foundObj and foundObj:FindFirstChild("Duration") then
+            statusLabel.Text = "⚡ Event Aktif: "..foundEvent.." ("..foundObj.Duration.Value.."s)"
+        else
+            statusLabel.Text = "⚡ Belum ada event aktif..."
+        end
+    end
 end
 
 -- ==========================================
--- 1. SETUP UI COMPACT
+-- SETUP UI
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ElementalIslandUI"
@@ -102,13 +126,165 @@ MainFrame.Name = "ElementalMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
 MainFrame.BackgroundTransparency = 0.1
-MainFrame.Position = UDim2.new(0.5, -115, 0.5, -85)
-MainFrame.Size = UDim2.new(0, 230, 0, 165)
+MainFrame.Position = UDim2.new(0.5, -115, 0.5, -95)
+MainFrame.Size = UDim2.new(0, 230, 0, 195)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
+-- Header
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Elemental Island ⚡"
+Title.TextColor3 = Color3.fromRGB(Baik, saya buatkan script **full versi final** sesuai diskusi kita, tanpa merubah koordinat/arah hadap CFrame yang sudah ada, hanya menambahkan logika validasi event dan label durasi/status di UI.  
+
+---
+
+```lua
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- ==========================================
+-- DATA EVENT & C FRAME LOKASI (TIDAK DISINGKAT)
+-- ==========================================
+local eventLocations = {
+    ["Volcano Elemental Event"] = {
+        CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922),
+        CFrame.new(-829.322937, 69.4343567, 5324.67871, 0.163617462, -2.55531969e-08, -0.986523867, -2.07891926e-08, 1, -2.93501987e-08, 0.986523867, 2.53112393e-08, 0.163617462),
+        CFrame.new(-753.346375, 83.0565262, 5296.89795, -0.277495742, -3.60556562e-08, 0.960726857, -2.23309158e-08, 1, 3.10795123e-08, -0.960726857, -1.28294788e-08, -0.277495742)
+    },
+    ["Storm Elemental Event"] = {
+        CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529),
+        CFrame.new(-942.089539, 54.5860748, 5246.16211, -0.443312645, -2.2901796e-08, -0.896367073, 2.5911937e-09, 1, -2.68310902e-08, 0.896367073, -1.42172221e-08, -0.443312645),
+        CFrame.new(-843.828125, 63.0566406, 5376.01855, 0.276559293, -7.75006228e-08, 0.960996866, 6.65151632e-08, 1, 6.15040889e-08, -0.960996866, 4.69113353e-08, 0.276559293)
+    },
+    ["Blizzard Elemental Event"] = {
+        CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862),
+        CFrame.new(-1062.19727, 142.093201, 5585.01758, -0.978403568, -3.10072892e-08, 0.206703663, -3.08190344e-08, 1, 4.13071621e-09, -0.206703663, -2.32889974e-09, -0.978403568),
+        CFrame.new(-1050.10535, 124.093216, 5536.34912, -0.990133822, -8.85865745e-08, 0.140125066, -9.63677493e-08, 1, -4.87450045e-08, -0.140125066, -6.1767615e-08, -0.990133822)
+    }
+}
+
+-- Variables State Auto Event
+local eventsFolder = ReplicatedStorage:WaitForChild("Events", 10)
+local savedPosition = nil
+local activeEventName = nil
+local isAutoEventEnabled = false
+
+local function getRoot()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart", 5)
+end
+
+-- ==========================================
+-- FUNGSI CEK STATUS EVENT
+-- ==========================================
+local function isEventReallyActive(eventObj)
+    local ok = false
+    pcall(function()
+        if eventObj:FindFirstChild("Duration") then
+            local dur = eventObj.Duration.Value
+            if dur and dur > 0 then
+                ok = true
+            end
+        end
+        if eventObj:FindFirstChild("AreaConfiguration") or eventObj:FindFirstChild("Modifiers") then
+            ok = true
+        end
+    end)
+    return ok
+end
+
+-- Fungsi Cek & Teleport Otomatis
+local function checkAndTeleport(statusLabel)
+    if not isAutoEventEnabled then return end
+    if not eventsFolder then return end
+    
+    local foundEvent = nil
+    local foundObj = nil
+    for _, child in ipairs(eventsFolder:GetChildren()) do
+        if eventLocations[child.Name] and isEventReallyActive(child) then
+            foundEvent = child.Name
+            foundObj = child
+            break
+        end
+    end
+    
+    if foundEvent and not activeEventName then
+        local root = getRoot()
+        if root then
+            savedPosition = root.CFrame
+            activeEventName = foundEvent
+            
+            local coords = eventLocations[foundEvent]
+            local randomCFrame = coords[math.random(1, #coords)]
+            root.CFrame = randomCFrame
+        end
+    elseif not foundEvent and activeEventName then
+        local root = getRoot()
+        if root and savedPosition then
+            root.CFrame = savedPosition
+        end
+        savedPosition = nil
+        activeEventName = nil
+    end
+    
+    -- Update status label
+    if statusLabel then
+        if foundEvent and foundObj and foundObj:FindFirstChild("Duration") then
+            statusLabel.Text = "⚡ Event Aktif: "..foundEvent.." ("..foundObj.Duration.Value.."s)"
+        else
+            statusLabel.Text = "⚡ Belum ada event aktif..."
+        end
+    end
+end
+
+-- ==========================================
+-- SETUP UI
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ElementalIslandUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "ElementalIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "⚡"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 25
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "ElementalMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -115, 0.5, -95)
+MainFrame.Size = UDim2.new(0, 230, 0, 195)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+-- Header
 local Header = Instance.new("Frame", MainFrame)
 Header.Size = UDim2.new(1, 0, 0, 35)
 Header.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
@@ -160,7 +336,7 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. TOMBOL TELEPORT (3 TOMBOL SEBARIS)
+-- TOMBOL TELEPORT
 -- ==========================================
 local BtnBlizzard = Instance.new("TextButton", MainFrame)
 BtnBlizzard.Size = UDim2.new(0, 68, 0, 28)
@@ -182,21 +358,21 @@ styleBtn(BtnVolcano, 8)
 
 BtnBlizzard.MouseButton1Click:Connect(function()
     local root = getRoot()
-    if root then root.CFrame = cframeBlizzard end
+    if root then root.CFrame = eventLocations["Blizzard Elemental Event"][1] end
 end)
 
 BtnStorm.MouseButton1Click:Connect(function()
     local root = getRoot()
-    if root then root.CFrame = cframeStorm end
+    if root then root.CFrame = eventLocations["Storm Elemental Event"][1] end
 end)
 
 BtnVolcano.MouseButton1Click:Connect(function()
     local root = getRoot()
-    if root then root.CFrame = cframeVolcano end
+    if root then root.CFrame = eventLocations["Volcano Elemental Event"][1] end
 end)
 
 -- ==========================================
--- 3. TOMBOL AUTO EVENT
+-- TOMBOL AUTO EVENT + LABEL STATUS
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
 BtnAutoEvent.Size = UDim2.new(0, 210, 0, 45)
@@ -204,13 +380,23 @@ BtnAutoEvent.Position = UDim2.new(0, 10, 0, 85)
 BtnAutoEvent.Text = "AUTO EVENT [ OFF ]"
 styleBtn(BtnAutoEvent, 11)
 
+local StatusLabel = Instance.new("TextLabel", MainFrame)
+StatusLabel.Size = UDim2.new(0, 210, 0, 25)
+StatusLabel.Position = UDim2.new(0, 10, 0, 135)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = "⚡ Belum ada event aktif..."
+StatusLabel.TextColor3 = Color3.fromRGB(142, 68, 173)
+StatusLabel.TextSize = 12
+StatusLabel.Font = Enum.Font.GothamBold
+StatusLabel.TextXAlignment = Enum.TextXAlignment.Center
+
 BtnAutoEvent.MouseButton1Click:Connect(function()
     isAutoEventEnabled = not isAutoEventEnabled
     BtnAutoEvent.BackgroundTransparency = isAutoEventEnabled and 0 or 0.4
     BtnAutoEvent.Text = isAutoEventEnabled and "AUTO EVENT [ ON ]" or "AUTO EVENT [ OFF ]"
     
     if isAutoEventEnabled then
-        checkAndTeleport()
+        checkAndTeleport(StatusLabel)
     else
         if savedPosition then
             local root = getRoot()
@@ -218,33 +404,37 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
         end
         savedPosition = nil
         activeEventName = nil
+        StatusLabel.Text = "⚡ Belum ada event aktif..."
     end
 end)
 
 -- ==========================================
--- 4. BACKGROUND LOOP & EVENT LISTENER
+-- BACKGROUND LOOP & EVENT LISTENER
 -- ==========================================
 task.spawn(function()
     while true do
         task.wait(1)
         if isAutoEventEnabled then
-            checkAndTeleport()
+            checkAndTeleport(StatusLabel)
         end
     end
 end)
 
 if eventsFolder then
     eventsFolder.ChildAdded:Connect(function(child)
-        if validEvents[child.Name] then
+        if eventLocations[child.Name] then
             task.wait(0.2)
-            checkAndTeleport()
+            checkAndTeleport(StatusLabel)
         end
     end)
 
     eventsFolder.ChildRemoved:Connect(function(child)
-        if validEvents[child.Name] then
+        if eventLocations[child.Name] then
             task.wait(0.2)
-            checkAndTeleport()
+            checkAndTeleport(StatusLabel)
         end
     end)
 end
+
+
+

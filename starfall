@@ -1,4 +1,4 @@
--- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU (FINAL REVISED) ]] --
+-- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU (FULL REVISED) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -89,7 +89,7 @@ MainFrame.Name = "EventMain"
 MainFrame.BackgroundColor3 = Color3.fromRGB(240, 248, 255)
 MainFrame.BackgroundTransparency = 0.05
 MainFrame.Position = UDim2.new(0.5, -130, 0.5, -100)
-MainFrame.Size = UDim2.new(0, 260, 0, 205)
+MainFrame.Size = UDim2.new(0, 260, 0, 215)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -171,7 +171,7 @@ BtnStorm.MouseButton1Click:Connect(function() teleportRandom("Storm") end)
 BtnVolcano.MouseButton1Click:Connect(function() teleportRandom("Volcano") end)
 
 -- ==========================================
--- 4. TOMBOL AUTO EVENT & INFO LABEL (DIREVISI)
+-- 4. TOMBOL AUTO EVENT & INFO LABEL (FONT DIPERBESAR & HH:MM:SS)
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
 BtnAutoEvent.Size = UDim2.new(0, 244, 0, 32)
@@ -179,15 +179,15 @@ BtnAutoEvent.Position = UDim2.new(0, 8, 0, 74)
 BtnAutoEvent.Text = "AUTO EVENT: OFF"
 styleBtn(BtnAutoEvent, 11)
 
--- Label Informasi (Font Waktu Lebih Besar, Jelas & Rapi)
+-- Label Informasi (Ukuran font dinaikkan 2 level -> TextSize = 15)
 local InfoLabel = Instance.new("TextLabel", MainFrame)
-InfoLabel.Size = UDim2.new(0, 244, 0, 85)
+InfoLabel.Size = UDim2.new(0, 244, 0, 95)
 InfoLabel.Position = UDim2.new(0, 8, 0, 112)
 InfoLabel.BackgroundColor3 = Color3.fromRGB(225, 235, 245)
 InfoLabel.BackgroundTransparency = 0.2
 InfoLabel.Text = "Status: Memuat..."
 InfoLabel.TextColor3 = Color3.fromRGB(20, 20, 20)
-InfoLabel.TextSize = 13
+InfoLabel.TextSize = 15
 InfoLabel.Font = Enum.Font.GothamBold
 InfoLabel.TextWrapped = true
 Instance.new("UICorner", InfoLabel).CornerRadius = UDim.new(0, 6)
@@ -206,7 +206,6 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
         BtnAutoEvent.Text = "AUTO EVENT: OFF"
         BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
         
-        -- Jika dimatikan saat di event, kembalikan ke SaveLoc jika ada
         if savedPosition then
             local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
             if hrp then hrp.CFrame = savedPosition end
@@ -216,7 +215,7 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
     end
 end)
 
--- LOGIKA JADWAL & STATUS WAKTU KONTINU (REAL-TIME)
+-- LOGIKA JADWAL & STATUS WAKTU KONTINU (JAM FORMAT HH:MM:SS)
 task.spawn(function()
     while true do
         local t = os.date("*t")
@@ -228,13 +227,13 @@ task.spawn(function()
         local nextEventName = ""
         local targetHour = 0
 
-        -- Pengecekan Jam Sekarang
+        -- 1. PEMETAAN JAM EVENT (Termasuk Jam 05.00)
         if hour == 1 then activeEvent = "Blizzard"; nextEventName = "Storm"; targetHour = 2
-        elseif hour == 4 then activeEvent = "Storm"; nextEventName = "Volcano"; targetHour = 5
+        elseif hour == 4 or hour == 5 then activeEvent = "Storm"; nextEventName = "Volcano"; targetHour = 6
         elseif hour == 7 then activeEvent = "Volcano"; nextEventName = "Blizzard"; targetHour = 8
         elseif hour == 10 then activeEvent = "Blizzard"; nextEventName = "Storm"; targetHour = 11
-        elseif hour == 13 then activeEvent = "Storm"; nextEventName = "Volcano"; targetHour = 14
-        elseif hour == 16 then activeEvent = "Volcano"; nextEventName = "Blizzard"; targetHour = 17
+        elseif hour == 13 or hour == 14 then activeEvent = "Storm"; nextEventName = "Volcano"; targetHour = 15
+        elseif hour == 16 or hour == 17 then activeEvent = "Volcano"; nextEventName = "Blizzard"; targetHour = 18
         elseif hour == 19 then activeEvent = "Blizzard"; nextEventName = "Storm"; targetHour = 20
         elseif hour == 22 then activeEvent = "Storm"; nextEventName = "Blizzard"; targetHour = 23
         end
@@ -243,30 +242,30 @@ task.spawn(function()
             -- === KONDISI: PAS EVENT BERLANGSUNG ===
             local diffSec = ((targetHour * 3600) - ((hour * 3600) + (minute * 60) + second))
             if diffSec < 0 then diffSec = 0 end
-            local remMin = math.floor(diffSec / 60)
+            
+            local remHrs = math.floor(diffSec / 3600)
+            local remMin = math.floor((diffSec % 3600) / 60)
             local remSec = diffSec % 60
-            local timeStr = string.format("%02d:%02d", remMin, remSec)
+            local timeStr = string.format("%02d:%02d:%02d", remHrs, remMin, remSec)
 
             if isAutoEventRunning then
-                -- Jika baru pertama kali mendeteksi event aktif (kontinu)
                 if currentActiveEvent ~= activeEvent then
                     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                     if hrp then
                         if not savedPosition then
-                            savedPosition = hrp.CFrame -- Simpan lokasi asal
+                            savedPosition = hrp.CFrame
                         end
-                        teleportRandom(activeEvent) -- Teleport ke lokasi event
+                        teleportRandom(activeEvent)
                     end
                     currentActiveEvent = activeEvent
                 end
             end
 
-            InfoLabel.Text = string.format("⚡ EVENT ACTIVE ⚡\n%s Event\n\nSisa Waktu: %s", activeEvent:upper(), timeStr)
+            InfoLabel.Text = string.format("⚡ EVENT ACTIVE ⚡\n%s Event\nSisa Waktu: %s", activeEvent:upper(), timeStr)
             InfoLabel.TextColor3 = Color3.fromRGB(180, 40, 40)
 
         else
-            -- === KONDISI: KETIKA MENUNGGU EVENT (IDLE) ===
-            -- Kembalikan posisi ke SaveLoc jika baru saja selesai event
+            -- === KONDISI: MENUNGGU EVENT (IDLE) ===
             if isAutoEventRunning and savedPosition then
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
@@ -276,16 +275,16 @@ task.spawn(function()
                 currentActiveEvent = nil
             end
 
-            -- Tentukan event berikutnya dan hitung jam targetnya
+            -- Tentukan event berikutnya
             if hour < 1 then nextEventName = "Blizzard"; targetHour = 1
             elseif hour >= 2 and hour < 4 then nextEventName = "Storm"; targetHour = 4
-            elseif hour >= 5 and hour < 7 then nextEventName = "Volcano"; targetHour = 7
+            elseif hour >= 6 and hour < 7 then nextEventName = "Volcano"; targetHour = 7
             elseif hour >= 8 and hour < 10 then nextEventName = "Blizzard"; targetHour = 10
             elseif hour >= 11 and hour < 13 then nextEventName = "Storm"; targetHour = 13
-            elseif hour >= 14 and hour < 16 then nextEventName = "Volcano"; targetHour = 16
-            elseif hour >= 17 and hour < 19 then nextEventName = "Blizzard"; targetHour = 19
+            elseif hour >= 15 and hour < 16 then nextEventName = "Volcano"; targetHour = 16
+            elseif hour >= 18 and hour < 19 then nextEventName = "Blizzard"; targetHour = 19
             elseif hour >= 20 and hour < 22 then nextEventName = "Storm"; targetHour = 22
-            else nextEventName = "Blizzard"; targetHour = 25 -- Jam 23 & 00 menuju jam 1 besoknya
+            else nextEventName = "Blizzard"; targetHour = 25
             end
 
             local targetSec = targetHour * 3600
@@ -293,11 +292,12 @@ task.spawn(function()
             local diffSec = targetSec - currentSec
             if diffSec < 0 then diffSec = 0 end
 
-            local remMin = math.floor(diffSec / 60)
+            local remHrs = math.floor(diffSec / 3600)
+            local remMin = math.floor((diffSec % 3600) / 60)
             local remSec = diffSec % 60
-            local timeStr = string.format("%02d:%02d", remMin, remSec)
+            local timeStr = string.format("%02d:%02d:%02d", remHrs, remMin, remSec)
 
-            InfoLabel.Text = string.format("⏳ WAITING EVENT ⏳\nNext: %s Event\n\nCooldown: %s", nextEventName, timeStr)
+            InfoLabel.Text = string.format("⏳ WAITING EVENT ⏳\nNext: %s Event\nCooldown: %s", nextEventName, timeStr)
             InfoLabel.TextColor3 = Color3.fromRGB(30, 80, 150)
         end
 

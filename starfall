@@ -1,7 +1,6 @@
--- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU ]] --
+-- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU (FIXED) ]] --
 
 local CoreGui = game:GetService("CoreGui")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
@@ -34,6 +33,7 @@ local function getElementalZonesFolder()
     return elementalIsland:FindFirstChild("Zones")
 end
 
+-- Deteksi Ketat: Memastikan objek event benar-benar ada dan berisi (bukan folder kosong/palsu)
 local function getActiveElementalEvent()
     local zones = getElementalZonesFolder()
     if not zones then return nil, nil end
@@ -41,23 +41,26 @@ local function getActiveElementalEvent()
     for eventName, _ in pairs(EVENT_LOCATIONS) do
         local shortName = eventName:gsub(" Elemental Event", "")
         local eventObj = zones:FindFirstChild(shortName) or zones:FindFirstChild(eventName)
-        if eventObj then
+        
+        -- Validasi tambahan: Pastikan objek benar-benar eksis dan memiliki anak/komponen aktif di dalamnya
+        if eventObj and (#eventObj:GetChildren() > 0 or eventObj:IsA("BasePart")) then
             return eventName, eventObj
         end
     end
     return nil, nil
 end
 
-local function teleportToEvent(eventName)
+local function teleportToEventRandom(eventName)
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp and EVENT_LOCATIONS[eventName] then
         local cframes = EVENT_LOCATIONS[eventName]
+        -- Pilih secara acak dari 3 titik koordinat yang tersedia agar tidak numpuk antar akun
         hrp.CFrame = cframes[math.random(1, #cframes)]
     end
 end
 
 -- ==========================================
--- 2. SETUP UI COMPACT (DESIGN MENU)
+-- 2. SETUP UI COMPACT
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ElementalEventUI"
@@ -132,7 +135,7 @@ CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local function styleBtn(b, fSize)
     b.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
-    b.BackgroundTransparency =.3
+    b.BackgroundTransparency = 0.3
     b.TextColor3 = Color3.new(1,1,1)
     b.TextSize = fSize
     b.Font = Enum.Font.GothamBold
@@ -160,9 +163,9 @@ BtnVolcano.Position = UDim2.new(0, 170, 0, 42)
 BtnVolcano.Text = "Volcano"
 styleBtn(BtnVolcano, 9)
 
-BtnBlizzard.MouseButton1Click:Connect(function() teleportToEvent("Blizzard Elemental Event") end)
-BtnStorm.MouseButton1Click:Connect(function() teleportToEvent("Storm Elemental Event") end)
-BtnVolcano.MouseButton1Click:Connect(function() teleportToEvent("Volcano Elemental Event") end)
+BtnBlizzard.MouseButton1Click:Connect(function() teleportToEventRandom("Blizzard Elemental Event") end)
+BtnStorm.MouseButton1Click:Connect(function() teleportToEventRandom("Storm Elemental Event") end)
+BtnVolcano.MouseButton1Click:Connect(function() teleportToEventRandom("Volcano Elemental Event") end)
 
 -- ==========================================
 -- 4. TOMBOL AUTO EVENT & INFORMASI WAKTU
@@ -173,7 +176,6 @@ BtnAutoEvent.Position = UDim2.new(0, 8, 0, 78)
 BtnAutoEvent.Text = "AUTO EVENT: OFF"
 styleBtn(BtnAutoEvent, 10)
 
--- Label Info Waktu & Event Aktif di Bawah Tombol Auto Event
 local InfoLabel = Instance.new("TextLabel", MainFrame)
 InfoLabel.Size = UDim2.new(0, 234, 0, 65)
 InfoLabel.Position = UDim2.new(0, 8, 0, 115)
@@ -186,8 +188,9 @@ InfoLabel.Font = Enum.Font.GothamSemibold
 InfoLabel.TextWrapped = true
 Instance.new("UICorner", InfoLabel).CornerRadius = UDim.new(0, 6)
 
--- Logika Auto Event & Penghitung Waktu Mundur 1 Jam
+-- State Variabel Auto Event
 local isAutoEventRunning = false
+local lastTeleportedEvent = nil -- Variabel pengunci agar tidak teleport terus-menerus (spam)
 
 BtnAutoEvent.MouseButton1Click:Connect(function()
     isAutoEventRunning = not isAutoEventRunning
@@ -196,41 +199,44 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
         BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(39, 174, 96) -- Hijau
     else
         BtnAutoEvent.Text = "AUTO EVENT: OFF"
-        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(41, 128, 185) -- Biru asal
+        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(41, 128, 185) -- Biru
+        lastTeleportedEvent = nil
     end
 end)
 
--- Main Loop Thread untuk Auto Teleport dan Update Timer Waktu Global
+-- Main Loop Pengecekan per Detik
 task.spawn(function()
     while true do
-        -- Hitung sisa waktu mundur berbasis jam (durasi event 1 jam, reset di menit :00)
+        -- Hitung Sisa Waktu Global (Berbasis durasi 1 jam, reset di menit :00)
         local currentTime = os.time()
         local currentMinute = tonumber(os.date("%M", currentTime))
         local currentSecond = tonumber(os.date("%S", currentTime))
         
-        -- Sisa detik menuju pergantian jam berikutnya (misal jam 17:30 ke 18:00 sisa 30 menit)
         local remainingSeconds = ((59 - currentMinute) * 60) + (60 - currentSecond)
         local minutesLeft = math.floor(remainingSeconds / 60)
         local secondsLeft = remainingSeconds % 60
         local timeString = string.format("%02d:%02d", minutesLeft, secondsLeft)
 
-        -- Cek Status Event di Workspace
+        -- Cek Event Aktif secara Real-Time Tiap Detik dengan Validasi Ketat
         local eventName, eventObj = getActiveElementalEvent()
         
         if eventName then
             local cleanName = eventName:gsub(" Elemental Event", "")
             InfoLabel.Text = "Event Aktif: " .. cleanName .. "\nSisa Waktu: " .. timeString
             
-            -- Jika Auto Event aktif, lakukan teleport otomatis sekali per kemunculan event
+            -- Logika Auto Teleport Random SEKALI SAJA saat event baru terdeteksi aktif
             if isAutoEventRunning then
-                teleportToEvent(eventName)
-                -- Beri jeda agar tidak spam teleport terus-menerus dalam satu sesi event yang sama
-                task.wait(5)
+                if lastTeleportedEvent ~= eventName then
+                    teleportToEventRandom(eventName)
+                    lastTeleportedEvent = eventName -- Kunci agar tidak teleport ulang di event yang sama
+                end
             end
         else
             InfoLabel.Text = "Event Aktif: Tidak Ada\nSisa Waktu: " .. timeString
+            -- Jika event sudah hilang / selesai di server, reset pengunci
+            lastTeleportedEvent = nil
         end
 
-        task.wait(1)
+        task.wait(1) -- Cek terus secara stabil setiap 1 detik
     end
 end)

@@ -1,66 +1,61 @@
--- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU (FULL REVISED) ]] --
+-- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU (FIXED) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
--- Hapus UI lama jika ada
-if CoreGui:FindFirstChild("ElementalEventUI") then
-    CoreGui.ElementalEventUI:Destroy()
-end
-
 -- ==========================================
--- 1. SETUP DATA KOORDINAT TERBARU
+-- 1. SETUP DATA KOORDINAT & AUTO EVENT
 -- ==========================================
 local EVENT_LOCATIONS = {
-    ["Blizzard"] = {
-        CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 5.01400059e-08, -0.567719817, -8.12790812e-09, 1, 1.00104096e-07, 0.567719817, 8.70222507e-08, -0.823221862),
-        CFrame.new(-1083.37109, 142.09317, 5610.42871, 0.575388789, -1.13806578e-07, -0.817880034, 5.97021312e-08, 1, -9.71470584e-08, 0.817880034, 7.06814385e-09, 0.575388789),
-        CFrame.new(-1085.59119, 124.093216, 5524.5293, -0.742040634, -4.99897403e-08, -0.670354903, -7.12930728e-08, 1, 4.34488312e-09, 0.670354903, 5.10157392e-08, -0.742040634),
-        CFrame.new(-1048.14624, 124.093216, 5536.87891, -0.998831868, 2.19594476e-08, 0.0483203493, 2.03562198e-08, 1, -3.36712311e-08, -0.0483203493, -3.2648277e-08, -0.998831868),
-        CFrame.new(-1012.52966, 76.6550522, 5507.66357, 0.332822233, -6.76241996e-08, 0.942989588, -3.555974e-08, 1, 8.42631493e-08, -0.942989588, -6.15771114e-08, 0.332822233),
-        CFrame.new(-1018.4176, 76.6326218, 5520.49561, -0.236138597, -1.80350277e-08, 0.971719384, -1.3816666e-08, 1, 1.52023105e-08, -0.971719384, -9.83606974e-09, -0.236138597),
-        CFrame.new(-1035.85352, 76.6607056, 5463.52246, -0.624831975, -9.46411589e-08, 0.780759275, -5.97962924e-08, 1, 7.33625924e-08, -0.780759275, -8.47217907e-10, -0.624831975),
-        CFrame.new(-1071.38953, 76.6337891, 5439.60449, -0.993995488, 3.18408944e-08, -0.109420821, 3.71020796e-08, 1, -4.60461358e-08, 0.109420821, -4.98293922e-08, -0.993995488),
-        CFrame.new(-1086.10449, 76.6591492, 5431.98535, -0.922427356, 6.32144603e-09, -0.386170626, 9.30978317e-09, 1, -5.86826898e-09, 0.386170626, -9.0082164e-09, -0.922427356),
-        CFrame.new(-1025.48877, 76.6407547, 5393.51953, 0.866418958, -8.04619749e-09, -0.499317765, 2.38145983e-08, 1, 2.52088395e-08, 0.499317765, -3.37324693e-08, 0.866418958),
-        CFrame.new(-980.327454, 45.8199997, 5352.61279, 0.833204031, -1.20526993e-08, 0.552965701, -1.5210345e-08, 1, 4.47152892e-08, -0.552965701, -4.56677576e-08, 0.833204031)
+    ["Volcano Elemental Event"] = {
+        CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922),
+        CFrame.new(-829.322937, 69.4343567, 5324.67871, 0.163617462, -2.55531969e-08, -0.986523867, -2.07891926e-08, 1, -2.93501987e-08, 0.986523867, 2.53112393e-08, 0.163617462),
+        CFrame.new(-753.346375, 83.0565262, 5296.89795, -0.277495742, -3.60556562e-08, 0.960726857, -2.23309158e-08, 1, 3.10795123e-08, -0.960726857, -1.28294788e-08, -0.277495742)
     },
-    ["Storm"] = {
-        CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, 2.08668691e-08, 0.81498605, 7.65280745e-08, 1, 2.88098949e-08, -0.81498605, 7.90640868e-08, -0.579480529),
-        CFrame.new(-865.918213, 56.0565376, 5289.84277, 0.0663703904, 2.88978086e-08, 0.997795045, 4.97165367e-08, 1, -3.2268666e-08, -0.997795045, 5.17486001e-08, 0.0663703904),
-        CFrame.new(-857.419739, 57.0534821, 5260.3042, -0.562150538, 8.78956552e-09, 0.82703495, -1.77418558e-09, 1, -1.183375e-08, -0.82703495, -8.11966228e-09, -0.562150538),
-        CFrame.new(-936.990112, 54.4527054, 5236.39014, -0.737211466, 5.34758948e-09, -0.6756621, -1.29432625e-08, 1, 2.20369198e-08, 0.6756621, 2.49911416e-08, -0.737211466),
-        CFrame.new(-902.909485, 54.8396606, 5246.67334, -0.999679923, 4.39510955e-10, -0.0252980646, 7.35687511e-10, 1, -1.16981722e-08, 0.0252980646, -1.17130394e-08, -0.999679923),
-        CFrame.new(-921.174683, 66.6255417, 5305.10205, 0.629207432, -1.72348038e-08, -0.777237415, 1.08461595e-08, 1, -1.33940015e-08, 0.777237415, -2.43584731e-12, 0.629207432),
-        CFrame.new(-916.690857, 66.0565872, 5316.10889, -0.730937719, 1.19892762e-08, -0.682444155, -1.96308374e-08, 1, 3.85939209e-08, 0.682444155, 4.16067039e-08, -0.730937719),
-        CFrame.new(-920.681091, 66.0566101, 5434.82422, -0.124135241, 6.17387812e-08, -0.992265284, -2.32161756e-08, 1, 6.51244463e-08, 0.992265284, 3.11208446e-08, -0.124135241),
-        CFrame.new(-930.342041, 66.0565262, 5439.85742, -0.956579328, -4.04126652e-08, -0.291472077, -3.04301331e-08, 1, -3.87818666e-08, 0.291472077, -2.82283974e-08, -0.956579328),
-        CFrame.new(-928.408325, 71.0565262, 5523.31836, 0.518100321, -3.1689563e-08, -0.855319858, -7.6085513e-08, 1, -8.31378912e-08, 0.855319858, 1.0815122e-07, 0.518100321),
-        CFrame.new(-812.494385, 77.0565186, 5417.30469, -0.771766722, 2.99704261e-08, 0.635905743, 1.46847032e-08, 1, -2.93082127e-08, -0.635905743, -1.32810154e-08, -0.771766722),
-        CFrame.new(-840.586853, 63.0565834, 5378.10254, -0.291930556, -3.78715832e-08, 0.956439495, 4.27722711e-08, 1, 5.26516502e-08, -0.956439495, 5.62797169e-08, -0.291930556)
+    ["Storm Elemental Event"] = {
+        CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529),
+        CFrame.new(-942.089539, 54.5860748, 5246.16211, -0.443312645, -2.2901796e-08, -0.896367073, 2.5911937e-09, 1, -2.68310902e-08, 0.896367073, -1.42172221e-08, -0.443312645),
+        CFrame.new(-843.828125, 63.0566406, 5376.01855, 0.276559293, -7.75006228e-08, 0.960996866, 6.65151632e-08, 1, 6.15040889e-08, -0.960996866, 4.69113353e-08, 0.276559293)
     },
-    ["Volcano"] = {
-        CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, 1.15431931e-08, -0.913912177, 2.03676844e-08, 1, 3.5842691e-09, 0.913912177, -1.71593779e-08, -0.405911922),
-        CFrame.new(-814.013428, 70.5277481, 5332.54932, 0.827399492, -8.93539251e-08, -0.561613858, 5.38849783e-08, 1, -7.97158464e-08, 0.561613858, 3.56942991e-08, 0.827399492),
-        CFrame.new(-798.008728, 59.5307808, 5264.39893, -0.900580049, -1.18638454e-07, -0.434690207, -1.02551262e-07, 1, -6.04633712e-08, 0.434690207, -9.87407578e-09, -0.900580049),
-        CFrame.new(-661.255676, 96.3744202, 5371.42334, -0.913787007, 9.14250862e-08, 0.406193733, 1.05247054e-07, 1, 1.16897452e-08, -0.406193733, 5.3432629e-08, -0.913787007),
-        CFrame.new(-659.80365, 95.082016, 5489.74756, 0.586133838, -6.36936059e-09, 0.810214221, -7.05962222e-08, 1, 5.89328017e-08, -0.810214221, -9.17405742e-08, 0.586133838),
-        CFrame.new(-659.938599, 94.9850464, 5477.48926, 0.904582202, 2.21339853e-08, 0.426299244, -5.21595425e-08, 1, 5.87582711e-08, -0.426299244, -7.53872627e-08, 0.904582202),
-        CFrame.new(-637.690369, 95.0463867, 5514.71533, -0.784126759, 1.10267351e-07, 0.6206007, 8.02329438e-08, 1, -7.63043815e-08, -0.6206007, -1.00396829e-08, -0.784126759),
-        CFrame.new(-676.786011, 95.0820618, 5513.25732, -0.970694721, 4.23190514e-08, 0.240315974, 5.03454167e-08, 1, 2.72598673e-08, -0.240315974, 3.85598184e-08, -0.970694721),
-        CFrame.new(-713.085388, 95.0121994, 5538.1875, -0.63991046, 9.67868488e-08, -0.768449485, 3.76978875e-08, 1, 9.45586933e-08, 0.768449485, 3.15401749e-08, -0.63991046),
-        CFrame.new(-729.69574, 98.0565262, 5553.65088, 0.0308181737, -3.25764979e-08, -0.999525011, -2.78704597e-08, 1, -3.34513039e-08, 0.999525011, 2.88881292e-08, 0.0308181737),
-        CFrame.new(-706.079895, 97.8457031, 5403.93799, -0.88868022, 1.68597664e-10, -0.458527505, 4.41148496e-09, 1, -8.1822833e-09, 0.458527505, -9.2942205e-09, -0.88868022),
-        CFrame.new(-720.942383, 106.980019, 5435.2832, 0.0039360947, -1.48099666e-08, -0.999992251, -4.87745355e-09, 1, -1.48292791e-08, 0.999992251, 4.93578511e-09, 0.0039360947)
+    ["Blizzard Elemental Event"] = {
+        CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862),
+        CFrame.new(-1062.19727, 142.093201, 5585.01758, -0.978403568, -3.10072892e-08, 0.206703663, -3.08190344e-08, 1, 4.13071621e-09, -0.206703663, -2.32889974e-09, -0.978403568),
+        CFrame.new(-1050.10535, 124.093216, 5536.34912, -0.990133822, -8.85865745e-08, 0.140125066, -9.63677493e-08, 1, -4.87450045e-08, -0.140125066, -6.1767615e-08, -0.990133822)
     }
 }
 
-local function teleportRandom(eventName)
+local function getElementalZonesFolder()
+    local worldSetup = workspace:FindFirstChild("WorldSetup")
+    if not worldSetup then return nil end
+    local elementalIsland = worldSetup:FindFirstChild("Elemental Island")
+    if not elementalIsland then return nil end
+    return elementalIsland:FindFirstChild("Zones")
+end
+
+-- Deteksi Ketat: Memastikan objek event benar-benar ada dan berisi (bukan folder kosong/palsu)
+local function getActiveElementalEvent()
+    local zones = getElementalZonesFolder()
+    if not zones then return nil, nil end
+
+    for eventName, _ in pairs(EVENT_LOCATIONS) do
+        local shortName = eventName:gsub(" Elemental Event", "")
+        local eventObj = zones:FindFirstChild(shortName) or zones:FindFirstChild(eventName)
+        
+        -- Validasi tambahan: Pastikan objek benar-benar eksis dan memiliki anak/komponen aktif di dalamnya
+        if eventObj and (#eventObj:GetChildren() > 0 or eventObj:IsA("BasePart")) then
+            return eventName, eventObj
+        end
+    end
+    return nil, nil
+end
+
+local function teleportToEventRandom(eventName)
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp and EVENT_LOCATIONS[eventName] then
-        local list = EVENT_LOCATIONS[eventName]
-        hrp.CFrame = list[math.random(1, #list)]
+        local cframes = EVENT_LOCATIONS[eventName]
+        -- Pilih secara acak dari 3 titik koordinat yang tersedia agar tidak numpuk antar akun
+        hrp.CFrame = cframes[math.random(1, #cframes)]
     end
 end
 
@@ -72,8 +67,9 @@ ScreenGui.Name = "ElementalEventUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
-local IconButton = Instance.new("TextButton", ScreenGui)
+local IconButton = Instance.new("TextButton")
 IconButton.Name = "EventIcon"
+IconButton.Parent = ScreenGui
 IconButton.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
 IconButton.Position = UDim2.new(0, 15, 0.5, -22)
 IconButton.Size = UDim2.new(0, 45, 0, 45)
@@ -84,12 +80,13 @@ IconButton.Active = true
 IconButton.Draggable = true
 Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
 
-local MainFrame = Instance.new("Frame", ScreenGui)
+local MainFrame = Instance.new("Frame")
 MainFrame.Name = "EventMain"
+MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(240, 248, 255)
-MainFrame.BackgroundTransparency = 0.05
-MainFrame.Position = UDim2.new(0.5, -130, 0.5, -100)
-MainFrame.Size = UDim2.new(0, 260, 0, 215)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -95)
+MainFrame.Size = UDim2.new(0, 250, 0, 195)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -101,17 +98,17 @@ Header.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
 Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
 
 local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(0.65, 0, 1, 0)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "Elemental Event Auto TP"
+Title.Text = "Elemental Event TP ⚡"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 12
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local HideBtn = Instance.new("TextButton", Header)
-HideBtn.Position = UDim2.new(0.72, 0, 0.15, 0)
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
 HideBtn.Size = UDim2.new(0, 24, 0, 24)
 HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 HideBtn.BackgroundTransparency = 0.4
@@ -138,7 +135,7 @@ CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
 local function styleBtn(b, fSize)
     b.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
-    b.BackgroundTransparency = 0.2
+    b.BackgroundTransparency = 0.3
     b.TextColor3 = Color3.new(1,1,1)
     b.TextSize = fSize
     b.Font = Enum.Font.GothamBold
@@ -146,161 +143,100 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 3. TOMBOL MANUAL TELEPORT
+-- 3. TOMBOL MANUAL TELEPORT (3 SEBARIS)
 -- ==========================================
 local BtnBlizzard = Instance.new("TextButton", MainFrame)
-BtnBlizzard.Size = UDim2.new(0, 75, 0, 28)
-BtnBlizzard.Position = UDim2.new(0, 8, 0, 40)
+BtnBlizzard.Size = UDim2.new(0, 72, 0, 28)
+BtnBlizzard.Position = UDim2.new(0, 8, 0, 42)
 BtnBlizzard.Text = "Blizzard"
-styleBtn(BtnBlizzard, 10)
+styleBtn(BtnBlizzard, 9)
 
 local BtnStorm = Instance.new("TextButton", MainFrame)
-BtnStorm.Size = UDim2.new(0, 75, 0, 28)
-BtnStorm.Position = UDim2.new(0, 92, 0, 40)
+BtnStorm.Size = UDim2.new(0, 72, 0, 28)
+BtnStorm.Position = UDim2.new(0, 89, 0, 42)
 BtnStorm.Text = "Storm"
-styleBtn(BtnStorm, 10)
+styleBtn(BtnStorm, 9)
 
 local BtnVolcano = Instance.new("TextButton", MainFrame)
-BtnVolcano.Size = UDim2.new(0, 75, 0, 28)
-BtnVolcano.Position = UDim2.new(0, 177, 0, 40)
+BtnVolcano.Size = UDim2.new(0, 72, 0, 28)
+BtnVolcano.Position = UDim2.new(0, 170, 0, 42)
 BtnVolcano.Text = "Volcano"
-styleBtn(BtnVolcano, 10)
+styleBtn(BtnVolcano, 9)
 
-BtnBlizzard.MouseButton1Click:Connect(function() teleportRandom("Blizzard") end)
-BtnStorm.MouseButton1Click:Connect(function() teleportRandom("Storm") end)
-BtnVolcano.MouseButton1Click:Connect(function() teleportRandom("Volcano") end)
+BtnBlizzard.MouseButton1Click:Connect(function() teleportToEventRandom("Blizzard Elemental Event") end)
+BtnStorm.MouseButton1Click:Connect(function() teleportToEventRandom("Storm Elemental Event") end)
+BtnVolcano.MouseButton1Click:Connect(function() teleportToEventRandom("Volcano Elemental Event") end)
 
 -- ==========================================
--- 4. TOMBOL AUTO EVENT & INFO LABEL (FONT DIPERBESAR & HH:MM:SS)
+-- 4. TOMBOL AUTO EVENT & INFORMASI WAKTU
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
-BtnAutoEvent.Size = UDim2.new(0, 244, 0, 32)
-BtnAutoEvent.Position = UDim2.new(0, 8, 0, 74)
+BtnAutoEvent.Size = UDim2.new(0, 234, 0, 30)
+BtnAutoEvent.Position = UDim2.new(0, 8, 0, 78)
 BtnAutoEvent.Text = "AUTO EVENT: OFF"
-styleBtn(BtnAutoEvent, 11)
+styleBtn(BtnAutoEvent, 10)
 
--- Label Informasi (Ukuran font dinaikkan 2 level -> TextSize = 15)
 local InfoLabel = Instance.new("TextLabel", MainFrame)
-InfoLabel.Size = UDim2.new(0, 244, 0, 95)
-InfoLabel.Position = UDim2.new(0, 8, 0, 112)
-InfoLabel.BackgroundColor3 = Color3.fromRGB(225, 235, 245)
-InfoLabel.BackgroundTransparency = 0.2
-InfoLabel.Text = "Status: Memuat..."
-InfoLabel.TextColor3 = Color3.fromRGB(20, 20, 20)
-InfoLabel.TextSize = 15
-InfoLabel.Font = Enum.Font.GothamBold
+InfoLabel.Size = UDim2.new(0, 234, 0, 65)
+InfoLabel.Position = UDim2.new(0, 8, 0, 115)
+InfoLabel.BackgroundColor3 = Color3.fromRGB(230, 240, 250)
+InfoLabel.BackgroundTransparency = 0.3
+InfoLabel.Text = "Event Aktif: None\nSisa Waktu: 00:00"
+InfoLabel.TextColor3 = Color3.fromRGB(40, 40, 40)
+InfoLabel.TextSize = 11
+InfoLabel.Font = Enum.Font.GothamSemibold
 InfoLabel.TextWrapped = true
 Instance.new("UICorner", InfoLabel).CornerRadius = UDim.new(0, 6)
 
--- State System
+-- State Variabel Auto Event
 local isAutoEventRunning = false
-local savedPosition = nil
-local currentActiveEvent = nil
+local lastTeleportedEvent = nil -- Variabel pengunci agar tidak teleport terus-menerus (spam)
 
 BtnAutoEvent.MouseButton1Click:Connect(function()
     isAutoEventRunning = not isAutoEventRunning
     if isAutoEventRunning then
         BtnAutoEvent.Text = "AUTO EVENT: ON"
-        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
+        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(39, 174, 96) -- Hijau
     else
         BtnAutoEvent.Text = "AUTO EVENT: OFF"
-        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
-        
-        if savedPosition then
-            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then hrp.CFrame = savedPosition end
-        end
-        savedPosition = nil
-        currentActiveEvent = nil
+        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(41, 128, 185) -- Biru
+        lastTeleportedEvent = nil
     end
 end)
 
--- LOGIKA JADWAL & STATUS WAKTU KONTINU (JAM FORMAT HH:MM:SS)
+-- Main Loop Pengecekan per Detik
 task.spawn(function()
     while true do
-        local t = os.date("*t")
-        local hour = t.hour
-        local minute = t.min
-        local second = t.sec
+        -- Hitung Sisa Waktu Global (Berbasis durasi 1 jam, reset di menit :00)
+        local currentTime = os.time()
+        local currentMinute = tonumber(os.date("%M", currentTime))
+        local currentSecond = tonumber(os.date("%S", currentTime))
+        
+        local remainingSeconds = ((59 - currentMinute) * 60) + (60 - currentSecond)
+        local minutesLeft = math.floor(remainingSeconds / 60)
+        local secondsLeft = remainingSeconds % 60
+        local timeString = string.format("%02d:%02d", minutesLeft, secondsLeft)
 
-        local activeEvent = nil
-        local nextEventName = ""
-        local targetHour = 0
-
-        -- 1. PEMETAAN JAM EVENT (Termasuk Jam 05.00)
-        if hour == 1 then activeEvent = "Blizzard"; nextEventName = "Storm"; targetHour = 2
-        elseif hour == 4 or hour == 5 then activeEvent = "Storm"; nextEventName = "Volcano"; targetHour = 6
-        elseif hour == 7 then activeEvent = "Volcano"; nextEventName = "Blizzard"; targetHour = 8
-        elseif hour == 10 then activeEvent = "Blizzard"; nextEventName = "Storm"; targetHour = 11
-        elseif hour == 13 or hour == 14 then activeEvent = "Storm"; nextEventName = "Volcano"; targetHour = 15
-        elseif hour == 16 or hour == 17 then activeEvent = "Volcano"; nextEventName = "Blizzard"; targetHour = 18
-        elseif hour == 19 then activeEvent = "Blizzard"; nextEventName = "Storm"; targetHour = 20
-        elseif hour == 22 then activeEvent = "Storm"; nextEventName = "Blizzard"; targetHour = 23
-        end
-
-        if activeEvent then
-            -- === KONDISI: PAS EVENT BERLANGSUNG ===
-            local diffSec = ((targetHour * 3600) - ((hour * 3600) + (minute * 60) + second))
-            if diffSec < 0 then diffSec = 0 end
+        -- Cek Event Aktif secara Real-Time Tiap Detik dengan Validasi Ketat
+        local eventName, eventObj = getActiveElementalEvent()
+        
+        if eventName then
+            local cleanName = eventName:gsub(" Elemental Event", "")
+            InfoLabel.Text = "Event Aktif: " .. cleanName .. "\nSisa Waktu: " .. timeString
             
-            local remHrs = math.floor(diffSec / 3600)
-            local remMin = math.floor((diffSec % 3600) / 60)
-            local remSec = diffSec % 60
-            local timeStr = string.format("%02d:%02d:%02d", remHrs, remMin, remSec)
-
+            -- Logika Auto Teleport Random SEKALI SAJA saat event baru terdeteksi aktif
             if isAutoEventRunning then
-                if currentActiveEvent ~= activeEvent then
-                    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                    if hrp then
-                        if not savedPosition then
-                            savedPosition = hrp.CFrame
-                        end
-                        teleportRandom(activeEvent)
-                    end
-                    currentActiveEvent = activeEvent
+                if lastTeleportedEvent ~= eventName then
+                    teleportToEventRandom(eventName)
+                    lastTeleportedEvent = eventName -- Kunci agar tidak teleport ulang di event yang sama
                 end
             end
-
-            InfoLabel.Text = string.format("⚡ EVENT ACTIVE ⚡\n%s Event\nSisa Waktu: %s", activeEvent:upper(), timeStr)
-            InfoLabel.TextColor3 = Color3.fromRGB(180, 40, 40)
-
         else
-            -- === KONDISI: MENUNGGU EVENT (IDLE) ===
-            if isAutoEventRunning and savedPosition then
-                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.CFrame = savedPosition
-                end
-                savedPosition = nil
-                currentActiveEvent = nil
-            end
-
-            -- Tentukan event berikutnya
-            if hour < 1 then nextEventName = "Blizzard"; targetHour = 1
-            elseif hour >= 2 and hour < 4 then nextEventName = "Storm"; targetHour = 4
-            elseif hour >= 6 and hour < 7 then nextEventName = "Volcano"; targetHour = 7
-            elseif hour >= 8 and hour < 10 then nextEventName = "Blizzard"; targetHour = 10
-            elseif hour >= 11 and hour < 13 then nextEventName = "Storm"; targetHour = 13
-            elseif hour >= 15 and hour < 16 then nextEventName = "Volcano"; targetHour = 16
-            elseif hour >= 18 and hour < 19 then nextEventName = "Blizzard"; targetHour = 19
-            elseif hour >= 20 and hour < 22 then nextEventName = "Storm"; targetHour = 22
-            else nextEventName = "Blizzard"; targetHour = 25
-            end
-
-            local targetSec = targetHour * 3600
-            local currentSec = (hour * 3600) + (minute * 60) + second
-            local diffSec = targetSec - currentSec
-            if diffSec < 0 then diffSec = 0 end
-
-            local remHrs = math.floor(diffSec / 3600)
-            local remMin = math.floor((diffSec % 3600) / 60)
-            local remSec = diffSec % 60
-            local timeStr = string.format("%02d:%02d:%02d", remHrs, remMin, remSec)
-
-            InfoLabel.Text = string.format("⏳ WAITING EVENT ⏳\nNext: %s Event\nCooldown: %s", nextEventName, timeStr)
-            InfoLabel.TextColor3 = Color3.fromRGB(30, 80, 150)
+            InfoLabel.Text = "Event Aktif: Tidak Ada\nSisa Waktu: " .. timeString
+            -- Jika event sudah hilang / selesai di server, reset pengunci
+            lastTeleportedEvent = nil
         end
 
-        task.wait(1)
+        task.wait(1) -- Cek terus secara stabil setiap 1 detik
     end
 end)

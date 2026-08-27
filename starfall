@@ -218,7 +218,7 @@ end)
 local EVENTS_LIST = {"Blizzard", "Storm", "Volcano"}
 local EVENT_SLOTS = {1, 4, 7, 10, 13, 16, 19, 22} -- 8 Event per hari (Interval 3 Jam)
 
--- Fungsi mengonversi os.time() UTC ke WIB (+7 Jam)
+-- Konversi os.time() Server (UTC) ke WIB (+7 Jam)
 local function getWIBTime()
     return os.time() + (7 * 3600)
 end
@@ -230,7 +230,7 @@ local function getEventInfoAt(wibTimestamp)
     local currentTotalSec = (tData.hour * 3600) + (tData.min * 60) + tData.sec
 
     -- Anchor: 27 Agustus 2026 Jam 16:00 WIB (Storm)
-    -- Jam 16:00 WIB ada di index slot ke-6 (16 / 3 + 1 = 6)
+    -- Jam 16:00 WIB berada pada slot index ke-6
     local anchorDayStart = os.time({year=2026, month=8, day=27, hour=0, min=0, sec=0})
     local daysDiff = math.floor((startOfDay - anchorDayStart) / 86400)
 

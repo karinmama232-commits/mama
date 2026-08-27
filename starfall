@@ -1,4 +1,4 @@
--- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU (ANCHOR LOGIC REVISED) ]] --
+-- [[ FISH IT - ELEMENTAL EVENT AUTO TELEPORT & MENU ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -65,7 +65,7 @@ local function teleportRandom(eventName)
 end
 
 -- ==========================================
--- 2. SETUP UI COMPACT
+-- 2. SETUP UI COMPACT & STYLING
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ElementalEventUI"
@@ -161,8 +161,7 @@ BtnStorm.Text = "Storm"
 styleBtn(BtnStorm, 10)
 
 local BtnVolcano = Instance.new("TextButton", MainFrame)
-BtnVolcano.Size = UDim2.new(0, 75, 0, 28)
-BtnVolcano.Position = UDim2.new(0, 177, 0, 40)
+BtnVolcano.Size = UDim2.new(0, 177, 0, 40)
 BtnVolcano.Text = "Volcano"
 styleBtn(BtnVolcano, 10)
 
@@ -171,7 +170,7 @@ BtnStorm.MouseButton1Click:Connect(function() teleportRandom("Storm") end)
 BtnVolcano.MouseButton1Click:Connect(function() teleportRandom("Volcano") end)
 
 -- ==========================================
--- 4. TOMBOL AUTO EVENT & INFO LABEL (FONT DIPERBESAR)
+-- 4. TOMBOL AUTO EVENT & INFO LABEL (FONT SIZE 17)
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
 BtnAutoEvent.Size = UDim2.new(0, 244, 0, 32)
@@ -179,7 +178,6 @@ BtnAutoEvent.Position = UDim2.new(0, 8, 0, 74)
 BtnAutoEvent.Text = "AUTO EVENT: OFF"
 styleBtn(BtnAutoEvent, 11)
 
--- Label Informasi (Font size dinaikkan 2 level -> 17)
 local InfoLabel = Instance.new("TextLabel", MainFrame)
 InfoLabel.Size = UDim2.new(0, 244, 0, 95)
 InfoLabel.Position = UDim2.new(0, 8, 0, 112)
@@ -192,7 +190,6 @@ InfoLabel.Font = Enum.Font.GothamBold
 InfoLabel.TextWrapped = true
 Instance.new("UICorner", InfoLabel).CornerRadius = UDim.new(0, 6)
 
--- State System
 local isAutoEventRunning = false
 local savedPosition = nil
 local currentActiveEvent = nil
@@ -216,64 +213,54 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 5. LOGIKA ANCHOR PATOKAN TANGGAL & WAKTU
+-- 5. LOGIKA ANCHOR TIME PERBAIKAN (UTC TO WIB)
 -- ==========================================
 local EVENTS_LIST = {"Blizzard", "Storm", "Volcano"}
-local EVENT_SLOTS = {1, 4, 7, 10, 13, 16, 19, 22} -- 8 slot event per hari
+local EVENT_SLOTS = {1, 4, 7, 10, 13, 16, 19, 22} -- 8 Event per hari (Interval 3 Jam)
 
--- Titik Anchor: 27 Agustus 2026 jam 16:00 WIB adalah Storm
-local ANCHOR_TIMESTAMP = os.time({year=2026, month=8, day=27, hour=16, min=0, sec=0})
-local ANCHOR_EVENT_IDX = 2 -- "Storm" ada di index ke-2 (Blizzard=1, Storm=2, Volcano=3)
-local ANCHOR_SLOT_INDEX = 6 -- Jam 16 adalah slot ke-6 dalam array EVENT_SLOTS
+-- Fungsi mengonversi os.time() UTC ke WIB (+7 Jam)
+local function getWIBTime()
+    return os.time() + (7 * 3600)
+end
 
-local function getEventInfoAt(targetTime)
-    local tData = os.date("*t", targetTime)
+local function getEventInfoAt(wibTimestamp)
+    local tData = os.date("!*t", wibTimestamp)
     local startOfDay = os.time({year=tData.year, month=tData.month, day=tData.day, hour=0, min=0, sec=0})
     
-    -- Cari slot jam yang aktif saat ini atau berikutnya
-    local currentHour = tData.hour
-    local currentMinute = tData.min
-    local currentSecond = tData.sec
-    local currentTotalSec = (currentHour * 3600) + (currentMinute * 60) + currentSecond
+    local currentTotalSec = (tData.hour * 3600) + (tData.min * 60) + tData.sec
+
+    -- Anchor: 27 Agustus 2026 Jam 16:00 WIB (Storm)
+    -- Jam 16:00 WIB ada di index slot ke-6 (16 / 3 + 1 = 6)
+    local anchorDayStart = os.time({year=2026, month=8, day=27, hour=0, min=0, sec=0})
+    local daysDiff = math.floor((startOfDay - anchorDayStart) / 86400)
 
     local activeEvent = nil
-    local nextEventName = ""
     local targetSecTimestamp = 0
 
-    -- Cek apakah sedang berada di dalam rentang jam event (misal durasi event 1 jam per slot)
     for i, slotHour in ipairs(EVENT_SLOTS) do
         local slotStartSec = slotHour * 3600
-        local slotEndSec = (slotHour + 1) * 3600 -- Asumsi durasi event 1 jam
-
-        -- Hitung jenis event menggunakan rumus selisih hari dari anchor
-        local daysDiff = math.floor((startOfDay - os.time({year=2026, month=8, day=27, hour=0, min=0, sec=0})) / 86400)
-        local totalSlotShift = (daysDiff * #EVENT_SLOTS) + (i - ANCHOR_SLOT_INDEX)
-        local eventIdx = ((ANCHOR_EVENT_IDX - 1 + totalSlotShift) % #EVENTS_LIST) + 1
-        local evName = EVENTS_LIST[eventIdx]
+        local slotEndSec = (slotHour + 1) * 3600 -- Event berlangsung 1 jam
 
         if currentTotalSec >= slotStartSec and currentTotalSec < slotEndSec then
-            activeEvent = evName
-            -- Target selesai event ini
+            local totalSlotShift = (daysDiff * #EVENT_SLOTS) + (i - 6)
+            local eventIdx = ((1 + totalSlotShift) % #EVENTS_LIST) + 1
+            activeEvent = EVENTS_LIST[eventIdx]
             targetSecTimestamp = startOfDay + slotEndSec
-            
-            -- Tentukan event berikutnya
-            local nextIdx = (eventIdx % #EVENTS_LIST) + 1
-            nextEventName = EVENTS_LIST[nextIdx]
             break
         end
     end
 
-    return activeEvent, nextEventName, targetSecTimestamp
+    return activeEvent, targetSecTimestamp
 end
 
 task.spawn(function()
     while true do
-        local now = os.time()
-        local activeEvent, nextEventName, targetTimestamp = getEventInfoAt(now)
+        local wibNow = getWIBTime()
+        local activeEvent, targetTimestamp = getEventInfoAt(wibNow)
 
         if activeEvent then
-            -- === KONDISI: EVENT BERLANGSUNG ===
-            local diffSec = targetTimestamp - now
+            -- === EVENT ACTIVE ===
+            local diffSec = targetTimestamp - wibNow
             if diffSec < 0 then diffSec = 0 end
 
             local remHrs = math.floor(diffSec / 3600)
@@ -298,7 +285,7 @@ task.spawn(function()
             InfoLabel.TextColor3 = Color3.fromRGB(180, 40, 40)
 
         else
-            -- === KONDISI: WAITING / COOLDOWN MENUJU EVENT BERIKUTNYA ===
+            -- === WAITING / COOLDOWN ===
             if isAutoEventRunning and savedPosition then
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then
@@ -308,38 +295,36 @@ task.spawn(function()
                 currentActiveEvent = nil
             end
 
-            -- Cari waktu event terdekat berikutnya
-            local tData = os.date("*t", now)
+            local tData = os.date("!*t", wibNow)
             local startOfDay = os.time({year=tData.year, month=tData.month, day=tData.day, hour=0, min=0, sec=0})
             local currentTotalSec = (tData.hour * 3600) + (tData.min * 60) + tData.sec
 
             local nextEventSec = nil
             local nextEvNameFound = "Blizzard"
+            local anchorDayStart = os.time({year=2026, month=8, day=27, hour=0, min=0, sec=0})
 
             for i, slotHour in ipairs(EVENT_SLOTS) do
                 local slotStartSec = slotHour * 3600
                 if slotStartSec > currentTotalSec then
                     nextEventSec = startOfDay + slotStartSec
-                    -- Hitung namanya
-                    local daysDiff = math.floor((startOfDay - os.time({year=2026, month=8, day=27, hour=0, min=0, sec=0})) / 86400)
-                    local totalSlotShift = (daysDiff * #EVENT_SLOTS) + (i - ANCHOR_SLOT_INDEX)
-                    local eventIdx = ((ANCHOR_EVENT_IDX - 1 + totalSlotShift) % #EVENTS_LIST) + 1
+                    local daysDiff = math.floor((startOfDay - anchorDayStart) / 86400)
+                    local totalSlotShift = (daysDiff * #EVENT_SLOTS) + (i - 6)
+                    local eventIdx = ((1 + totalSlotShift) % #EVENTS_LIST) + 1
                     nextEvNameFound = EVENTS_LIST[eventIdx]
                     break
                 end
             end
 
-            -- Jika hari ini sudah habis slotnya, ambil slot pertama besok
             if not nextEventSec then
                 local nextDayStart = startOfDay + 86400
                 nextEventSec = nextDayStart + (EVENT_SLOTS[1] * 3600)
-                local daysDiff = math.floor((nextDayStart - os.time({year=2026, month=8, day=27, hour=0, min=0, sec=0})) / 86400)
-                local totalSlotShift = (daysDiff * #EVENT_SLOTS) + (1 - ANCHOR_SLOT_INDEX)
-                local eventIdx = ((ANCHOR_EVENT_IDX - 1 + totalSlotShift) % #EVENTS_LIST) + 1
+                local daysDiff = math.floor((nextDayStart - anchorDayStart) / 86400)
+                local totalSlotShift = (daysDiff * #EVENT_SLOTS) + (1 - 6)
+                local eventIdx = ((1 + totalSlotShift) % #EVENTS_LIST) + 1
                 nextEvNameFound = EVENTS_LIST[eventIdx]
             end
 
-            local diffSec = nextEventSec - now
+            local diffSec = nextEventSec - wibNow
             if diffSec < 0 then diffSec = 0 end
 
             local remHrs = math.floor(diffSec / 3600)

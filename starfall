@@ -10,7 +10,7 @@ if CoreGui:FindFirstChild("ElementalEventUI") then
 end
 
 -- ==========================================
--- 1. SETUP DATA KOORDINAT TERBARU
+-- 1. DATA KOORDINAT (TETAP/ASLI)
 -- ==========================================
 local EVENT_LOCATIONS = {
     ["Blizzard"] = {
@@ -65,13 +65,14 @@ local function teleportRandom(eventName)
 end
 
 -- ==========================================
--- 2. SETUP UI COMPACT & STYLING
+-- 2. SETUP UI KEMBALI KE TAMPILAN ASLI KAMU
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ElementalEventUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
+-- Icon mengambang asli
 local IconButton = Instance.new("TextButton", ScreenGui)
 IconButton.Name = "EventIcon"
 IconButton.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
@@ -84,6 +85,7 @@ IconButton.Active = true
 IconButton.Draggable = true
 Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
 
+-- Frame Utama asli
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "EventMain"
 MainFrame.BackgroundColor3 = Color3.fromRGB(240, 248, 255)
@@ -95,6 +97,7 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
+-- Header asli
 local Header = Instance.new("Frame", MainFrame)
 Header.Size = UDim2.new(1, 0, 0, 32)
 Header.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
@@ -136,47 +139,49 @@ IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFram
 HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
-local function styleBtn(b, fSize)
+local function styleBtn(b)
     b.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
     b.BackgroundTransparency = 0.2
     b.TextColor3 = Color3.new(1,1,1)
-    b.TextSize = fSize
+    b.TextSize = 10
     b.Font = Enum.Font.GothamBold
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
 end
 
 -- ==========================================
--- 3. TOMBOL MANUAL TELEPORT
+-- 3. TOMBOL TERPISAH KEMBALI SEJAJAR (BLIZZARD - STORM - VOLCANO)
 -- ==========================================
 local BtnBlizzard = Instance.new("TextButton", MainFrame)
 BtnBlizzard.Size = UDim2.new(0, 75, 0, 28)
 BtnBlizzard.Position = UDim2.new(0, 8, 0, 40)
 BtnBlizzard.Text = "Blizzard"
-styleBtn(BtnBlizzard, 10)
+styleBtn(BtnBlizzard)
 
 local BtnStorm = Instance.new("TextButton", MainFrame)
 BtnStorm.Size = UDim2.new(0, 75, 0, 28)
 BtnStorm.Position = UDim2.new(0, 92, 0, 40)
 BtnStorm.Text = "Storm"
-styleBtn(BtnStorm, 10)
+styleBtn(BtnStorm)
 
 local BtnVolcano = Instance.new("TextButton", MainFrame)
-BtnVolcano.Size = UDim2.new(0, 177, 0, 40)
+BtnVolcano.Size = UDim2.new(0, 75, 0, 28)
+BtnVolcano.Position = UDim2.new(0, 177, 0, 40)
 BtnVolcano.Text = "Volcano"
-styleBtn(BtnVolcano, 10)
+styleBtn(BtnVolcano)
 
 BtnBlizzard.MouseButton1Click:Connect(function() teleportRandom("Blizzard") end)
 BtnStorm.MouseButton1Click:Connect(function() teleportRandom("Storm") end)
 BtnVolcano.MouseButton1Click:Connect(function() teleportRandom("Volcano") end)
 
 -- ==========================================
--- 4. TOMBOL AUTO EVENT & INFO LABEL (FONT SIZE 17)
+-- 4. TOMBOL AUTO EVENT & INFO LABEL ASLI
 -- ==========================================
 local BtnAutoEvent = Instance.new("TextButton", MainFrame)
 BtnAutoEvent.Size = UDim2.new(0, 244, 0, 32)
 BtnAutoEvent.Position = UDim2.new(0, 8, 0, 74)
 BtnAutoEvent.Text = "AUTO EVENT: OFF"
-styleBtn(BtnAutoEvent, 11)
+styleBtn(BtnAutoEvent)
+BtnAutoEvent.TextSize = 11
 
 local InfoLabel = Instance.new("TextLabel", MainFrame)
 InfoLabel.Size = UDim2.new(0, 244, 0, 95)
@@ -213,12 +218,11 @@ BtnAutoEvent.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 5. LOGIKA ANCHOR TIME PERBAIKAN (UTC TO WIB)
+-- 5. PERBAIKAN RUMUS WAKTU (UTC TO WIB +7 JAM)
 -- ==========================================
 local EVENTS_LIST = {"Blizzard", "Storm", "Volcano"}
-local EVENT_SLOTS = {1, 4, 7, 10, 13, 16, 19, 22} -- 8 Event per hari (Interval 3 Jam)
+local EVENT_SLOTS = {1, 4, 7, 10, 13, 16, 19, 22}
 
--- Konversi os.time() Server (UTC) ke WIB (+7 Jam)
 local function getWIBTime()
     return os.time() + (7 * 3600)
 end
@@ -226,11 +230,8 @@ end
 local function getEventInfoAt(wibTimestamp)
     local tData = os.date("!*t", wibTimestamp)
     local startOfDay = os.time({year=tData.year, month=tData.month, day=tData.day, hour=0, min=0, sec=0})
-    
     local currentTotalSec = (tData.hour * 3600) + (tData.min * 60) + tData.sec
 
-    -- Anchor: 27 Agustus 2026 Jam 16:00 WIB (Storm)
-    -- Jam 16:00 WIB berada pada slot index ke-6
     local anchorDayStart = os.time({year=2026, month=8, day=27, hour=0, min=0, sec=0})
     local daysDiff = math.floor((startOfDay - anchorDayStart) / 86400)
 
@@ -239,7 +240,7 @@ local function getEventInfoAt(wibTimestamp)
 
     for i, slotHour in ipairs(EVENT_SLOTS) do
         local slotStartSec = slotHour * 3600
-        local slotEndSec = (slotHour + 1) * 3600 -- Event berlangsung 1 jam
+        local slotEndSec = (slotHour + 1) * 3600
 
         if currentTotalSec >= slotStartSec and currentTotalSec < slotEndSec then
             local totalSlotShift = (daysDiff * #EVENT_SLOTS) + (i - 6)
@@ -259,7 +260,6 @@ task.spawn(function()
         local activeEvent, targetTimestamp = getEventInfoAt(wibNow)
 
         if activeEvent then
-            -- === EVENT ACTIVE ===
             local diffSec = targetTimestamp - wibNow
             if diffSec < 0 then diffSec = 0 end
 
@@ -285,7 +285,6 @@ task.spawn(function()
             InfoLabel.TextColor3 = Color3.fromRGB(180, 40, 40)
 
         else
-            -- === WAITING / COOLDOWN ===
             if isAutoEventRunning and savedPosition then
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp then

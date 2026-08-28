@@ -1,159 +1,299 @@
--- [[ FISH IT - AUTO TELEPORT EVENT ONLY ]] --
+-- [[ CONFIGURATION ]] --
+local webhook_url = "https://discord.com/api/webhooks/1471473387120361573/OJN4BmXmdHbf89_fJ6oV-QRp7j0XVeQVR4mxYR_aIIZTwmaoHYxU9oYqsGK8OQRecxY4"
+local startTime = os.time()
 
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
+-- State Tracking Event
+local currentEvent = nil 
+local eventStartTime = 0
 
--- Hapus UI lama jika ada
-if CoreGui:FindFirstChild("ElementalEventUI") then
-    CoreGui.ElementalEventUI:Destroy()
-end
+-- [[ COUNTER DATA STRUCTURES ]] --
+local globalServerCount = { blizzard = 0, storm = 0, volcano = 0 }
+local globalPlayerCount = {}
 
--- ==========================================
--- 1. KOORDINAT BARU
--- ==========================================
-local TARGET_LOCATIONS = {
-    CFrame.new(-4079.10596, -547.17395, 548.034973, -0.308991671, 0, -0.951064765, 0, 1, 0, 0.951064765, 0, -0.308991671),
-    CFrame.new(-4145.04297, 7.94670057, 617.357971, 0.407304734, 0, 0.913292289, 0, 1, 0, -0.913292289, 0, 0.407304734),
-    CFrame.new(-4241.76807, 60.4801407, 414.652008, -0.333387047, 0, -0.942790031, 0, 1, 0, 0.942790031, 0, -0.333387047),
-    CFrame.new(-4193.96729, 59.9070892, 431.949066, 0.901977777, 3.53790384e-08, -0.431782454, -3.42042803e-08, 1, 1.04856888e-08, 0.431782454, 5.3109499e-09, 0.901977777),
-    CFrame.new(-4211.97656, 3.30052066, 569.13562, -0.869756937, 4.29486917e-08, -0.493480384, 1.87457783e-08, 1, 5.39928706e-08, 0.493480384, 3.77099987e-08, -0.869756937),
-    CFrame.new(-4039.93188, -550.528748, 510.889435, -0.996512353, -2.4901917e-08, -0.0834453106, -2.55337245e-08, 1, 6.50432108e-09, 0.0834453106, 8.61230554e-09, -0.996512353)
+local sessionServerCount = { blizzard = 0, storm = 0, volcano = 0 }
+local sessionPlayerCount = {}
+
+-- [[ DETEKSI ITEM EVENT ]] --
+local list_blizzard = {"Wintertusk Mammofin"}
+local list_storm    = {"Stormshell Brute"}
+local list_volcano  = {"Pyrocoil"}
+
+-- [[ METADATA ELEMENTAL EVENT ]] --
+local eventData = {
+    blizzard = {
+        Name = "Blizzard Elemental Event",
+        Description = "A blizzard has started!",
+        Color = 65535, 
+        Fish = "Wintertusk Mammofin"
+    },
+    storm = {
+        Name = "Storm Elemental Event",
+        Description = "A massive storm is occurring!",
+        Color = 16705372, 
+        Fish = "Stormshell Brute"
+    },
+    volcano = {
+        Name = "Volcano Elemental Event",
+        Description = "The volcano has erupted!",
+        Color = 15548997, 
+        Fish = "Pyrocoil"
+    }
 }
 
-local function teleportRandom()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        hrp.CFrame = TARGET_LOCATIONS[math.random(1, #TARGET_LOCATIONS)]
-    end
-end
+-- [[ FUNGSI DETEKSI EVENT UI DEPAN LAYAR ]] --
+local function detectActiveEvent()
+    local playerGui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")
+    if not playerGui then return nil end
 
--- ==========================================
--- 2. SETUP UI (Sesuai Desain Asli)
--- ==========================================
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ElementalEventUI"
-ScreenGui.Parent = CoreGui
-ScreenGui.ResetOnSpawn = false
-
--- Icon Floating Button
-local IconButton = Instance.new("TextButton", ScreenGui)
-IconButton.Name = "EventIcon"
-IconButton.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
-IconButton.Position = UDim2.new(0, 15, 0.5, -22)
-IconButton.Size = UDim2.new(0, 45, 0, 45)
-IconButton.Text = "🌋"
-IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-IconButton.TextSize = 22
-IconButton.Active = true
-IconButton.Draggable = true
-Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
-
--- Main Frame (Ukuran Disesuaikan Hanya Untuk 1 Tombol)
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Name = "EventMain"
-MainFrame.BackgroundColor3 = Color3.fromRGB(240, 248, 255)
-MainFrame.BackgroundTransparency = 0.05
-MainFrame.Position = UDim2.new(0.5, -130, 0.5, -45)
-MainFrame.Size = UDim2.new(0, 260, 0, 90)
-MainFrame.Visible = false
-MainFrame.Active = true
-MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-
--- Header Frame
-local Header = Instance.new("Frame", MainFrame)
-Header.Size = UDim2.new(1, 0, 0, 32)
-Header.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
-
-local Title = Instance.new("TextLabel", Header)
-Title.Size = UDim2.new(0.65, 0, 1, 0)
-Title.Position = UDim2.new(0.05, 0, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "Elemental Event Auto TP"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 12
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-
-local HideBtn = Instance.new("TextButton", Header)
-HideBtn.Position = UDim2.new(0.72, 0, 0.15, 0)
-HideBtn.Size = UDim2.new(0, 24, 0, 24)
-HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-HideBtn.BackgroundTransparency = 0.4
-HideBtn.Text = "-"
-HideBtn.TextColor3 = Color3.fromRGB(41, 128, 185)
-HideBtn.TextSize = 16
-HideBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
-
-local CloseBtn = Instance.new("TextButton", Header)
-CloseBtn.Position = UDim2.new(0.85, 0, 0.15, 0)
-CloseBtn.Size = UDim2.new(0, 24, 0, 24)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.BackgroundTransparency = 0.4
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(41, 128, 185)
-CloseBtn.TextSize = 14
-CloseBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
-
-IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
-HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
-CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
--- ==========================================
--- 3. TOMBOL SINGLE AUTO EVENT
--- ==========================================
-local BtnAutoEvent = Instance.new("TextButton", MainFrame)
-BtnAutoEvent.Size = UDim2.new(0, 244, 0, 40)
-BtnAutoEvent.Position = UDim2.new(0, 8, 0, 42)
-BtnAutoEvent.Text = "AUTO EVENT: OFF"
-BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
-BtnAutoEvent.BackgroundTransparency = 0.2
-BtnAutoEvent.TextColor3 = Color3.new(1, 1, 1)
-BtnAutoEvent.TextSize = 12
-BtnAutoEvent.Font = Enum.Font.GothamBold
-Instance.new("UICorner", BtnAutoEvent).CornerRadius = UDim.new(0, 6)
-
-local isAutoEventRunning = false
-
-BtnAutoEvent.MouseButton1Click:Connect(function()
-    isAutoEventRunning = not isAutoEventRunning
-    if isAutoEventRunning then
-        BtnAutoEvent.Text = "AUTO EVENT: ON"
-        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
-    else
-        BtnAutoEvent.Text = "AUTO EVENT: OFF"
-        BtnAutoEvent.BackgroundColor3 = Color3.fromRGB(41, 128, 185)
-    end
-end)
-
--- ==========================================
--- 4. LOGIKA AUTO TELEPORT JAM KHUSUS
--- ==========================================
-task.spawn(function()
-    local targetHours = {[3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true, [24]=true}
-    local hasTeleportedThisSecond = false
-
-    while true do
-        if isAutoEventRunning then
-            local t = os.date("*t")
-            local hour = t.hour
-            local minute = t.min
-            local second = t.sec
-
-            -- Mengecek jam 3, 6, 9, 12, 15, 18, 21, 24(00) tepat pada menit 00 dan detik 05
-            if targetHours[hour] and minute == 0 and second == 5 then
-                if not hasTeleportedThisSecond then
-                    teleportRandom()
-                    hasTeleportedThisSecond = true
+    for _, gui in pairs(playerGui:GetDescendants()) do
+        if gui:IsA("TextLabel") or gui:IsA("TextButton") then
+            local txt = gui.Text
+            if txt and txt ~= "" then
+                if txt:find("Blizzard Elemental Event") then
+                    return "blizzard"
+                elseif txt:find("Storm Elemental Event") then
+                    return "storm"
+                elseif txt:find("Volcano Elemental Event") then
+                    return "volcano"
                 end
-            else
-                hasTeleportedThisSecond = false
             end
         end
+    end
+    return nil
+end
+
+-- [[ FUNGSI UTAMA KIRIM WEBHOOK ]] --
+local function sendWebhook(options)
+    local req = request or http_request or (http and http.request)
+    if not req then return end
+
+    local content = options.content or ""
+    local description = options.description or ""
+    local color = options.color or 8421504
+
+    req({
+        Url = webhook_url,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode({
+            ["content"] = content,
+            ["embeds"] = {{
+                ["description"] = description,
+                ["color"] = color,
+                ["footer"] = {["text"] = "Server Mybubub - " .. os.date("%X")}
+            }}
+        })
+    })
+end
+
+-- [[ LOGIKA NOTIFIKASI EVENT START ]] --
+local function handleEventStart()
+    sessionServerCount = { blizzard = 0, storm = 0, volcano = 0 }
+    sessionPlayerCount = {}
+    eventStartTime = os.time()
+
+    local detected = detectActiveEvent()
+    currentEvent = detected
+
+    local content, description, color
+
+    if detected and eventData[detected] then
+        local info = eventData[detected]
+        content = info.Name .. " HAS STARTED"
+        description = "Event Name: " .. info.Name .. "\n" ..
+                      "Description: " .. info.Description .. "\n\n" ..
+                      "Status: Event telah dimulai\n" ..
+                      "Account: " .. game.Players.LocalPlayer.Name .. "\n" ..
+                      "Silakan periksa area event."
+        color = info.Color
+    else
+        content = "Elemental Event Started"
+        description = "Event Name: Unknown Elemental Event\n" ..
+                      "Description: Status event tidak terdeteksi di UI, namun jam event telah masuk.\n\n" ..
+                      "Status: Event telah dimulai\n" ..
+                      "Account: " .. game.Players.LocalPlayer.Name .. "\n" ..
+                      "Silakan cek langsung ke lokasi event."
+        color = 16744192
+    end
+
+    sendWebhook({
+        content = content,
+        description = description,
+        color = color
+    })
+end
+
+-- [[ LOGIKA NOTIFIKASI EVENT END & REKAP ]] --
+local function handleEventEnd()
+    local s = os.time() - startTime
+    local totalRuntime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
+
+    local sessionPlayerDetails = ""
+    local hasSessionData = false
+    for player, stats in pairs(sessionPlayerCount) do
+        local pItems = {}
+        if stats.blizzard > 0 then table.insert(pItems, "Wintertusk Mammofin: " .. stats.blizzard) end
+        if stats.storm > 0 then table.insert(pItems, "Stormshell Brute: " .. stats.storm) end
+        if stats.volcano > 0 then table.insert(pItems, "Pyrocoil: " .. stats.volcano) end
+
+        if #pItems > 0 then
+            hasSessionData = true
+            sessionPlayerDetails = sessionPlayerDetails .. "\n- " .. player .. ": " .. table.concat(pItems, " | ")
+        end
+    end
+
+    if not hasSessionData then
+        sessionPlayerDetails = "\nTidak ada player yang menangkap item event pada sesi ini."
+    end
+
+    local globalPlayerDetails = ""
+    local hasGlobalData = false
+    for player, stats in pairs(globalPlayerCount) do
+        local pItems = {}
+        if stats.blizzard > 0 then table.insert(pItems, "Wintertusk Mammofin: " .. stats.blizzard) end
+        if stats.storm > 0 then table.insert(pItems, "Stormshell Brute: " .. stats.storm) end
+        if stats.volcano > 0 then table.insert(pItems, "Pyrocoil: " .. stats.volcano) end
+
+        if #pItems > 0 then
+            hasGlobalData = true
+            globalPlayerDetails = globalPlayerDetails .. "\n- " .. player .. ": " .. table.concat(pItems, " | ")
+        end
+    end
+
+    if not hasGlobalData then
+        globalPlayerDetails = "\nBelum ada player yang menangkap item event sejak script di-run."
+    end
+
+    local description = "Elemental Event Ended\n\n" ..
+        "RINCIAN TANGKAPAN SESI INI:" .. sessionPlayerDetails .. "\n\n" ..
+        "TOTAL REKAP SESI INI:\n" ..
+        "Blizzard: " .. sessionServerCount.blizzard .. " | Storm: " .. sessionServerCount.storm .. " | Volcano: " .. sessionServerCount.volcano .. "\n\n" ..
+        "----------------------------------------\n\n" ..
+        "RINCIAN PLAYER KESELURUHAN (TOTAL RUN):" .. globalPlayerDetails .. "\n\n" ..
+        "TOTAL AKUMULASI SERVER (TOTAL RUN):\n" ..
+        "Blizzard: " .. globalServerCount.blizzard .. " | Storm: " .. globalServerCount.storm .. " | Volcano: " .. globalServerCount.volcano .. "\n\n" ..
+        "Script Runtime: " .. totalRuntime
+
+    sendWebhook({
+        content = "Elemental Event Has Ended",
+        description = description,
+        color = 7632781
+    })
+
+    currentEvent = nil
+end
+
+-- [[ LOGIKA NOTIFIKASI ITEM CAUGHT (CHAT DETECTOR) ]] --
+local function handleItemCaught(category, rawText)
+    local cleanerText = rawText:gsub("<[^>]*>", "")
+    local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
+
+    sessionServerCount[category] = (sessionServerCount[category] or 0) + 1
+    sessionPlayerCount[luckyPlayer] = sessionPlayerCount[luckyPlayer] or { blizzard = 0, storm = 0, volcano = 0 }
+    sessionPlayerCount[luckyPlayer][category] = sessionPlayerCount[luckyPlayer][category] + 1
+
+    globalServerCount[category] = (globalServerCount[category] or 0) + 1
+    globalPlayerCount[luckyPlayer] = globalPlayerCount[luckyPlayer] or { blizzard = 0, storm = 0, volcano = 0 }
+    globalPlayerCount[luckyPlayer][category] = globalPlayerCount[luckyPlayer][category] + 1
+
+    local s = os.time() - startTime
+    local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
+
+    local info = eventData[category]
+    local fishFullWithWeight = cleanerText:match("obtained a (.-) with") or info.Fish
+
+    local content = luckyPlayer .. " obtained a new " .. fishFullWithWeight .. " Fish"
+
+    local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. sessionPlayerCount[luckyPlayer][category] .. " " .. info.Fish
+
+    local serverStats = "\nBlizzard: " .. sessionServerCount.blizzard ..
+                        " | Storm: " .. sessionServerCount.storm ..
+                        " | Volcano: " .. sessionServerCount.volcano
+
+    local description = info.Name .. "\n" ..
+                        info.Description .. "\n\n" ..
+                        cleanerText .. "\n\n" ..
+                        "Script Runtime: " .. runtime .. "\n\n" ..
+                        playerStats .. "\n\n" ..
+                        "Sesi Event Records" .. serverStats
+
+    sendWebhook({
+        content = content,
+        description = description,
+        color = info.Color
+    })
+end
+
+-- [[ STARTUP NOTIFICATION ]] --
+sendWebhook({
+    content = "Webhook Fishit Event Tracker Aktif",
+    description = "Script running di akun: " .. game.Players.LocalPlayer.Name .. "\nMenunggu jam operasional event.",
+    color = 65535
+})
+
+-- [[ SCHEDULE LOOP ]] --
+task.spawn(function()
+    local startHours = {[23]=true, [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true}
+    local endHours   = {[0]=true, [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [24]=true}
+
+    local hasTriggeredStart = false
+    local hasTriggeredEnd   = false
+
+    while true do
+        local t = os.date("*t")
+        local hour = t.hour
+        local min  = t.min
+        local sec  = t.sec
+
+        if startHours[hour] and min == 0 and sec == 5 then
+            if not hasTriggeredStart then
+                handleEventStart()
+                hasTriggeredStart = true
+            end
+        else
+            hasTriggeredStart = false
+        end
+
+        if endHours[hour] and min == 0 and sec == 5 then
+            if not hasTriggeredEnd then
+                handleEventEnd()
+                hasTriggeredEnd = true
+            end
+        else
+            hasTriggeredEnd = false
+        end
+
         task.wait(0.5)
     end
 end)
+
+-- [[ CHAT DETECTOR LISTENER ]] --
+local TextChatService = game:GetService("TextChatService")
+local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+
+if channel then
+    channel.MessageReceived:Connect(function(message)
+        local txt = message.Text:lower()
+
+        if txt:find("obtained") then
+            for _, n in pairs(list_blizzard) do
+                if txt:find(n:lower()) then
+                    handleItemCaught("blizzard", message.Text)
+                    return
+                end
+            end
+            for _, n in pairs(list_storm) do
+                if txt:find(n:lower()) then
+                    handleItemCaught("storm", message.Text)
+                    return
+                end
+            end
+            for _, n in pairs(list_volcano) do
+                if txt:find(n:lower()) then
+                    handleItemCaught("volcano", message.Text)
+                    return
+                end
+            end
+        end
+    end)
+end

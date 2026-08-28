@@ -1,75 +1,69 @@
--- [[ CONFIGURATION ]] --
+-- [[ CONFIG ]] --
 local webhook_url = "https://discord.com/api/webhooks/1471473387120361573/OJN4BmXmdHbf89_fJ6oV-QRp7j0XVeQVR4mxYR_aIIZTwmaoHYxU9oYqsGK8OQRecxY4"
 local startTime = os.time()
 
--- State Tracking Event
-local currentEvent = nil 
-local eventStartTime = 0
-
--- [[ COUNTER DATA STRUCTURES ]] --
-local globalServerCount = { blizzard = 0, storm = 0, volcano = 0 }
-local globalPlayerCount = {}
-
-local sessionServerCount = { blizzard = 0, storm = 0, volcano = 0 }
-local sessionPlayerCount = {}
-
--- [[ DETEKSI ITEM EVENT ]] --
-local list_blizzard = {"Wintertusk Mammofin"}
-local list_storm    = {"Stormshell Brute"}
-local list_volcano  = {"Pyrocoil"}
-
--- [[ METADATA ELEMENTAL EVENT ]] --
-local eventData = {
-    blizzard = {
-        Name = "Blizzard Elemental Event",
-        Description = "A blizzard has started!",
-        Color = 65535, 
-        Fish = "Wintertusk Mammofin"
-    },
-    storm = {
-        Name = "Storm Elemental Event",
-        Description = "A massive storm is occurring!",
-        Color = 16705372, 
-        Fish = "Stormshell Brute"
-    },
-    volcano = {
-        Name = "Volcano Elemental Event",
-        Description = "The volcano has erupted!",
-        Color = 15548997, 
-        Fish = "Pyrocoil"
-    }
+-- Counter Server
+local serverCount = {
+    blizzard = 0,
+    storm = 0,
+    volcano = 0
 }
 
--- [[ FUNGSI DETEKSI EVENT UI DEPAN LAYAR ]] --
-local function detectActiveEvent()
-    local playerGui = game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")
-    if not playerGui then return nil end
+-- Counter Player
+local playerCount = {}
 
-    for _, gui in pairs(playerGui:GetDescendants()) do
-        if gui:IsA("TextLabel") or gui:IsA("TextButton") then
-            local txt = gui.Text
-            if txt and txt ~= "" then
-                if txt:find("Blizzard Elemental Event") then
-                    return "blizzard"
-                elseif txt:find("Storm Elemental Event") then
-                    return "storm"
-                elseif txt:find("Volcano Elemental Event") then
-                    return "volcano"
-                end
-            end
-        end
-    end
-    return nil
-end
+-- Daftar item untuk deteksi & mapping lokasi/kategori
+local targetItems = {
+    { name = "Wintertusk Mammofin", category = "blizzard", displayName = "Wintertusk Mammofin", location = "Blizzard", color = 38399 },  -- Biru Muda (#00C6FF -> 38399)
+    { name = "Stormshell Brute",   category = "storm",    displayName = "Stormshell Brute",   location = "Storm",    color = 16766720 }, -- Gold (#FFD700 -> 16766720)
+    { name = "Pyrocoil",           category = "volcano",  displayName = "Pyrocoil",           location = "Volcano",  color = 16724736 }  -- Merah Api (#FF3300 -> 16724736)
+}
 
--- [[ FUNGSI UTAMA KIRIM WEBHOOK ]] --
-local function sendWebhook(options)
+-- [[ FUNGSI KIRIM WEBHOOK ]] --
+local function sendWebhook(itemData, fullText, isStart)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
-    local content = options.content or ""
-    local description = options.description or ""
-    local color = options.color or 8421504
+    local content, description, color
+    
+    if isStart then
+        content = "🔔 **Webhook Fishit Aktif!**"
+        description = "Script running di akun: **" .. game.Players.LocalPlayer.Name .. "**\nMenunggu kabar dari server..."
+        color = 65535 
+    else
+        local cleanerText = fullText:gsub("<[^>]*>", "") 
+        local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
+        local category = itemData.category
+
+        -- Update Counter Server
+        serverCount[category] = (serverCount[category] or 0) + 1
+
+        -- Update Counter Player
+        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {
+            blizzard = 0, storm = 0, volcano = 0
+        }
+        playerCount[luckyPlayer][category] = playerCount[luckyPlayer][category] + 1
+
+        local s = os.time() - startTime
+        local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
+        
+        local fishFullWithWeight = cleanerText:match("obtained a (.-) with") or itemData.displayName
+
+        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** Fish!"
+        
+        local pStats = playerCount[luckyPlayer][category]
+        local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. pStats .. " " .. itemData.displayName .. " (Lokasi: " .. itemData.location .. ")"
+
+        local serverStats = "\nBlizzard (Mammofin): " .. serverCount.blizzard ..
+                            "\nStorm (Stormshell): " .. serverCount.storm ..
+                            "\nVolcano (Pyrocoil): " .. serverCount.volcano
+
+        description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
+            "\n\n" .. playerStats ..
+            "\n\n**Server Records**" .. serverStats
+        
+        color = itemData.color
+    end
 
     req({
         Url = webhook_url,
@@ -80,217 +74,27 @@ local function sendWebhook(options)
             ["embeds"] = {{
                 ["description"] = description,
                 ["color"] = color,
-                ["footer"] = {["text"] = "Server Mybubub - " .. os.date("%X")}
+                ["footer"] = {["text"] = "Server Mybubub • " .. os.date("%X", os.time() - 3600)}
             }}
         })
     })
 end
 
--- [[ LOGIKA NOTIFIKASI EVENT START ]] --
-local function handleEventStart()
-    sessionServerCount = { blizzard = 0, storm = 0, volcano = 0 }
-    sessionPlayerCount = {}
-    eventStartTime = os.time()
+-- [[ STARTUP ]] --
+sendWebhook(nil, nil, true)
 
-    local detected = detectActiveEvent()
-    currentEvent = detected
-
-    local content, description, color
-
-    if detected and eventData[detected] then
-        local info = eventData[detected]
-        content = info.Name .. " HAS STARTED"
-        description = "Event Name: " .. info.Name .. "\n" ..
-                      "Description: " .. info.Description .. "\n\n" ..
-                      "Status: Event telah dimulai\n" ..
-                      "Account: " .. game.Players.LocalPlayer.Name .. "\n" ..
-                      "Silakan periksa area event."
-        color = info.Color
-    else
-        content = "Elemental Event Started"
-        description = "Event Name: Unknown Elemental Event\n" ..
-                      "Description: Status event tidak terdeteksi di UI, namun jam event telah masuk.\n\n" ..
-                      "Status: Event telah dimulai\n" ..
-                      "Account: " .. game.Players.LocalPlayer.Name .. "\n" ..
-                      "Silakan cek langsung ke lokasi event."
-        color = 16744192
-    end
-
-    sendWebhook({
-        content = content,
-        description = description,
-        color = color
-    })
-end
-
--- [[ LOGIKA NOTIFIKASI EVENT END & REKAP ]] --
-local function handleEventEnd()
-    local s = os.time() - startTime
-    local totalRuntime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
-
-    local sessionPlayerDetails = ""
-    local hasSessionData = false
-    for player, stats in pairs(sessionPlayerCount) do
-        local pItems = {}
-        if stats.blizzard > 0 then table.insert(pItems, "Wintertusk Mammofin: " .. stats.blizzard) end
-        if stats.storm > 0 then table.insert(pItems, "Stormshell Brute: " .. stats.storm) end
-        if stats.volcano > 0 then table.insert(pItems, "Pyrocoil: " .. stats.volcano) end
-
-        if #pItems > 0 then
-            hasSessionData = true
-            sessionPlayerDetails = sessionPlayerDetails .. "\n- " .. player .. ": " .. table.concat(pItems, " | ")
-        end
-    end
-
-    if not hasSessionData then
-        sessionPlayerDetails = "\nTidak ada player yang menangkap item event pada sesi ini."
-    end
-
-    local globalPlayerDetails = ""
-    local hasGlobalData = false
-    for player, stats in pairs(globalPlayerCount) do
-        local pItems = {}
-        if stats.blizzard > 0 then table.insert(pItems, "Wintertusk Mammofin: " .. stats.blizzard) end
-        if stats.storm > 0 then table.insert(pItems, "Stormshell Brute: " .. stats.storm) end
-        if stats.volcano > 0 then table.insert(pItems, "Pyrocoil: " .. stats.volcano) end
-
-        if #pItems > 0 then
-            hasGlobalData = true
-            globalPlayerDetails = globalPlayerDetails .. "\n- " .. player .. ": " .. table.concat(pItems, " | ")
-        end
-    end
-
-    if not hasGlobalData then
-        globalPlayerDetails = "\nBelum ada player yang menangkap item event sejak script di-run."
-    end
-
-    local description = "Elemental Event Ended\n\n" ..
-        "RINCIAN TANGKAPAN SESI INI:" .. sessionPlayerDetails .. "\n\n" ..
-        "TOTAL REKAP SESI INI:\n" ..
-        "Blizzard: " .. sessionServerCount.blizzard .. " | Storm: " .. sessionServerCount.storm .. " | Volcano: " .. sessionServerCount.volcano .. "\n\n" ..
-        "----------------------------------------\n\n" ..
-        "RINCIAN PLAYER KESELURUHAN (TOTAL RUN):" .. globalPlayerDetails .. "\n\n" ..
-        "TOTAL AKUMULASI SERVER (TOTAL RUN):\n" ..
-        "Blizzard: " .. globalServerCount.blizzard .. " | Storm: " .. globalServerCount.storm .. " | Volcano: " .. globalServerCount.volcano .. "\n\n" ..
-        "Script Runtime: " .. totalRuntime
-
-    sendWebhook({
-        content = "Elemental Event Has Ended",
-        description = description,
-        color = 7632781
-    })
-
-    currentEvent = nil
-end
-
--- [[ LOGIKA NOTIFIKASI ITEM CAUGHT (CHAT DETECTOR) ]] --
-local function handleItemCaught(category, rawText)
-    local cleanerText = rawText:gsub("<[^>]*>", "")
-    local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
-
-    sessionServerCount[category] = (sessionServerCount[category] or 0) + 1
-    sessionPlayerCount[luckyPlayer] = sessionPlayerCount[luckyPlayer] or { blizzard = 0, storm = 0, volcano = 0 }
-    sessionPlayerCount[luckyPlayer][category] = sessionPlayerCount[luckyPlayer][category] + 1
-
-    globalServerCount[category] = (globalServerCount[category] or 0) + 1
-    globalPlayerCount[luckyPlayer] = globalPlayerCount[luckyPlayer] or { blizzard = 0, storm = 0, volcano = 0 }
-    globalPlayerCount[luckyPlayer][category] = globalPlayerCount[luckyPlayer][category] + 1
-
-    local s = os.time() - startTime
-    local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
-
-    local info = eventData[category]
-    local fishFullWithWeight = cleanerText:match("obtained a (.-) with") or info.Fish
-
-    local content = luckyPlayer .. " obtained a new " .. fishFullWithWeight .. " Fish"
-
-    local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. sessionPlayerCount[luckyPlayer][category] .. " " .. info.Fish
-
-    local serverStats = "\nBlizzard: " .. sessionServerCount.blizzard ..
-                        " | Storm: " .. sessionServerCount.storm ..
-                        " | Volcano: " .. sessionServerCount.volcano
-
-    local description = info.Name .. "\n" ..
-                        info.Description .. "\n\n" ..
-                        cleanerText .. "\n\n" ..
-                        "Script Runtime: " .. runtime .. "\n\n" ..
-                        playerStats .. "\n\n" ..
-                        "Sesi Event Records" .. serverStats
-
-    sendWebhook({
-        content = content,
-        description = description,
-        color = info.Color
-    })
-end
-
--- [[ STARTUP NOTIFICATION ]] --
-sendWebhook({
-    content = "Webhook Fishit Event Tracker Aktif",
-    description = "Script running di akun: " .. game.Players.LocalPlayer.Name .. "\nMenunggu jam operasional event.",
-    color = 65535
-})
-
--- [[ SCHEDULE LOOP ]] --
-task.spawn(function()
-    local startHours = {[23]=true, [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true}
-    local endHours   = {[0]=true, [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [24]=true}
-
-    local hasTriggeredStart = false
-    local hasTriggeredEnd   = false
-
-    while true do
-        local t = os.date("*t")
-        local hour = t.hour
-        local min  = t.min
-        local sec  = t.sec
-
-        if startHours[hour] and min == 0 and sec == 5 then
-            if not hasTriggeredStart then
-                handleEventStart()
-                hasTriggeredStart = true
-            end
-        else
-            hasTriggeredStart = false
-        end
-
-        if endHours[hour] and min == 0 and sec == 5 then
-            if not hasTriggeredEnd then
-                handleEventEnd()
-                hasTriggeredEnd = true
-            end
-        else
-            hasTriggeredEnd = false
-        end
-
-        task.wait(0.5)
-    end
-end)
-
--- [[ CHAT DETECTOR LISTENER ]] --
+-- [[ DETEKSI CHAT UPDATE BARU ]] --
 local TextChatService = game:GetService("TextChatService")
 local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
 
 if channel then
     channel.MessageReceived:Connect(function(message)
         local txt = message.Text:lower()
-
+        
         if txt:find("obtained") then
-            for _, n in pairs(list_blizzard) do
-                if txt:find(n:lower()) then
-                    handleItemCaught("blizzard", message.Text)
-                    return
-                end
-            end
-            for _, n in pairs(list_storm) do
-                if txt:find(n:lower()) then
-                    handleItemCaught("storm", message.Text)
-                    return
-                end
-            end
-            for _, n in pairs(list_volcano) do
-                if txt:find(n:lower()) then
-                    handleItemCaught("volcano", message.Text)
+            for _, item in ipairs(targetItems) do
+                if txt:find(item.name:lower()) then
+                    sendWebhook(item, message.Text, false)
                     return
                 end
             end

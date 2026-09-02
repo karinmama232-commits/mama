@@ -1,8 +1,8 @@
 -- [[ CONFIGURATION ]] --
-local webhook_url = "https://discord.com/api/webhooks/1531621031138037830/ju6NgD5A-tL2rkx3007U1jf8f2_x1jwyMrOvS_lvUD9lMwdWTqOXIuAO5p4p4_k8cXIx"
+local webhook_url = "https://discord.com/api/webhooks/1501314866235969647/ue6JQKQryItIT4VE-_QKcSbMVqFnUGc39Ki6yoD5wN6G4N2qW_1JGkfyCHMeYzs2OaiA"
 local startTime = os.time()
 
--- Window Jam Selesai Event (03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00)
+-- Window Jam Selesai Event Asli (03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00)
 local targetEndHours = {[3] = true, [6] = true, [9] = true, [12] = true, [15] = true, [18] = true, [21] = true, [0] = true}
 
 -- Target Items & Data Mapping
@@ -33,11 +33,11 @@ local targetItems = {
     }
 }
 
--- Memory Buffer untuk Rekap Tangkapan per Event Window
+-- Memory Buffer (Counter & List Player per Kategori)
 local catchBuffer = {
-    blizzard = 0,
-    storm = 0,
-    volcano = 0
+    blizzard = { count = 0, players = {} },
+    storm    = { count = 0, players = {} },
+    volcano  = { count = 0, players = {} }
 }
 
 local hasSentForCurrentHour = false
@@ -48,7 +48,7 @@ local function getFormattedRuntime()
     return string.format("%02d:%02d:%02d", math.floor(s / 3600), math.floor((s % 3600) / 60), s % 60)
 end
 
-local function sendWebhookPayload(embedTitle, descriptionText, embedColor)
+local function sendWebhookPayload(embedTitle, descriptionText, embedColor, footerText)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
@@ -62,7 +62,7 @@ local function sendWebhookPayload(embedTitle, descriptionText, embedColor)
                 ["description"] = descriptionText,
                 ["color"] = embedColor,
                 ["footer"] = {
-                    ["text"] = "Script Runtime: " .. getFormattedRuntime()
+                    ["text"] = footerText
                 }
             }}
         })
@@ -74,46 +74,49 @@ local function sendEventSummary()
     local currentTimeTable = os.date("*t", os.time())
     local currentHour = currentTimeTable.hour
     
-    -- Hitung Waktu Session (Dikurangi 1 Jam untuk Tampilan Text)
-    local startHour = (currentHour - 1) % 24
-    local timeSessionStr = string.format("%02d:00 - %02d:00, %s", startHour, currentHour, os.date("%d %B %Y", os.time()))
+    -- Display Waktu di Discord Dikurangi 1 Jam
+    local endHourDisplay = (currentHour - 1) % 24
+    local startHourDisplay = (endHourDisplay - 1) % 24
+    local timeSessionStr = string.format("%02d:00 - %02d:00, %s", startHourDisplay, endHourDisplay, os.date("%d %B %Y", os.time()))
+    local footerStr = "Event Session: " .. timeSessionStr .. " • Script Runtime: " .. getFormattedRuntime()
 
-    -- Cari apakah ada ikan yang berhasil ditangkap selama window ini
+    -- Cek item yang tertangkap
     local activeItem = nil
-    local catchCount = 0
+    local itemData = nil
 
     for _, item in ipairs(targetItems) do
-        local count = catchBuffer[item.category] or 0
-        if count > 0 then
+        local buf = catchBuffer[item.category]
+        if buf and buf.count > 0 then
             activeItem = item
-            catchCount = count
+            itemData = buf
             break
         end
     end
 
     local title, description, color
 
-    if activeItem and catchCount > 0 then
-        -- KONDISI 1: ADA IKAN TERTANGKAP
+    if activeItem and itemData then
+        -- KONDISI 1: ADA IKAN TERTANGKAP (Dengan Enter / Baris Baru untuk List Player)
         title = activeItem.eventTitle
-        description = "**Event Session:** " .. timeSessionStr .. "\n\n" ..
-                      "**In Server**\n" ..
-                      "Sudah Menangkap " .. catchCount .. " " .. activeItem.displayName .. " (Lokasi: " .. activeItem.location .. ")"
+        local playerListStr = table.concat(itemData.players, ", ")
+        
+        description = "**Location: " .. activeItem.location .. "**\n" ..
+                      "Caught " .. itemData.count .. " " .. activeItem.displayName .. "\n" ..
+                      "(" .. playerListStr .. ")"
         color = activeItem.color
     else
         -- KONDISI 2: ZERO CATCH (TIDAK ADA IKAN)
         title = "Elemental Event Has Concluded!"
-        description = "**Event Session:** " .. timeSessionStr .. "\n\n" ..
-                      "Tidak ada ikan yang di dapat"
+        description = "No target fish caught during this event."
         color = 0 -- Warna Hitam
     end
 
     -- Kirim Webhook
-    sendWebhookPayload(title, description, color)
+    sendWebhookPayload(title, description, color, footerStr)
 
-    -- Reset Buffer untuk Window Event Berikutnya
+    -- Reset Buffer
     for k in pairs(catchBuffer) do
-        catchBuffer[k] = 0
+        catchBuffer[k] = { count = 0, players = {} }
     end
 end
 
@@ -121,7 +124,8 @@ end
 sendWebhookPayload(
     "Webhook Fishit Active", 
     "Script initialized for account: **" .. game.Players.LocalPlayer.Name .. "**\nMonitoring elemental chat logs...", 
-    65535
+    65535,
+    "Script Runtime: " .. getFormattedRuntime()
 )
 
 -- [[ DETEKSI CHAT LOG (BUFFERING ONLY) ]] --
@@ -132,9 +136,14 @@ if channel then
     channel.MessageReceived:Connect(function(message)
         local txt = message.Text:lower()
         if txt:find("obtained") then
+            local cleanerText = message.Text:gsub("<[^>]*>", "")
+            local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
+            
             for _, item in ipairs(targetItems) do
                 if txt:find(item.name:lower()) then
-                    catchBuffer[item.category] = (catchBuffer[item.category] or 0) + 1
+                    local buf = catchBuffer[item.category]
+                    buf.count = buf.count + 1
+                    table.insert(buf.players, luckyPlayer)
                     break
                 end
             end
@@ -142,7 +151,7 @@ if channel then
     end)
 end
 
--- [[ LOOP PENJADWALAN CHECKING EVENT (TIAP MENIT BERAKHIR) ]] --
+-- [[ LOOP PENJADWALAN CHECKING EVENT ]] --
 task.spawn(function()
     while true do
         local dateTable = os.date("*t", os.time())
@@ -159,6 +168,6 @@ task.spawn(function()
             hasSentForCurrentHour = false
         end
 
-        task.wait(10) -- Check setiap 10 detik
+        task.wait(10)
     end
 end)

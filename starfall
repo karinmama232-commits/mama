@@ -1,103 +1,164 @@
--- [[ CONFIG ]] --
-local webhook_url = "https://discord.com/api/webhooks/1501314866235969647/ue6JQKQryItIT4VE-_QKcSbMVqFnUGc39Ki6yoD5wN6G4N2qW_1JGkfyCHMeYzs2OaiA"
+-- [[ CONFIGURATION ]] --
+local webhook_url = "https://discord.com/api/webhooks/1531621031138037830/ju6NgD5A-tL2rkx3007U1jf8f2_x1jwyMrOvS_lvUD9lMwdWTqOXIuAO5p4p4_k8cXIx"
 local startTime = os.time()
 
--- Counter Server
-local serverCount = {
+-- Window Jam Selesai Event (03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00)
+local targetEndHours = {[3] = true, [6] = true, [9] = true, [12] = true, [15] = true, [18] = true, [21] = true, [0] = true}
+
+-- Target Items & Data Mapping
+local targetItems = {
+    { 
+        name = "Wintertusk Mammofin", 
+        category = "blizzard", 
+        displayName = "Wintertusk Mammofin", 
+        location = "Blizzard", 
+        color = 38399,
+        eventTitle = "Blizzard Elemental Event Has Concluded!"
+    },
+    { 
+        name = "Stormshell Brute",   
+        category = "storm",    
+        displayName = "Stormshell Brute",   
+        location = "Storm",    
+        color = 16766720,
+        eventTitle = "Storm Elemental Event Has Concluded!"
+    },
+    { 
+        name = "Pyrocoil",           
+        category = "volcano",  
+        displayName = "Pyrocoil",           
+        location = "Volcano",  
+        color = 16724736,
+        eventTitle = "Volcano Elemental Event Has Concluded!"
+    }
+}
+
+-- Memory Buffer untuk Rekap Tangkapan per Event Window
+local catchBuffer = {
     blizzard = 0,
     storm = 0,
     volcano = 0
 }
 
--- Counter Player
-local playerCount = {}
+local hasSentForCurrentHour = false
 
--- Daftar item untuk deteksi & mapping lokasi/kategori
-local targetItems = {
-    { name = "Wintertusk Mammofin", category = "blizzard", displayName = "Wintertusk Mammofin", location = "Blizzard", color = 38399 },  -- Biru Muda (#00C6FF -> 38399)
-    { name = "Stormshell Brute",   category = "storm",    displayName = "Stormshell Brute",   location = "Storm",    color = 16766720 }, -- Gold (#FFD700 -> 16766720)
-    { name = "Pyrocoil",           category = "volcano",  displayName = "Pyrocoil",           location = "Volcano",  color = 16724736 }  -- Merah Api (#FF3300 -> 16724736)
-}
+-- [[ HELPER FUNCTIONS ]] --
+local function getFormattedRuntime()
+    local s = os.time() - startTime
+    return string.format("%02d:%02d:%02d", math.floor(s / 3600), math.floor((s % 3600) / 60), s % 60)
+end
 
--- [[ FUNGSI KIRIM WEBHOOK ]] --
-local function sendWebhook(itemData, fullText, isStart)
+local function sendWebhookPayload(embedTitle, descriptionText, embedColor)
     local req = request or http_request or (http and http.request)
     if not req then return end
-
-    local content, description, color
-    
-    if isStart then
-        content = "🔔 **Webhook Fishit Aktif!**"
-        description = "Script running di akun: **" .. game.Players.LocalPlayer.Name .. "**\nMenunggu kabar dari server..."
-        color = 65535 
-    else
-        local cleanerText = fullText:gsub("<[^>]*>", "") 
-        local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
-        local category = itemData.category
-
-        -- Update Counter Server
-        serverCount[category] = (serverCount[category] or 0) + 1
-
-        -- Update Counter Player
-        playerCount[luckyPlayer] = playerCount[luckyPlayer] or {
-            blizzard = 0, storm = 0, volcano = 0
-        }
-        playerCount[luckyPlayer][category] = playerCount[luckyPlayer][category] + 1
-
-        local s = os.time() - startTime
-        local runtime = string.format("%02d:%02d:%02d", math.floor(s/3600), math.floor((s%3600)/60), s%60)
-        
-        local fishFullWithWeight = cleanerText:match("obtained a (.-) with") or itemData.displayName
-
-        content = "Congratulations!! **" .. luckyPlayer .. "** You have obtained a new **" .. fishFullWithWeight .. "** Fish!"
-        
-        local pStats = playerCount[luckyPlayer][category]
-        local playerStats = "Player " .. luckyPlayer .. "\nSudah Menangkap " .. pStats .. " " .. itemData.displayName .. " (Lokasi: " .. itemData.location .. ")"
-
-        local serverStats = "\nBlizzard (Mammofin): " .. serverCount.blizzard ..
-                            "\nStorm (Stormshell): " .. serverCount.storm ..
-                            "\nVolcano (Pyrocoil): " .. serverCount.volcano
-
-        description = "**" .. cleanerText .. "**\n\n**Script Runtime:** " .. runtime ..
-            "\n\n" .. playerStats ..
-            "\n\n**Server Records**" .. serverStats
-        
-        color = itemData.color
-    end
 
     req({
         Url = webhook_url,
         Method = "POST",
         Headers = {["Content-Type"] = "application/json"},
         Body = game:GetService("HttpService"):JSONEncode({
-            ["content"] = content,
             ["embeds"] = {{
-                ["description"] = description,
-                ["color"] = color,
-                ["footer"] = {["text"] = "Server Mybubub • " .. os.date("%X", os.time() - 3600)}
+                ["title"] = embedTitle,
+                ["description"] = descriptionText,
+                ["color"] = embedColor,
+                ["footer"] = {
+                    ["text"] = "Script Runtime: " .. getFormattedRuntime()
+                }
             }}
         })
     })
 end
 
--- [[ STARTUP ]] --
-sendWebhook(nil, nil, true)
+-- [[ FUNGSI KIRIM REKAP EVENT ]] --
+local function sendEventSummary()
+    local currentTimeTable = os.date("*t", os.time())
+    local currentHour = currentTimeTable.hour
+    
+    -- Hitung Waktu Session (Dikurangi 1 Jam untuk Tampilan Text)
+    local startHour = (currentHour - 1) % 24
+    local timeSessionStr = string.format("%02d:00 - %02d:00, %s", startHour, currentHour, os.date("%d %B %Y", os.time()))
 
--- [[ DETEKSI CHAT UPDATE BARU ]] --
+    -- Cari apakah ada ikan yang berhasil ditangkap selama window ini
+    local activeItem = nil
+    local catchCount = 0
+
+    for _, item in ipairs(targetItems) do
+        local count = catchBuffer[item.category] or 0
+        if count > 0 then
+            activeItem = item
+            catchCount = count
+            break
+        end
+    end
+
+    local title, description, color
+
+    if activeItem and catchCount > 0 then
+        -- KONDISI 1: ADA IKAN TERTANGKAP
+        title = activeItem.eventTitle
+        description = "**Event Session:** " .. timeSessionStr .. "\n\n" ..
+                      "**In Server**\n" ..
+                      "Sudah Menangkap " .. catchCount .. " " .. activeItem.displayName .. " (Lokasi: " .. activeItem.location .. ")"
+        color = activeItem.color
+    else
+        -- KONDISI 2: ZERO CATCH (TIDAK ADA IKAN)
+        title = "Elemental Event Has Concluded!"
+        description = "**Event Session:** " .. timeSessionStr .. "\n\n" ..
+                      "Tidak ada ikan yang di dapat"
+        color = 0 -- Warna Hitam
+    end
+
+    -- Kirim Webhook
+    sendWebhookPayload(title, description, color)
+
+    -- Reset Buffer untuk Window Event Berikutnya
+    for k in pairs(catchBuffer) do
+        catchBuffer[k] = 0
+    end
+end
+
+-- [[ STARTUP NOTIFICATION ]] --
+sendWebhookPayload(
+    "Webhook Fishit Active", 
+    "Script initialized for account: **" .. game.Players.LocalPlayer.Name .. "**\nMonitoring elemental chat logs...", 
+    65535
+)
+
+-- [[ DETEKSI CHAT LOG (BUFFERING ONLY) ]] --
 local TextChatService = game:GetService("TextChatService")
 local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
 
 if channel then
     channel.MessageReceived:Connect(function(message)
         local txt = message.Text:lower()
-        
         if txt:find("obtained") then
             for _, item in ipairs(targetItems) do
                 if txt:find(item.name:lower()) then
-                    sendWebhook(item, message.Text, false)
-                    return
+                    catchBuffer[item.category] = (catchBuffer[item.category] or 0) + 1
+                    break
                 end
             end
         end
     end)
 end
+
+-- [[ LOOP PENJADWALAN CHECKING EVENT (TIAP MENIT BERAKHIR) ]] --
+task.spawn(function()
+    while true do
+        local dateTable = os.date("*t", os.time())
+        local hour = dateTable.hour
+        local min = dateTable.min
+
+        -- Pemicu Rekap Tepat di Menit 00 pada Jam Event yang Ditentukan
+        if targetEndHours[hour] and min == 0 then
+            if not hasSentForCurrentHour then
+                sendEventSummary()
+                hasSentForCurrentHour = true
+            end
+        else
+            hasSentForCurrentHour = false
+        end
+
+        task.wait(10) -- Check setiap 10 detik
+    end
+end)

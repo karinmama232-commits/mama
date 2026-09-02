@@ -1,5 +1,5 @@
 -- [[ CONFIGURATION ]] --
-local webhook_url = "https://discord.com/api/webhooks/1531621031138037830/ju6NgD5A-tL2rkx3007U1jf8f2_x1jwyMrOvS_lvUD9lMwdWTqOXIuAO5p4p4_k8cXIx"
+local webhook_url = "https://discord.com/api/webhooks/1501314866235969647/ue6JQKQryItIT4VE-_QKcSbMVqFnUGc39Ki6yoD5wN6G4N2qW_1JGkfyCHMeYzs2OaiA"
 local startTime = os.time()
 
 -- Window Jam Selesai Event Asli (03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00)

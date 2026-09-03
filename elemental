@@ -143,16 +143,22 @@ BtnLucid.MouseButton1Click:Connect(function()
                     hrp.CFrame = randomTarget
                 end
                 
-                -- 3. Deteksi Chat Log berdasarkan Display Name Player
+                -- 3. Deteksi Chat Log berdasarkan Display Name Player (Aman dari crash)
                 local gotStone = false
                 local conn
-                conn = game:GetService("TextChatService").OnIncomingMessage = function(message)
-                    if message and message.Text then
-                        -- Menggunakan DisplayName bukan Username
-                        local expectedText = Player.DisplayName .. " obtained a Runic Enchant Stone with a 1 in 1M chance!"
-                        if string.find(message.Text, expectedText) then
-                            gotStone = true
-                        end
+                
+                local TextChatService = game:GetService("TextChatService")
+                if TextChatService and TextChatService:FindFirstChild("TextChannels") then
+                    local generalChannel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+                    if generalChannel then
+                        conn = generalChannel.MessageReceived:Connect(function(message)
+                            if message and message.Text then
+                                local expectedText = Player.DisplayName .. " obtained a Runic Enchant Stone with a 1 in 1M chance!"
+                                if string.find(message.Text, expectedText) then
+                                    gotStone = true
+                                end
+                            end
+                        end)
                     end
                 end
                 

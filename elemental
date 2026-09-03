@@ -1,0 +1,289 @@
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED HASHES & LOGIC) ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- ==========================================
+-- 1. SETUP UI COMPACT
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ElementalIslandUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "ElementalIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "⚡"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 25
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "ElementalMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Elemental Island ⚡"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 13
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local HideBtn = Instance.new("TextButton", Header)
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
+HideBtn.Size = UDim2.new(0, 25, 0, 25)
+HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HideBtn.BackgroundTransparency = 0.4
+HideBtn.Text = "-"
+HideBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+HideBtn.TextSize = 18
+HideBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
+
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+
+-- State Variables
+local isLucid = false
+local isPet = false
+local isElementalEvent = false
+
+local function resetAll()
+    isLucid = false; isPet = false; isElementalEvent = false
+end
+
+IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() resetAll() ScreenGui:Destroy() end)
+
+local function styleBtn(b, fSize)
+    b.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+    b.BackgroundTransparency = 0.4
+    b.TextColor3 = Color3.new(1,1,1)
+    b.TextSize = fSize
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
+
+-- ==========================================
+-- 2. TOMBOL & LOGIKA (BARIS ATAS)
+-- ==========================================
+local BtnLucid = Instance.new("TextButton", MainFrame)
+BtnLucid.Size = UDim2.new(0, 95, 0, 28)
+BtnLucid.Position = UDim2.new(0, 10, 0, 45)
+BtnLucid.Text = "LUCID"
+styleBtn(BtnLucid, 9)
+
+local BtnPet = Instance.new("TextButton", MainFrame)
+BtnPet.Size = UDim2.new(0, 95, 0, 28)
+BtnPet.Position = UDim2.new(0, 115, 0, 45)
+BtnPet.Text = "PET"
+styleBtn(BtnPet, 9)
+
+-- Logika LUCID
+BtnLucid.MouseButton1Click:Connect(function()
+    isLucid = not isLucid
+    BtnLucid.BackgroundTransparency = isLucid and 0 or 0.4
+    
+    if isLucid then
+        task.spawn(function()
+            local RE_Lucid = Net:WaitForChild("RE/992cb93cea8a815ac6db86be739bf6c2dc77c159266ed766c4a036c8144acea9")
+            
+            local underwaterCFrames = {
+                CFrame.new(-3140.12207, -643.476807, -10412.6221, 0.042624779, 6.91801105e-08, -0.999091148, -8.82980515e-08, 1, 6.54759305e-08, 0.999091148, 8.54269047e-08, 0.042624779),
+                CFrame.new(-3139.31689, -643.262024, -10439.7197, 0.00107784977, 1.20874724e-08, -0.999999404, -2.67054379e-08, 1, 1.20586945e-08, 0.999999404, 2.66924243e-08, 0.00107784977),
+                CFrame.new(-3139.00146, -643.476807, -10457.4102, 0.709533572, 4.93398566e-08, -0.704671621, 1.01340314e-08, 1, 8.0222172e-08, 0.704671621, -6.40614886e-08, 0.709533572)
+            }
+            
+            while isLucid do
+                -- 1. Fire Remote Lucid
+                pcall(function()
+                    RE_Lucid:FireServer("Lucid", 1, 1)
+                end)
+                task.wait(1)
+                
+                -- 2. Teleport ke salah satu CFrame secara acak
+                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local randomTarget = underwaterCFrames[math.random(1, #underwaterCFrames)]
+                    hrp.CFrame = randomTarget
+                end
+                
+                -- 3. Deteksi Chat Log berdasarkan Display Name Player
+                local gotStone = false
+                local conn
+                conn = game:GetService("TextChatService").OnIncomingMessage = function(message)
+                    if message and message.Text then
+                        -- Menggunakan DisplayName bukan Username
+                        local expectedText = Player.DisplayName .. " obtained a Runic Enchant Stone with a 1 in 1M chance!"
+                        if string.find(message.Text, expectedText) then
+                            gotStone = true
+                        end
+                    end
+                end
+                
+                -- Polling tunggu pesan di-chat muncul
+                repeat
+                    task.wait(1)
+                until gotStone or not isLucid
+                
+                if conn then conn:Disconnect() end
+                task.wait(1)
+            end
+        end)
+    end
+end)
+
+-- Logika PET
+BtnPet.MouseButton1Click:Connect(function()
+    isPet = not isPet
+    BtnPet.BackgroundTransparency = isPet and 0 or 0.4
+    
+    if isPet then
+        task.spawn(function()
+            local RF_Pet = Net:WaitForChild("RF/876e9e3ed8cc665ccaf3c7aa1b73e6cda0e72706eade3d13be9508f0602e4dbe")
+            
+            while isPet do
+                -- 1. Stay Action
+                pcall(function()
+                    RF_Pet:InvokeServer({["Action"] = "Stay"})
+                end)
+                
+                -- 2. Tunggu 30 Menit (1800 detik)
+                for i = 1800, 1, -1 do
+                    if not isPet then break end
+                    task.wait(1)
+                end
+                if not isPet then break end
+                
+                -- 3. Follow Action
+                pcall(function()
+                    RF_Pet:InvokeServer({["Action"] = "Follow"})
+                end)
+                
+                -- 4. Tunggu 5 Detik
+                task.wait(5)
+            end
+        end)
+    end
+end)
+
+-- ==========================================
+-- 3. TOMBOL & LOGIKA (BARIS TENGAH)
+-- ==========================================
+local BtnTpCrystal = Instance.new("TextButton", MainFrame)
+BtnTpCrystal.Size = UDim2.new(0, 95, 0, 28)
+BtnTpCrystal.Position = UDim2.new(0, 10, 0, 80)
+BtnTpCrystal.Text = "TP CRYSTAL"
+styleBtn(BtnTpCrystal, 8)
+
+local BtnTpKohana = Instance.new("TextButton", MainFrame)
+BtnTpKohana.Size = UDim2.new(0, 95, 0, 28)
+BtnTpKohana.Position = UDim2.new(0, 115, 0, 80)
+BtnTpKohana.Text = "TP KOHANA"
+styleBtn(BtnTpKohana, 8)
+
+-- Logika TP Crystal
+BtnTpCrystal.MouseButton1Click:Connect(function()
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then 
+        hrp.CFrame = CFrame.new(5751.2002, -907.159973, 15343.4404, -0.629727244, -5.50524994e-08, 0.776816368, -1.95113348e-08, 1, 5.50524994e-08, -0.776816368, 1.95113348e-08, -0.629727244)
+    end
+end)
+
+-- Logika TP Kohana
+BtnTpKohana.MouseButton1Click:Connect(function()
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then 
+        hrp.CFrame = CFrame.new(-859.915466, 18.7447453, 464.726349, 0.519193888, -7.42872288e-08, 0.854656458, 1.07504434e-07, 1, 2.16128733e-08, -0.854656458, 8.065809e-08, 0.519193888)
+    end
+end)
+
+-- ==========================================
+-- 4. TOMBOL & LOGIKA (BARIS BAWAH)
+-- ==========================================
+local BtnElementalEvent = Instance.new("TextButton", MainFrame)
+BtnElementalEvent.Size = UDim2.new(0, 200, 0, 28)
+BtnElementalEvent.Position = UDim2.new(0, 10, 0, 118)
+BtnElementalEvent.Text = "ELEMENTAL EVENT"
+styleBtn(BtnElementalEvent, 9)
+
+-- Logika Elemental Event (Jam & Teleport Target)
+BtnElementalEvent.MouseButton1Click:Connect(function()
+    isElementalEvent = not isElementalEvent
+    BtnElementalEvent.BackgroundTransparency = isElementalEvent and 0 or 0.4
+    
+    if isElementalEvent then
+        task.spawn(function()
+            local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
+            local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
+            
+            local savedCFrame = nil
+            local isTeleportedToPocong = false
+            
+            while isElementalEvent do
+                local dateTable = os.date("*t")
+                local currentHour = dateTable.hour
+                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                
+                -- Cek apakah jam event dimulai
+                if startHours[currentHour] and not isTeleportedToPocong then
+                    if hrp then
+                        savedCFrame = hrp.CFrame
+                    end
+                    
+                    local targetPlayer = Players:FindFirstChild("ini_pocong")
+                    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        if hrp then
+                            hrp.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+                            isTeleportedToPocong = true
+                        end
+                    end
+                -- Cek apakah jam event selesai
+                elseif endHours[currentHour] and isTeleportedToPocong then
+                    if hrp and savedCFrame then
+                        hrp.CFrame = savedCFrame
+                    end
+                    isTeleportedToPocong = false
+                    savedCFrame = nil
+                end
+                
+                task.wait(5)
+            end
+        end)
+    end
+end)

@@ -79,11 +79,12 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 -- State Variables
 local isLucid = false
+local isLucidPaused = false
 local isPet = false
 local isElementalEvent = false
 
 local function resetAll()
-    isLucid = false; isPet = false; isElementalEvent = false
+    isLucid = false; isLucidPaused = false; isPet = false; isElementalEvent = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -130,20 +131,27 @@ BtnLucid.MouseButton1Click:Connect(function()
             }
             
             while isLucid do
+                -- Hanya pause jika tombol Elemental Event AKTIF dan status Pause terdeteksi True
+                while isElementalEvent and isLucidPaused and isLucid do
+                    task.wait(1)
+                end
+                
+                if not isLucid then break end
+
                 -- 1. Fire Remote Lucid
                 pcall(function()
                     RE_Lucid:FireServer("Lucid", 1, 1)
                 end)
                 task.wait(1)
                 
-                -- 2. Teleport ke salah satu CFrame secara acak
+                -- 2. Teleport ke salah satu CFrame secara acak (jika tidak sedang di-pause oleh event)
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
+                if hrp and not (isElementalEvent and isLucidPaused) then
                     local randomTarget = underwaterCFrames[math.random(1, #underwaterCFrames)]
                     hrp.CFrame = randomTarget
                 end
                 
-                -- 3. Deteksi Chat Log berdasarkan Display Name Player (Aman dari crash)
+                -- 3. Deteksi Chat Log berdasarkan Display Name Player
                 local gotStone = false
                 local conn
                 
@@ -162,10 +170,10 @@ BtnLucid.MouseButton1Click:Connect(function()
                     end
                 end
                 
-                -- Polling tunggu pesan di-chat muncul
+                -- Polling tunggu pesan di-chat muncul atau terjedanya event (hanya jika tombol event aktif)
                 repeat
                     task.wait(1)
-                until gotStone or not isLucid
+                until gotStone or not isLucid or (isElementalEvent and isLucidPaused)
                 
                 if conn then conn:Disconnect() end
                 task.wait(1)
@@ -253,6 +261,10 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
     isElementalEvent = not isElementalEvent
     BtnElementalEvent.BackgroundTransparency = isElementalEvent and 0 or 0.4
     
+    if not isElementalEvent then
+        isLucidPaused = false -- Unpause Lucid jika tombol Elemental Event dimatikan
+    end
+    
     if isElementalEvent then
         task.spawn(function()
             local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
@@ -268,6 +280,8 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 
                 -- Cek apakah jam event dimulai
                 if startHours[currentHour] and not isTeleportedToPocong then
+                    isLucidPaused = true -- Beri sinyal jeda ke Lucid
+                    
                     if hrp then
                         savedCFrame = hrp.CFrame
                     end
@@ -286,6 +300,8 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                     end
                     isTeleportedToPocong = false
                     savedCFrame = nil
+                    
+                    isLucidPaused = false -- Beri sinyal lanjut ke Lucid
                 end
                 
                 task.wait(5)

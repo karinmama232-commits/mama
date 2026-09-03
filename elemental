@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED HASHES & LOGIC) ]] --
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED PET DELAY 3S) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -6,6 +6,40 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- Remote / RemoteFunction Hashes
+local RE_Lucid   = Net:WaitForChild("RE/992cb93cea8a815ac6db86be739bf6c2dc77c159266ed766c4a036c8144acea9")
+local RF_Pet     = Net:WaitForChild("RF/876e9e3ed8cc665ccaf3c7aa1b73e6cda0e72706eade3d13be9508f0602e4dbe")
+
+-- Remote / RemoteFunction Fishing
+local RE_Equip   = Net:WaitForChild("RE/63893ad9b4e702f7ceca513ca16760b93872754d82698b5a03229a3cec499e35")
+local RE_Unequip = Net:WaitForChild("RE/e94900fb3aa6c919e7908407cb73a11747baa4d691b1bae3e3f48310df684c8a")
+local RF_Fish1   = Net:WaitForChild("RF/fd08377d4e65ff9b205a02f06d6de374aebcff12f8b4151f931c086860be4694")
+local RF_Fish2   = Net:WaitForChild("RF/cd68f7281ec6bf4636ae4a802c00d156ccb3b6e116aacceeb203876c8c9823c5")
+local RE_Catch   = Net:WaitForChild("RE/b6682df607c5f614e3f75ce4b16674cebb8d65b305847bc0fb231d8826e99e89")
+
+local snakeCFrame = CFrame.new(-4149.7998, 7.94670057, 618.787415, 0.29035899, -7.28464258e-08, 0.956917763, 5.20069392e-08, 1, 6.03455632e-08, -0.956917763, 3.22444862e-08, 0.29035899)
+
+-- Helper Functions
+local function repeatActionForDuration(duration, actionFunc)
+    local startTime = tick()
+    while tick() - startTime < duration do
+        pcall(actionFunc)
+        task.wait(0.1)
+    end
+end
+
+local function equipRod()
+    repeatActionForDuration(2, function()
+        RE_Equip:FireServer(1)
+    end)
+end
+
+local function unequipRod()
+    repeatActionForDuration(2, function()
+        RE_Unequip:FireServer()
+    end)
+end
 
 -- ==========================================
 -- 1. SETUP UI COMPACT
@@ -122,8 +156,6 @@ BtnLucid.MouseButton1Click:Connect(function()
     
     if isLucid then
         task.spawn(function()
-            local RE_Lucid = Net:WaitForChild("RE/992cb93cea8a815ac6db86be739bf6c2dc77c159266ed766c4a036c8144acea9")
-            
             local underwaterCFrames = {
                 CFrame.new(-3140.12207, -643.476807, -10412.6221, 0.042624779, 6.91801105e-08, -0.999091148, -8.82980515e-08, 1, 6.54759305e-08, 0.999091148, 8.54269047e-08, 0.042624779),
                 CFrame.new(-3139.31689, -643.262024, -10439.7197, 0.00107784977, 1.20874724e-08, -0.999999404, -2.67054379e-08, 1, 1.20586945e-08, 0.999999404, 2.66924243e-08, 0.00107784977),
@@ -131,27 +163,23 @@ BtnLucid.MouseButton1Click:Connect(function()
             }
             
             while isLucid do
-                -- Hanya pause jika tombol Elemental Event AKTIF dan status Pause terdeteksi True
                 while isElementalEvent and isLucidPaused and isLucid do
                     task.wait(1)
                 end
                 
                 if not isLucid then break end
 
-                -- 1. Fire Remote Lucid
                 pcall(function()
                     RE_Lucid:FireServer("Lucid", 1, 1)
                 end)
                 task.wait(1)
                 
-                -- 2. Teleport ke salah satu CFrame secara acak (jika tidak sedang di-pause oleh event)
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if hrp and not (isElementalEvent and isLucidPaused) then
                     local randomTarget = underwaterCFrames[math.random(1, #underwaterCFrames)]
                     hrp.CFrame = randomTarget
                 end
                 
-                -- 3. Deteksi Chat Log berdasarkan Display Name Player
                 local gotStone = false
                 local conn
                 
@@ -170,7 +198,6 @@ BtnLucid.MouseButton1Click:Connect(function()
                     end
                 end
                 
-                -- Polling tunggu pesan di-chat muncul atau terjedanya event (hanya jika tombol event aktif)
                 repeat
                     task.wait(1)
                 until gotStone or not isLucid or (isElementalEvent and isLucidPaused)
@@ -182,35 +209,117 @@ BtnLucid.MouseButton1Click:Connect(function()
     end
 end)
 
--- Logika PET
+-- Logika PET (Dengan Jeda 3 Detik Setiap Tahap)
 BtnPet.MouseButton1Click:Connect(function()
     isPet = not isPet
     BtnPet.BackgroundTransparency = isPet and 0 or 0.4
     
     if isPet then
         task.spawn(function()
-            local RF_Pet = Net:WaitForChild("RF/876e9e3ed8cc665ccaf3c7aa1b73e6cda0e72706eade3d13be9508f0602e4dbe")
-            
             while isPet do
-                -- 1. Stay Action
+                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if not hrp then break end
+                
+                -- 1. Simpan posisi awal & Jeda 3s
+                local startCFrame = hrp.CFrame
+                task.wait(3)
+                
+                -- 2. Teleport ke Ular & Jeda 3s
+                hrp.CFrame = snakeCFrame
+                task.wait(3)
+                
+                -- 3. Pasang Pet Stay & Jeda 3s
                 pcall(function()
                     RF_Pet:InvokeServer({["Action"] = "Stay"})
                 end)
+                task.wait(3)
                 
-                -- 2. Tunggu 30 Menit (1800 detik)
-                for i = 1800, 1, -1 do
+                -- 4. Teleport balik ke posisi awal & Jeda 3s
+                local currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if currentHrp then currentHrp.CFrame = startCFrame end
+                task.wait(3)
+                
+                -- 5. Buka pancing & Jeda 3s
+                equipRod()
+                task.wait(3)
+                
+                -- 6. Loop mancing berjalan
+                local fishingLoopActive = true
+                task.spawn(function()
+                    while isPet and fishingLoopActive do
+                        pcall(function()
+                            RF_Fish1:InvokeServer()
+                            task.wait(0.01)
+                            RF_Fish2:InvokeServer(-1.233184814453125, 0.3312464441272613, 1788425979.004372)
+                            task.wait(0.08)
+                            RE_Catch:FireServer()
+                        end)
+                        task.wait(0.05)
+                    end
+                end)
+                
+                -- 7. Jeda 100 menit (6000 detik)
+                for i = 6000, 1, -1 do
                     if not isPet then break end
                     task.wait(1)
                 end
-                if not isPet then break end
                 
-                -- 3. Follow Action
+                -- Stop loop mancing
+                fishingLoopActive = false
+                task.wait(1)
+                
+                -- 8. Tutup pancing & Jeda 3s
+                unequipRod()
+                task.wait(3)
+                
+                -- 9. Simpan posisi terbaru & Jeda 3s
+                currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if currentHrp then
+                    local lastCFrame = currentHrp.CFrame
+                    task.wait(3)
+                    
+                    -- 10. Teleport ke Ular & Jeda 3s
+                    currentHrp.CFrame = snakeCFrame
+                    task.wait(3)
+                    
+                    -- 11. Ambil Pet (Follow) & Jeda 3s
+                    pcall(function()
+                        RF_Pet:InvokeServer({["Action"] = "Follow"})
+                    end)
+                    task.wait(3)
+                    
+                    -- 12. Teleport balik ke posisi terbaru & Jeda 3s
+                    if isPet then
+                        currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                        if currentHrp then currentHrp.CFrame = lastCFrame end
+                        task.wait(3)
+                    end
+                end
+            end
+        end)
+    else
+        -- Jika Tombol PET dimatikan (OFF)
+        task.spawn(function()
+            unequipRod()
+            task.wait(3)
+            
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local savedCFrame = hrp.CFrame
+                task.wait(3)
+                
+                hrp.CFrame = snakeCFrame
+                task.wait(3)
+                
                 pcall(function()
                     RF_Pet:InvokeServer({["Action"] = "Follow"})
                 end)
+                task.wait(3)
                 
-                -- 4. Tunggu 5 Detik
-                task.wait(5)
+                local currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if currentHrp then
+                    currentHrp.CFrame = savedCFrame
+                end
             end
         end)
     end
@@ -256,13 +365,13 @@ BtnElementalEvent.Position = UDim2.new(0, 10, 0, 118)
 BtnElementalEvent.Text = "ELEMENTAL EVENT"
 styleBtn(BtnElementalEvent, 9)
 
--- Logika Elemental Event (Jam & Teleport Target)
+-- Logika Elemental Event
 BtnElementalEvent.MouseButton1Click:Connect(function()
     isElementalEvent = not isElementalEvent
     BtnElementalEvent.BackgroundTransparency = isElementalEvent and 0 or 0.4
     
     if not isElementalEvent then
-        isLucidPaused = false -- Unpause Lucid jika tombol Elemental Event dimatikan
+        isLucidPaused = false
     end
     
     if isElementalEvent then
@@ -278,9 +387,8 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 local currentHour = dateTable.hour
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 
-                -- Cek apakah jam event dimulai
                 if startHours[currentHour] and not isTeleportedToPocong then
-                    isLucidPaused = true -- Beri sinyal jeda ke Lucid
+                    isLucidPaused = true
                     
                     if hrp then
                         savedCFrame = hrp.CFrame
@@ -293,7 +401,6 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                             isTeleportedToPocong = true
                         end
                     end
-                -- Cek apakah jam event selesai
                 elseif endHours[currentHour] and isTeleportedToPocong then
                     if hrp and savedCFrame then
                         hrp.CFrame = savedCFrame
@@ -301,7 +408,7 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                     isTeleportedToPocong = false
                     savedCFrame = nil
                     
-                    isLucidPaused = false -- Beri sinyal lanjut ke Lucid
+                    isLucidPaused = false
                 end
                 
                 task.wait(5)

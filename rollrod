@@ -1,0 +1,48 @@
+-- [[ CONFIG ]] --
+local webhook_url = "https://discord.com/api/webhooks/1501314866235969647/ue6JQKQryItIT4VE-_QKcSbMVqFnUGc39Ki6yoD5wN6G4N2qW_1JGkfyCHMeYzs2OaiA"
+
+-- [[ FUNGSI KIRIM WEBHOOK ]] --
+local function sendWebhook(textMessage, isStart)
+    local req = request or http_request or (http and http.request)
+    if not req then return end
+
+    local content
+    
+    if isStart then
+        content = "🔔 **Webhook Fishit Aktif!**\nScript running di akun: **" .. game.Players.LocalPlayer.Name .. "**"
+    else
+        -- Hapus tag HTML/formatting dari teks Roblox jika ada
+        local cleanerText = textMessage:gsub("<[^>]*>", "")
+        -- Menghapus awalan "[Server]: " jika terbawa di pesan
+        cleanerText = cleanerText:gsub("^%[Server%]:%s*", "")
+        
+        content = cleanerText
+    end
+
+    req({
+        Url = webhook_url,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode({
+            ["content"] = content
+        })
+    })
+end
+
+-- [[ STARTUP ]] --
+sendWebhook(nil, true)
+
+-- [[ DETEKSI CHAT ENCHANT ]] --
+local TextChatService = game:GetService("TextChatService")
+local channel = TextChatService:FindFirstChild("RBXGeneral") or (TextChatService.TextChannels and TextChatService.TextChannels:FindFirstChild("RBXGeneral"))
+
+if channel then
+    channel.MessageReceived:Connect(function(message)
+        local txt = message.Text
+        
+        -- Mencegat pesan pola: rolled a ... Enchant on their ...
+        if txt:lower():find("rolled a") and txt:lower():find("enchant on their") then
+            sendWebhook(txt, false)
+        end
+    end)
+end

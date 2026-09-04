@@ -9,11 +9,10 @@ local function sendWebhook(textMessage, isStart)
     local content
     
     if isStart then
-        content = "🔔 **Webhook Fishit Aktif!**\nScript running di akun: **" .. game.Players.LocalPlayer.Name .. "**"
+        content = "🔔 **Webhook Roll Enchant Fishit Aktif!**\nScript running di akun: **" .. game.Players.LocalPlayer.Name .. "**"
     else
-        -- Hapus tag HTML/formatting dari teks Roblox jika ada
+        -- Bersihkan tag formatting UI Roblox
         local cleanerText = textMessage:gsub("<[^>]*>", "")
-        -- Menghapus awalan "[Server]: " jika terbawa di pesan
         cleanerText = cleanerText:gsub("^%[Server%]:%s*", "")
         
         content = cleanerText
@@ -32,17 +31,36 @@ end
 -- [[ STARTUP ]] --
 sendWebhook(nil, true)
 
--- [[ DETEKSI CHAT ENCHANT ]] --
-local TextChatService = game:GetService("TextChatService")
-local channel = TextChatService:FindFirstChild("RBXGeneral") or (TextChatService.TextChannels and TextChatService.TextChannels:FindFirstChild("RBXGeneral"))
+-- [[ FUNGSI EVALUASI TEMA PESAN ]] --
+local function processChatMessage(msgText)
+    local lowerMsg = msgText:lower()
+    
+    -- Tangkap pesan jika mengandung kata kunci roll atau enchant
+    if lowerMsg:find("rolled") or lowerMsg:find("enchant") then
+        sendWebhook(msgText, false)
+    end
+end
 
-if channel then
-    channel.MessageReceived:Connect(function(message)
-        local txt = message.Text
-        
-        -- Mencegat pesan pola: rolled a ... Enchant on their ...
-        if txt:lower():find("rolled a") and txt:lower():find("enchant on their") then
-            sendWebhook(txt, false)
+-- [[ DETEKSI VIA TEXTCHATSERVICE (SISTEM BARU) ]] --
+local TextChatService = game:GetService("TextChatService")
+if TextChatService then
+    TextChatService.MessageReceived:Connect(function(message)
+        if message and message.Text then
+            processChatMessage(message.Text)
         end
+    end)
+end
+
+-- [[ DETEKSI VIA PLAYERS CHATTED (FALLBACK SISTEM LAMA) ]] --
+local Players = game:GetService("Players")
+Players.PlayerAdded:Connect(function(player)
+    player.Chatted:Connect(function(msg)
+        processChatMessage(msg)
+    end)
+end)
+
+for _, player in ipairs(Players:GetPlayers()) do
+    player.Chatted:Connect(function(msg)
+        processChatMessage(msg)
     end)
 end

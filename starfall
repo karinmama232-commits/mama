@@ -1,8 +1,7 @@
 -- [[ CONFIGURATION ]] --
 local webhook_url = "https://discord.com/api/webhooks/1531621031138037830/ju6NgD5A-tL2rkx3007U1jf8f2_x1jwyMrOvS_lvUD9lMwdWTqOXIuAO5p4p4_k8cXIx"
-local startTime = os.time()
 
--- Window Jam Selesai Event Asli (03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00)
+-- Target Hours for Event Recap (03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00, 00:00)
 local targetEndHours = {[3] = true, [6] = true, [9] = true, [12] = true, [15] = true, [18] = true, [21] = true, [0] = true}
 
 -- Target Items & Data Mapping
@@ -33,21 +32,22 @@ local targetItems = {
     }
 }
 
--- Memory Buffer (Counter & List Player per Kategori)
+-- Hourly Catch Buffer (Directly reset per event)
 local catchBuffer = {
     blizzard = { count = 0, players = {} },
     storm    = { count = 0, players = {} },
     volcano  = { count = 0, players = {} }
 }
 
+-- Total Accumulated Catches (Reset only via !claim)
+local totalCatches = {
+    total = 0,
+    players = {} -- Structure: { ["player_name"] = count }
+}
+
 local hasSentForCurrentHour = false
 
 -- [[ HELPER FUNCTIONS ]] --
-local function getFormattedRuntime()
-    local s = os.time() - startTime
-    return string.format("%02d:%02d:%02d", math.floor(s / 3600), math.floor((s % 3600) / 60), s % 60)
-end
-
 local function sendWebhookPayload(embedTitle, descriptionText, embedColor, footerText)
     local req = request or http_request or (http and http.request)
     if not req then return end
@@ -69,18 +69,35 @@ local function sendWebhookPayload(embedTitle, descriptionText, embedColor, foote
     })
 end
 
--- [[ FUNGSI KIRIM REKAP EVENT ]] --
+local function getTotalCaughtString()
+    if totalCatches.total == 0 then
+        return "Total Caught: 0"
+    end
+
+    local playerDetails = {}
+    for player, count in pairs(totalCatches.players) do
+        table.insert(playerDetails, string.format("(%d %s)", count, player))
+    end
+
+    return string.format("Total Caught: %d %s", totalCatches.total, table.concat(playerDetails, " "))
+end
+
+-- [[ EVENT RECAP FUNCTION ]] --
 local function sendEventSummary()
     local currentTimeTable = os.date("*t", os.time())
     local currentHour = currentTimeTable.hour
     
-    -- Display Waktu di Discord Dikurangi 1 Jam
+    -- Hour offset calculations
     local endHourDisplay = (currentHour - 1) % 24
     local startHourDisplay = (endHourDisplay - 1) % 24
     local timeSessionStr = string.format("%02d:00 - %02d:00, %s", startHourDisplay, endHourDisplay, os.date("%d %B %Y", os.time()))
-    local footerStr = "Event Session: " .. timeSessionStr .. " • Script Runtime: " .. getFormattedRuntime()
+    
+    -- Dynamic Footer with Accumulated Totals
+    local footerStr = "Event Session: " .. timeSessionStr .. "\n" .. 
+                      getTotalCaughtString() .. "\n" .. 
+                      "Type !claim in chat to collect fish"
 
-    -- Cek item yang tertangkap
+    -- Find active item for the session
     local activeItem = nil
     local itemData = nil
 
@@ -96,7 +113,6 @@ local function sendEventSummary()
     local title, description, color
 
     if activeItem and itemData then
-        -- KONDISI 1: ADA IKAN TERTANGKAP (Dengan Enter / Baris Baru untuk List Player)
         title = activeItem.eventTitle
         local playerListStr = table.concat(itemData.players, ", ")
         
@@ -105,16 +121,15 @@ local function sendEventSummary()
                       "(" .. playerListStr .. ")"
         color = activeItem.color
     else
-        -- KONDISI 2: ZERO CATCH (TIDAK ADA IKAN)
         title = "Elemental Event Has Concluded!"
         description = "No target fish caught during this event."
-        color = 0 -- Warna Hitam
+        color = 0 -- Black
     end
 
-    -- Kirim Webhook
+    -- Send Discord Webhook
     sendWebhookPayload(title, description, color, footerStr)
 
-    -- Reset Buffer
+    -- Reset Hourly Buffer Only
     for k in pairs(catchBuffer) do
         catchBuffer[k] = { count = 0, players = {} }
     end
@@ -125,25 +140,53 @@ sendWebhookPayload(
     "Webhook Fishit Active", 
     "Script initialized for account: **" .. game.Players.LocalPlayer.Name .. "**\nMonitoring elemental chat logs...", 
     65535,
-    "Script Runtime: " .. getFormattedRuntime()
+    "Status: Monitoring Active | Type !claim in chat to reset counter"
 )
 
--- [[ DETEKSI CHAT LOG (BUFFERING ONLY) ]] --
+-- [[ CHAT MONITORING & CLAIM SYSTEM ]] --
 local TextChatService = game:GetService("TextChatService")
 local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
 
 if channel then
     channel.MessageReceived:Connect(function(message)
-        local txt = message.Text:lower()
+        local rawText = message.Text
+        local txt = rawText:lower()
+        local senderName = message.TextSource and game.Players:GetPlayerByUserId(message.TextSource.UserId) and game.Players:GetPlayerByUserId(message.TextSource.UserId).Name or "Unknown Player"
+
+        -- 1. DETECT !CLAIM COMMAND
+        if txt:find("!claim") then
+            local claimedTotal = totalCatches.total
+            
+            -- Send Green Notification Webhook
+            sendWebhookPayload(
+                "Fish Claimed Successfully!",
+                "All accumulated target fish have been claimed by **" .. senderName .. "**!\n" ..
+                "Total Claimed: **" .. claimedTotal .. " Fish**",
+                65280, -- Green
+                "Counter has been reset to 0"
+            )
+
+            -- Reset Accumulated Totals
+            totalCatches.total = 0
+            totalCatches.players = {}
+            return
+        end
+
+        -- 2. DETECT FISH CATCH LOGS
         if txt:find("obtained") then
-            local cleanerText = message.Text:gsub("<[^>]*>", "")
+            local cleanerText = rawText:gsub("<[^>]*>", "")
             local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
             
             for _, item in ipairs(targetItems) do
                 if txt:find(item.name:lower()) then
+                    -- Add to Hourly Buffer
                     local buf = catchBuffer[item.category]
                     buf.count = buf.count + 1
                     table.insert(buf.players, luckyPlayer)
+
+                    -- Add to Lifetime Total
+                    totalCatches.total = totalCatches.total + 1
+                    totalCatches.players[luckyPlayer] = (totalCatches.players[luckyPlayer] or 0) + 1
                     break
                 end
             end
@@ -151,14 +194,14 @@ if channel then
     end)
 end
 
--- [[ LOOP PENJADWALAN CHECKING EVENT ]] --
+-- [[ MAIN LOOP SCHEDULE ]] --
 task.spawn(function()
     while true do
         local dateTable = os.date("*t", os.time())
         local hour = dateTable.hour
         local min = dateTable.min
 
-        -- Pemicu Rekap Tepat di Menit 00 pada Jam Event yang Ditentukan
+        -- Trigger Recap on Minute 00 of Target Hours
         if targetEndHours[hour] and min == 0 then
             if not hasSentForCurrentHour then
                 sendEventSummary()

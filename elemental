@@ -8,7 +8,7 @@ local Player = Players.LocalPlayer
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
 -- Remote / RemoteFunction Hashes (UPDATED)
-local RE_Lucid   = Net:WaitForChild("RE/992cb93cea8a815ac6db86be739bf6c2dc77c159266ed766c4a036c8144acea9")
+local RE_Lucid   = Net:WaitForChild("RE/e9ac7d783b0a45969b782a31dbf972b1f726f4ba411e0ac79aaffb0251ce1122")
 local RF_Pet     = Net:WaitForChild("RF/91d63cabe33404c97c76a97e7ee0e755636be70bad62fd1842ae2075b8c4f017")
 
 -- Remote / RemoteFunction Fishing (UPDATED)

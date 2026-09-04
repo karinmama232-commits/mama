@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED PET DELAY 3S) ]] --
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED RE/RF & DELAY 3S) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -7,16 +7,16 @@ local Player = Players.LocalPlayer
 
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
--- Remote / RemoteFunction Hashes
+-- Remote / RemoteFunction Hashes (UPDATED)
 local RE_Lucid   = Net:WaitForChild("RE/992cb93cea8a815ac6db86be739bf6c2dc77c159266ed766c4a036c8144acea9")
-local RF_Pet     = Net:WaitForChild("RF/876e9e3ed8cc665ccaf3c7aa1b73e6cda0e72706eade3d13be9508f0602e4dbe")
+local RF_Pet     = Net:WaitForChild("RF/91d63cabe33404c97c76a97e7ee0e755636be70bad62fd1842ae2075b8c4f017")
 
--- Remote / RemoteFunction Fishing
-local RE_Equip   = Net:WaitForChild("RE/63893ad9b4e702f7ceca513ca16760b93872754d82698b5a03229a3cec499e35")
-local RE_Unequip = Net:WaitForChild("RE/e94900fb3aa6c919e7908407cb73a11747baa4d691b1bae3e3f48310df684c8a")
-local RF_Fish1   = Net:WaitForChild("RF/fd08377d4e65ff9b205a02f06d6de374aebcff12f8b4151f931c086860be4694")
-local RF_Fish2   = Net:WaitForChild("RF/cd68f7281ec6bf4636ae4a802c00d156ccb3b6e116aacceeb203876c8c9823c5")
-local RE_Catch   = Net:WaitForChild("RE/b6682df607c5f614e3f75ce4b16674cebb8d65b305847bc0fb231d8826e99e89")
+-- Remote / RemoteFunction Fishing (UPDATED)
+local RE_Equip   = Net:WaitForChild("RE/9b6c546becca1c89e67528799e3f682ac47d1c710e74327e05b0607b7d1c49a2")
+local RE_Unequip = Net:WaitForChild("RE/a5a34a2cf701124a334cba4c89dc627c59eb9464a3e2aa712d63f3b8972da2b4")
+local RF_Fish1   = Net:WaitForChild("RF/9bb07b0bed0e4329270407e1e031b642d263c4fd1c5adb0aaa5c019109926adf")
+local RF_Fish2   = Net:WaitForChild("RF/b7d70c290934d44786e87c71988c8512d98a46fc23815d09625b7af6f666353f")
+local RE_Catch   = Net:WaitForChild("RE/4eb73185a014f9a3a545752b04c58280b6f83ceb00ef52f8a6f8063ab2f6da92")
 
 local snakeCFrame = CFrame.new(-4149.7998, 7.94670057, 618.787415, 0.29035899, -7.28464258e-08, 0.956917763, 5.20069392e-08, 1, 6.03455632e-08, -0.956917763, 3.22444862e-08, 0.29035899)
 
@@ -209,7 +209,7 @@ BtnLucid.MouseButton1Click:Connect(function()
     end
 end)
 
--- Logika PET (Dengan Jeda 3 Detik Setiap Tahap)
+-- Logika PET (Dengan Jeda 3 Detik Setiap Tahap & Remote Terbaru)
 BtnPet.MouseButton1Click:Connect(function()
     isPet = not isPet
     BtnPet.BackgroundTransparency = isPet and 0 or 0.4
@@ -222,35 +222,35 @@ BtnPet.MouseButton1Click:Connect(function()
                 
                 -- 1. Simpan posisi awal & Jeda 3s
                 local startCFrame = hrp.CFrame
-                task.wait(1)
+                task.wait(3)
                 
                 -- 2. Teleport ke Ular & Jeda 3s
                 hrp.CFrame = snakeCFrame
-                task.wait(5)
+                task.wait(3)
                 
                 -- 3. Pasang Pet Stay & Jeda 3s
                 pcall(function()
                     RF_Pet:InvokeServer({["Action"] = "Stay"})
                 end)
-                task.wait(5)
+                task.wait(3)
                 
                 -- 4. Teleport balik ke posisi awal & Jeda 3s
                 local currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if currentHrp then currentHrp.CFrame = startCFrame end
-                task.wait(1)
+                task.wait(3)
                 
                 -- 5. Buka pancing & Jeda 3s
                 equipRod()
-                task.wait(5)
+                task.wait(3)
                 
-                -- 6. Loop mancing berjalan
+                -- 6. Loop mancing berjalan (Remote & Parameter Terbaru)
                 local fishingLoopActive = true
                 task.spawn(function()
                     while isPet and fishingLoopActive do
                         pcall(function()
                             RF_Fish1:InvokeServer()
                             task.wait(0.01)
-                            RF_Fish2:InvokeServer(-1.233184814453125, 0.3312464441272613, 1788425979.004372)
+                            RF_Fish2:InvokeServer(-1.233184814453125, 0.5974168063934951, 1788506749.784816)
                             task.wait(0.08)
                             RE_Catch:FireServer()
                         end)
@@ -266,33 +266,33 @@ BtnPet.MouseButton1Click:Connect(function()
                 
                 -- Stop loop mancing
                 fishingLoopActive = false
-                task.wait(2)
+                task.wait(1)
                 
                 -- 8. Tutup pancing & Jeda 3s
                 unequipRod()
-                task.wait(1)
+                task.wait(3)
                 
                 -- 9. Simpan posisi terbaru & Jeda 3s
                 currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if currentHrp then
                     local lastCFrame = currentHrp.CFrame
-                    task.wait(1)
+                    task.wait(3)
                     
                     -- 10. Teleport ke Ular & Jeda 3s
                     currentHrp.CFrame = snakeCFrame
-                    task.wait(5)
+                    task.wait(3)
                     
                     -- 11. Ambil Pet (Follow) & Jeda 3s
                     pcall(function()
                         RF_Pet:InvokeServer({["Action"] = "Follow"})
                     end)
-                    task.wait(5)
+                    task.wait(3)
                     
                     -- 12. Teleport balik ke posisi terbaru & Jeda 3s
                     if isPet then
                         currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                         if currentHrp then currentHrp.CFrame = lastCFrame end
-                        task.wait(1)
+                        task.wait(3)
                     end
                 end
             end
@@ -301,20 +301,20 @@ BtnPet.MouseButton1Click:Connect(function()
         -- Jika Tombol PET dimatikan (OFF)
         task.spawn(function()
             unequipRod()
-            task.wait(1)
+            task.wait(3)
             
             local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
                 local savedCFrame = hrp.CFrame
-                task.wait(1)
+                task.wait(3)
                 
                 hrp.CFrame = snakeCFrame
-                task.wait(5)
+                task.wait(3)
                 
                 pcall(function()
                     RF_Pet:InvokeServer({["Action"] = "Follow"})
                 end)
-                task.wait(2)
+                task.wait(3)
                 
                 local currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if currentHrp then

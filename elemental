@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED RE/RF & DELAY 3S) ]] --
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED UI & HYDRA TP) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -7,11 +7,11 @@ local Player = Players.LocalPlayer
 
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
--- Remote / RemoteFunction Hashes (UPDATED)
+-- Remote / RemoteFunction Hashes
 local RE_Lucid   = Net:WaitForChild("RE/e9ac7d783b0a45969b782a31dbf972b1f726f4ba411e0ac79aaffb0251ce1122")
 local RF_Pet     = Net:WaitForChild("RF/91d63cabe33404c97c76a97e7ee0e755636be70bad62fd1842ae2075b8c4f017")
 
--- Remote / RemoteFunction Fishing (UPDATED)
+-- Remote / RemoteFunction Fishing
 local RE_Equip   = Net:WaitForChild("RE/9b6c546becca1c89e67528799e3f682ac47d1c710e74327e05b0607b7d1c49a2")
 local RE_Unequip = Net:WaitForChild("RE/a5a34a2cf701124a334cba4c89dc627c59eb9464a3e2aa712d63f3b8972da2b4")
 local RF_Fish1   = Net:WaitForChild("RF/9bb07b0bed0e4329270407e1e031b642d263c4fd1c5adb0aaa5c019109926adf")
@@ -19,6 +19,28 @@ local RF_Fish2   = Net:WaitForChild("RF/b7d70c290934d44786e87c71988c8512d98a46fc
 local RE_Catch   = Net:WaitForChild("RE/4eb73185a014f9a3a545752b04c58280b6f83ceb00ef52f8a6f8063ab2f6da92")
 
 local snakeCFrame = CFrame.new(-4149.7998, 7.94670057, 618.787415, 0.29035899, -7.28464258e-08, 0.956917763, 5.20069392e-08, 1, 6.03455632e-08, -0.956917763, 3.22444862e-08, 0.29035899)
+
+-- Daftar CFrame Hydra Locations
+local volcanoCFrames = {
+    CFrame.new(-1334.16516, -855.694641, 5553.63086, -0.525375187, 2.29844161e-08, -0.850870669, -3.3188595e-08, 1, 4.7505317e-08, 0.850870669, 5.3197315e-08, -0.525375187),
+    CFrame.new(-1274.89709, -855.694519, 5539.01025, -0.877271771, -2.46672638e-08, 0.479994029, -6.83745967e-08, 1, -7.35755776e-08, -0.479994029, -9.73651737e-08, -0.877271771)
+}
+
+local blizzardCFrames = {
+    CFrame.new(-1232.67383, -855.691223, 5580.79199, -0.58545351, 1.15176568e-09, 0.81070596, -3.9156113e-08, 1, -2.96973877e-08, -0.81070596, -4.91305343e-08, -0.58545351),
+    CFrame.new(-1247.93469, -855.694702, 5638.97705, 0.809574902, -6.95431908e-08, 0.587016582, 4.83460987e-08, 1, 5.17930836e-08, -0.587016582, -1.35504186e-08, 0.809574902)
+}
+
+local stormCFrames = {
+    CFrame.new(-1305.62073, -855.69458, 5654.5127, 0.990153253, 4.53234854e-08, -0.139987707, -4.6744109e-08, 1, -6.86019552e-09, 0.139987707, 1.3336245e-08, 0.990153253),
+    CFrame.new(-1348.74109, -855.694641, 5611.17334, 0.0830475464, 5.26299582e-09, -0.996545613, 3.34251071e-09, 1, 5.55978907e-09, 0.996545613, -3.79269105e-09, 0.0830475464)
+}
+
+local allHydraCFrames = {
+    volcanoCFrames[1], volcanoCFrames[2],
+    blizzardCFrames[1], blizzardCFrames[2],
+    stormCFrames[1], stormCFrames[2]
+}
 
 -- Helper Functions
 local function repeatActionForDuration(duration, actionFunc)
@@ -39,6 +61,17 @@ local function unequipRod()
     repeatActionForDuration(2, function()
         RE_Unequip:FireServer()
     end)
+end
+
+local function getRandomCFrame(cframeTable)
+    return cframeTable[math.random(1, #cframeTable)]
+end
+
+local function teleportTo(cframe)
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = cframe
+    end
 end
 
 -- ==========================================
@@ -135,7 +168,7 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. TOMBOL & LOGIKA (BARIS ATAS)
+-- 2. BARIS 1: LUCID & PET (2 TOMBOL)
 -- ==========================================
 local BtnLucid = Instance.new("TextButton", MainFrame)
 BtnLucid.Size = UDim2.new(0, 95, 0, 28)
@@ -209,7 +242,7 @@ BtnLucid.MouseButton1Click:Connect(function()
     end
 end)
 
--- Logika PET (Dengan Jeda 3 Detik Setiap Tahap & Remote Terbaru)
+-- Logika PET
 BtnPet.MouseButton1Click:Connect(function()
     isPet = not isPet
     BtnPet.BackgroundTransparency = isPet and 0 or 0.4
@@ -220,30 +253,24 @@ BtnPet.MouseButton1Click:Connect(function()
                 local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if not hrp then break end
                 
-                -- 1. Simpan posisi awal & Jeda 3s
                 local startCFrame = hrp.CFrame
                 task.wait(3)
                 
-                -- 2. Teleport ke Ular & Jeda 3s
                 hrp.CFrame = snakeCFrame
                 task.wait(3)
                 
-                -- 3. Pasang Pet Stay & Jeda 3s
                 pcall(function()
                     RF_Pet:InvokeServer({["Action"] = "Stay"})
                 end)
                 task.wait(3)
                 
-                -- 4. Teleport balik ke posisi awal & Jeda 3s
                 local currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if currentHrp then currentHrp.CFrame = startCFrame end
                 task.wait(3)
                 
-                -- 5. Buka pancing & Jeda 3s
                 equipRod()
                 task.wait(3)
                 
-                -- 6. Loop mancing berjalan (Remote & Parameter Terbaru)
                 local fishingLoopActive = true
                 task.spawn(function()
                     while isPet and fishingLoopActive do
@@ -258,37 +285,30 @@ BtnPet.MouseButton1Click:Connect(function()
                     end
                 end)
                 
-                -- 7. Jeda 100 menit (6000 detik)
                 for i = 6000, 1, -1 do
                     if not isPet then break end
                     task.wait(1)
                 end
                 
-                -- Stop loop mancing
                 fishingLoopActive = false
                 task.wait(1)
                 
-                -- 8. Tutup pancing & Jeda 3s
                 unequipRod()
                 task.wait(3)
                 
-                -- 9. Simpan posisi terbaru & Jeda 3s
                 currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                 if currentHrp then
                     local lastCFrame = currentHrp.CFrame
                     task.wait(3)
                     
-                    -- 10. Teleport ke Ular & Jeda 3s
                     currentHrp.CFrame = snakeCFrame
                     task.wait(3)
                     
-                    -- 11. Ambil Pet (Follow) & Jeda 3s
                     pcall(function()
                         RF_Pet:InvokeServer({["Action"] = "Follow"})
                     end)
                     task.wait(3)
                     
-                    -- 12. Teleport balik ke posisi terbaru & Jeda 3s
                     if isPet then
                         currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
                         if currentHrp then currentHrp.CFrame = lastCFrame end
@@ -298,7 +318,6 @@ BtnPet.MouseButton1Click:Connect(function()
             end
         end)
     else
-        -- Jika Tombol PET dimatikan (OFF)
         task.spawn(function()
             unequipRod()
             task.wait(3)
@@ -326,38 +345,40 @@ BtnPet.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 3. TOMBOL & LOGIKA (BARIS TENGAH)
+-- 3. BARIS 2: TELEPORT HYDRA (3 TOMBOL)
 -- ==========================================
-local BtnTpCrystal = Instance.new("TextButton", MainFrame)
-BtnTpCrystal.Size = UDim2.new(0, 95, 0, 28)
-BtnTpCrystal.Position = UDim2.new(0, 10, 0, 80)
-BtnTpCrystal.Text = "TP CRYSTAL"
-styleBtn(BtnTpCrystal, 8)
+local BtnBlizzard = Instance.new("TextButton", MainFrame)
+BtnBlizzard.Size = UDim2.new(0, 63, 0, 28)
+BtnBlizzard.Position = UDim2.new(0, 10, 0, 80)
+BtnBlizzard.Text = "BLIZZARD"
+styleBtn(BtnBlizzard, 7)
 
-local BtnTpKohana = Instance.new("TextButton", MainFrame)
-BtnTpKohana.Size = UDim2.new(0, 95, 0, 28)
-BtnTpKohana.Position = UDim2.new(0, 115, 0, 80)
-BtnTpKohana.Text = "TP KOHANA"
-styleBtn(BtnTpKohana, 8)
+local BtnStorm = Instance.new("TextButton", MainFrame)
+BtnStorm.Size = UDim2.new(0, 63, 0, 28)
+BtnStorm.Position = UDim2.new(0, 78, 0, 80)
+BtnStorm.Text = "STORM"
+styleBtn(BtnStorm, 7)
 
--- Logika TP Crystal
-BtnTpCrystal.MouseButton1Click:Connect(function()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then 
-        hrp.CFrame = CFrame.new(5751.2002, -907.159973, 15343.4404, -0.629727244, -5.50524994e-08, 0.776816368, -1.95113348e-08, 1, 5.50524994e-08, -0.776816368, 1.95113348e-08, -0.629727244)
-    end
+local BtnVolcano = Instance.new("TextButton", MainFrame)
+BtnVolcano.Size = UDim2.new(0, 64, 0, 28)
+BtnVolcano.Position = UDim2.new(0, 146, 0, 80)
+BtnVolcano.Text = "VOLCANO"
+styleBtn(BtnVolcano, 7)
+
+BtnBlizzard.MouseButton1Click:Connect(function()
+    teleportTo(getRandomCFrame(blizzardCFrames))
 end)
 
--- Logika TP Kohana
-BtnTpKohana.MouseButton1Click:Connect(function()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then 
-        hrp.CFrame = CFrame.new(-859.915466, 18.7447453, 464.726349, 0.519193888, -7.42872288e-08, 0.854656458, 1.07504434e-07, 1, 2.16128733e-08, -0.854656458, 8.065809e-08, 0.519193888)
-    end
+BtnStorm.MouseButton1Click:Connect(function()
+    teleportTo(getRandomCFrame(stormCFrames))
+end)
+
+BtnVolcano.MouseButton1Click:Connect(function()
+    teleportTo(getRandomCFrame(volcanoCFrames))
 end)
 
 -- ==========================================
--- 4. TOMBOL & LOGIKA (BARIS BAWAH)
+-- 4. BARIS 3: ELEMENTAL EVENT (1 TOMBOL LUAS)
 -- ==========================================
 local BtnElementalEvent = Instance.new("TextButton", MainFrame)
 BtnElementalEvent.Size = UDim2.new(0, 200, 0, 28)
@@ -365,7 +386,6 @@ BtnElementalEvent.Position = UDim2.new(0, 10, 0, 118)
 BtnElementalEvent.Text = "ELEMENTAL EVENT"
 styleBtn(BtnElementalEvent, 9)
 
--- Logika Elemental Event
 BtnElementalEvent.MouseButton1Click:Connect(function()
     isElementalEvent = not isElementalEvent
     BtnElementalEvent.BackgroundTransparency = isElementalEvent and 0 or 0.4
@@ -376,42 +396,38 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
     
     if isElementalEvent then
         task.spawn(function()
-            local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
+            local eventHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
             local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
             
-            local savedCFrame = nil
-            local isTeleportedToPocong = false
+            local lastHandledHour = -1
+            
+            -- Initial Check saat pertama kali dinyalakan
+            local currentHour = os.date("*t").hour
+            if not eventHours[currentHour] then
+                isLucidPaused = false
+                teleportTo(getRandomCFrame(allHydraCFrames))
+                lastHandledHour = currentHour
+            else
+                isLucidPaused = true
+                lastHandledHour = currentHour
+            end
             
             while isElementalEvent do
                 local dateTable = os.date("*t")
-                local currentHour = dateTable.hour
-                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                local hour = dateTable.hour
                 
-                if startHours[currentHour] and not isTeleportedToPocong then
-                    isLucidPaused = true
-                    
-                    if hrp then
-                        savedCFrame = hrp.CFrame
+                if hour ~= lastHandledHour then
+                    if eventHours[hour] then
+                        isLucidPaused = true
+                        lastHandledHour = hour
+                    elseif endHours[hour] then
+                        isLucidPaused = false
+                        teleportTo(getRandomCFrame(allHydraCFrames))
+                        lastHandledHour = hour
                     end
-                    
-                    local targetPlayer = Players:FindFirstChild("ini_pocong")
-                    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        if hrp then
-                            hrp.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
-                            isTeleportedToPocong = true
-                        end
-                    end
-                elseif endHours[currentHour] and isTeleportedToPocong then
-                    if hrp and savedCFrame then
-                        hrp.CFrame = savedCFrame
-                    end
-                    isTeleportedToPocong = false
-                    savedCFrame = nil
-                    
-                    isLucidPaused = false
                 end
                 
-                task.wait(5)
+                task.wait(3)
             end
         end)
     end

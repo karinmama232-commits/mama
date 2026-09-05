@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED UI & HYDRA TP) ]] --
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED UI, HYDRA TP & Rionn603 TARGET) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -71,6 +71,16 @@ local function teleportTo(cframe)
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
         hrp.CFrame = cframe
+    end
+end
+
+local function teleportToPocong()
+    local targetPlayer = Players:FindFirstChild("Rionn603")
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+        end
     end
 end
 
@@ -403,12 +413,13 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             
             -- Initial Check saat pertama kali dinyalakan
             local currentHour = os.date("*t").hour
-            if not eventHours[currentHour] then
-                isLucidPaused = false
-                teleportTo(getRandomCFrame(allHydraCFrames))
+            if eventHours[currentHour] then
+                isLucidPaused = true
+                teleportToPocong()
                 lastHandledHour = currentHour
             else
-                isLucidPaused = true
+                isLucidPaused = false
+                teleportTo(getRandomCFrame(allHydraCFrames))
                 lastHandledHour = currentHour
             end
             
@@ -419,6 +430,7 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 if hour ~= lastHandledHour then
                     if eventHours[hour] then
                         isLucidPaused = true
+                        teleportToPocong()
                         lastHandledHour = hour
                     elseif endHours[hour] then
                         isLucidPaused = false

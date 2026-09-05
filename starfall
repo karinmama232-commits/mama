@@ -10,6 +10,7 @@ local targetItems = {
         name = "Wintertusk Mammofin", 
         category = "blizzard", 
         displayName = "Wintertusk Mammofin", 
+        shortName = "Winter",
         location = "Blizzard", 
         color = 38399,
         eventTitle = "Blizzard Elemental Event Has Concluded!"
@@ -18,6 +19,7 @@ local targetItems = {
         name = "Stormshell Brute",   
         category = "storm",    
         displayName = "Stormshell Brute",   
+        shortName = "Storm",
         location = "Storm",    
         color = 16766720,
         eventTitle = "Storm Elemental Event Has Concluded!"
@@ -26,6 +28,7 @@ local targetItems = {
         name = "Pyrocoil",           
         category = "volcano",  
         displayName = "Pyrocoil",           
+        shortName = "Pyro",
         location = "Volcano",  
         color = 16724736,
         eventTitle = "Volcano Elemental Event Has Concluded!"
@@ -40,9 +43,10 @@ local catchBuffer = {
 }
 
 -- Total Accumulated Catches (Reset only via !claim)
+-- Structure: { total = 0, players = { ["player_name"] = { total = count, items = { ["Winter"] = count, ["Storm"] = count, ... } } } }
 local totalCatches = {
     total = 0,
-    players = {} -- Structure: { ["player_name"] = count }
+    players = {}
 }
 
 local hasSentForCurrentHour = false
@@ -74,12 +78,20 @@ local function getTotalCaughtString()
         return "Total Caught: 0"
     end
 
-    local playerDetails = {}
-    for player, count in pairs(totalCatches.players) do
-        table.insert(playerDetails, string.format("(%d %s)", count, player))
+    local lines = { "Total Caught: " .. totalCatches.total }
+    
+    for player, pData in pairs(totalCatches.players) do
+        local itemDetails = {}
+        for shortName, count in pairs(pData.items) do
+            if count > 0 then
+                table.insert(itemDetails, string.format("(%d %s)", count, shortName))
+            end
+        end
+        local line = string.format("%d %s %s", pData.total, player, table.concat(itemDetails, " "))
+        table.insert(lines, line)
     end
 
-    return string.format("Total Caught: %d %s", totalCatches.total, table.concat(playerDetails, " "))
+    return table.concat(lines, "\n")
 end
 
 -- [[ EVENT RECAP FUNCTION ]] --
@@ -95,7 +107,7 @@ local function sendEventSummary()
     -- Dynamic Footer with Accumulated Totals
     local footerStr = "Event Session: " .. timeSessionStr .. "\n" .. 
                       getTotalCaughtString() .. "\n" .. 
-                      "Type !claim in chat to collect fish"
+                      "Type **!claim** in chat fishit to collect fish"
 
     -- Find active item for the session
     local activeItem = nil
@@ -140,7 +152,7 @@ sendWebhookPayload(
     "Webhook Fishit Active", 
     "Script initialized for account: **" .. game.Players.LocalPlayer.Name .. "**\nMonitoring elemental chat logs...", 
     65535,
-    "Status: Monitoring Active | Type !claim in chat to reset counter"
+    "Status: Monitoring Active | Type **!claim** in chat fishit to collect fish"
 )
 
 -- [[ CHAT MONITORING & CLAIM SYSTEM ]] --
@@ -186,7 +198,14 @@ if channel then
 
                     -- Add to Lifetime Total
                     totalCatches.total = totalCatches.total + 1
-                    totalCatches.players[luckyPlayer] = (totalCatches.players[luckyPlayer] or 0) + 1
+                    
+                    if not totalCatches.players[luckyPlayer] then
+                        totalCatches.players[luckyPlayer] = { total = 0, items = {} }
+                    end
+                    
+                    local pData = totalCatches.players[luckyPlayer]
+                    pData.total = pData.total + 1
+                    pData.items[item.shortName] = (pData.items[item.shortName] or 0) + 1
                     break
                 end
             end

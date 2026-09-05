@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (UPDATED UI, HYDRA TP & Rionn603 TARGET) ]] --
+-- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (HYDRA SELECTION & EVENT LOGIC) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -20,7 +20,7 @@ local RE_Catch   = Net:WaitForChild("RE/4eb73185a014f9a3a545752b04c58280b6f83ceb
 
 local snakeCFrame = CFrame.new(-4149.7998, 7.94670057, 618.787415, 0.29035899, -7.28464258e-08, 0.956917763, 5.20069392e-08, 1, 6.03455632e-08, -0.956917763, 3.22444862e-08, 0.29035899)
 
--- Daftar CFrame Hydra Locations
+-- Daftar CFrame Hydra Locations (Masing-Masing 2 Spot Acak)
 local volcanoCFrames = {
     CFrame.new(-1334.16516, -855.694641, 5553.63086, -0.525375187, 2.29844161e-08, -0.850870669, -3.3188595e-08, 1, 4.7505317e-08, 0.850870669, 5.3197315e-08, -0.525375187),
     CFrame.new(-1274.89709, -855.694519, 5539.01025, -0.877271771, -2.46672638e-08, 0.479994029, -6.83745967e-08, 1, -7.35755776e-08, -0.479994029, -9.73651737e-08, -0.877271771)
@@ -41,6 +41,11 @@ local allHydraCFrames = {
     blizzardCFrames[1], blizzardCFrames[2],
     stormCFrames[1], stormCFrames[2]
 }
+
+-- State Variables Pilihan Lokasi Hydra
+local isBlizzardSelected = false
+local isStormSelected = false
+local isVolcanoSelected = false
 
 -- Helper Functions
 local function repeatActionForDuration(duration, actionFunc)
@@ -68,7 +73,8 @@ local function getRandomCFrame(cframeTable)
 end
 
 local function teleportTo(cframe)
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
     if hrp then
         hrp.CFrame = cframe
     end
@@ -77,16 +83,34 @@ end
 local function teleportToPocong()
     local targetPlayer = Players:FindFirstChild("Rionn603")
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        local char = Player.Character or Player.CharacterAdded:Wait()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
         if hrp then
             hrp.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
         end
     end
 end
 
+-- Fungsi Menentukan Lokasi Teleport Berdasarkan Pilihan Tombol
+local function teleportToSelectedHydra()
+    if isBlizzardSelected then
+        teleportTo(getRandomCFrame(blizzardCFrames))
+    elseif isStormSelected then
+        teleportTo(getRandomCFrame(stormCFrames))
+    elseif isVolcanoSelected then
+        teleportTo(getRandomCFrame(volcanoCFrames))
+    else
+        teleportTo(getRandomCFrame(allHydraCFrames))
+    end
+end
+
 -- ==========================================
 -- 1. SETUP UI COMPACT
 -- ==========================================
+if CoreGui:FindFirstChild("ElementalIslandUI") then
+    CoreGui.ElementalIslandUI:Destroy()
+end
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "ElementalIslandUI"
 ScreenGui.Parent = CoreGui
@@ -162,6 +186,7 @@ local isElementalEvent = false
 
 local function resetAll()
     isLucid = false; isLucidPaused = false; isPet = false; isElementalEvent = false
+    isBlizzardSelected = false; isStormSelected = false; isVolcanoSelected = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -355,7 +380,7 @@ BtnPet.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 3. BARIS 2: TELEPORT HYDRA (3 TOMBOL)
+-- 3. BARIS 2: PILIHAN LOKASI HYDRA (3 TOGGLE)
 -- ==========================================
 local BtnBlizzard = Instance.new("TextButton", MainFrame)
 BtnBlizzard.Size = UDim2.new(0, 63, 0, 28)
@@ -376,19 +401,40 @@ BtnVolcano.Text = "VOLCANO"
 styleBtn(BtnVolcano, 7)
 
 BtnBlizzard.MouseButton1Click:Connect(function()
-    teleportTo(getRandomCFrame(blizzardCFrames))
+    isBlizzardSelected = not isBlizzardSelected
+    if isBlizzardSelected then
+        isStormSelected = false
+        isVolcanoSelected = false
+    end
+    BtnBlizzard.BackgroundTransparency = isBlizzardSelected and 0 or 0.4
+    BtnStorm.BackgroundTransparency = isStormSelected and 0 or 0.4
+    BtnVolcano.BackgroundTransparency = isVolcanoSelected and 0 or 0.4
 end)
 
 BtnStorm.MouseButton1Click:Connect(function()
-    teleportTo(getRandomCFrame(stormCFrames))
+    isStormSelected = not isStormSelected
+    if isStormSelected then
+        isBlizzardSelected = false
+        isVolcanoSelected = false
+    end
+    BtnBlizzard.BackgroundTransparency = isBlizzardSelected and 0 or 0.4
+    BtnStorm.BackgroundTransparency = isStormSelected and 0 or 0.4
+    BtnVolcano.BackgroundTransparency = isVolcanoSelected and 0 or 0.4
 end)
 
 BtnVolcano.MouseButton1Click:Connect(function()
-    teleportTo(getRandomCFrame(volcanoCFrames))
+    isVolcanoSelected = not isVolcanoSelected
+    if isVolcanoSelected then
+        isBlizzardSelected = false
+        isStormSelected = false
+    end
+    BtnBlizzard.BackgroundTransparency = isBlizzardSelected and 0 or 0.4
+    BtnStorm.BackgroundTransparency = isStormSelected and 0 or 0.4
+    BtnVolcano.BackgroundTransparency = isVolcanoSelected and 0 or 0.4
 end)
 
 -- ==========================================
--- 4. BARIS 3: ELEMENTAL EVENT (1 TOMBOL LUAS)
+-- 4. BARIS 3: ELEMENTAL EVENT (AUTOMATION)
 -- ==========================================
 local BtnElementalEvent = Instance.new("TextButton", MainFrame)
 BtnElementalEvent.Size = UDim2.new(0, 200, 0, 28)
@@ -406,35 +452,36 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
     
     if isElementalEvent then
         task.spawn(function()
-            local eventHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
+            local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
             local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
             
             local lastHandledHour = -1
             
-            -- Initial Check saat pertama kali dinyalakan
+            -- Pengecekan Awal Saat Tombol Baru Dinyalakan
             local currentHour = os.date("*t").hour
-            if eventHours[currentHour] then
+            if startHours[currentHour] then
                 isLucidPaused = true
                 teleportToPocong()
                 lastHandledHour = currentHour
             else
                 isLucidPaused = false
-                teleportTo(getRandomCFrame(allHydraCFrames))
+                teleportToSelectedHydra()
                 lastHandledHour = currentHour
             end
             
+            -- Loop Otomatis Berdasarkan Jam Server
             while isElementalEvent do
                 local dateTable = os.date("*t")
                 local hour = dateTable.hour
                 
                 if hour ~= lastHandledHour then
-                    if eventHours[hour] then
+                    if startHours[hour] then
                         isLucidPaused = true
                         teleportToPocong()
                         lastHandledHour = hour
                     elseif endHours[hour] then
                         isLucidPaused = false
-                        teleportTo(getRandomCFrame(allHydraCFrames))
+                        teleportToSelectedHydra()
                         lastHandledHour = hour
                     end
                 end

@@ -1,0 +1,47 @@
+-- [[ CONFIGURATION ]] --
+local webhook_url = "https://discord.com/api/webhooks/1501401598243639336/YAARK-eSD9nbygohQ64puYEX5zBoSPRNTLj7wcqD8Zup6nIsWk0aYpDGV2MK2MbwfftW"
+
+-- Kata kunci yang dipantau (format huruf kecil)
+local keywords = { "poci", "pocix", "pocistore" }
+
+-- [[ HELPER FUNCTION ]] --
+local function sendFooterOnlyWebhook(footerText)
+    local req = request or http_request or (http and http.request)
+    if not req then return end
+
+    req({
+        Url = webhook_url,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode({
+            ["embeds"] = {{
+                ["footer"] = {
+                    ["text"] = footerText
+                }
+            }}
+        })
+    })
+end
+
+-- [[ CHAT MONITORING ]] --
+local TextChatService = game:GetService("TextChatService")
+local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+
+if channel then
+    channel.MessageReceived:Connect(function(message)
+        local rawText = message.Text
+        local txt = rawText:lower()
+
+        -- Periksa apakah pesan mengandung salah satu kata kunci
+        for _, keyword in ipairs(keywords) do
+            if txt:find(keyword) then
+                -- Hapus tag RichText/HTML jika ada di pesan
+                local cleanText = rawText:gsub("<[^>]*>", "")
+                
+                -- Kirim isi pesan langsung ke Discord sebagai footer
+                sendFooterOnlyWebhook(cleanText)
+                break
+            end
+        end
+    end)
+end

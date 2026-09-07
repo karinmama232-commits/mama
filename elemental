@@ -27,13 +27,13 @@ local allHydraCFrames = {
     stormCFrames[1], stormCFrames[2]
 }
 
--- State Variables Pilihan Lokasi Hydra & Event
+-- State Variables Pilihan Lokasi Hydra
 local isBlizzardSelected = false
 local isStormSelected = false
 local isVolcanoSelected = false
 local isElementalEvent = false
 
--- Storage CFrame untuk Menyimpan Lokasi & Sudut Pandang Awal
+-- Variable Penyimpan CFrame Posisi & Rotasi Awal
 local savedLocation = nil
 
 -- Helper Functions
@@ -49,20 +49,12 @@ local function teleportTo(cframe)
     end
 end
 
--- Simpan Lokasi Presisi Karakter (Preserve Position & Orientation/Rotation)
+-- Simpan CFrame Awal (Termasuk Orientasi/Sudut Hadap)
 local function saveCurrentLocation()
     local char = Player.Character or Player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
     if hrp then
         savedLocation = hrp.CFrame
-    end
-end
-
--- Teleport Kembali ke Lokasi Tersimpan (Jika Ada)
-local function returnToSavedLocation()
-    if savedLocation then
-        teleportTo(savedLocation)
-        savedLocation = nil
     end
 end
 
@@ -77,16 +69,23 @@ local function teleportToPocong()
     end
 end
 
--- Fungsi Menentukan Lokasi Teleport Berdasarkan Pilihan Tombol (JIKA TIDAK ADA SAVED LOCATION)
+-- Fungsi Menentukan Lokasi Teleport Saat Selesai Event
 local function teleportToSelectedHydra()
-    if isBlizzardSelected then
-        teleportTo(getRandomCFrame(blizzardCFrames))
-    elseif isStormSelected then
-        teleportTo(getRandomCFrame(stormCFrames))
-    elseif isVolcanoSelected then
-        teleportTo(getRandomCFrame(volcanoCFrames))
+    -- Kalau ada lokasi ter-save, balik ke lokasi itu (supaya rotasi & tempatnya persis)
+    if savedLocation then
+        teleportTo(savedLocation)
+        savedLocation = nil
     else
-        teleportTo(getRandomCFrame(allHydraCFrames))
+        -- Cadangan jika tidak ada savedLocation
+        if isBlizzardSelected then
+            teleportTo(getRandomCFrame(blizzardCFrames))
+        elseif isStormSelected then
+            teleportTo(getRandomCFrame(stormCFrames))
+        elseif isVolcanoSelected then
+            teleportTo(getRandomCFrame(volcanoCFrames))
+        else
+            teleportTo(getRandomCFrame(allHydraCFrames))
+        end
     end
 end
 
@@ -262,16 +261,11 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             -- Pengecekan Awal Saat Tombol Baru Dinyalakan
             local currentHour = os.date("*t").hour
             if startHours[currentHour] then
-                saveCurrentLocation() -- Simpan lokasi presisi sebelum teleport event
+                saveCurrentLocation() -- Save CFrame dulu sebelum TP
                 teleportToPocong()
                 lastHandledHour = currentHour
             else
-                -- Jika bukan jam event, kembalikan ke lokasi tersimpan atau teleport ke Hydra
-                if savedLocation then
-                    returnToSavedLocation()
-                else
-                    teleportToSelectedHydra()
-                end
+                teleportToSelectedHydra()
                 lastHandledHour = currentHour
             end
             
@@ -282,15 +276,11 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 
                 if hour ~= lastHandledHour then
                     if startHours[hour] then
-                        saveCurrentLocation() -- Simpan posisi & orientasi awal saat event mulai
+                        saveCurrentLocation() -- Pas jam event mulai: Save CFrame dulu baru TP
                         teleportToPocong()
                         lastHandledHour = hour
                     elseif endHours[hour] then
-                        if savedLocation then
-                            returnToSavedLocation() -- Kembali ke posisi awal lengkap dengan rotasinya
-                        else
-                            teleportToSelectedHydra()
-                        end
+                        teleportToSelectedHydra() -- Pas jam event selesai: Balik ke saved CFrame
                         lastHandledHour = hour
                     end
                 end
@@ -298,10 +288,5 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 task.wait(3)
             end
         end)
-    else
-        -- Jika toggle dimatikan manual saat di tengah event, kembalikan posisi awal
-        if savedLocation then
-            returnToSavedLocation()
-        end
     end
 end)

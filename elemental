@@ -5,21 +5,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
-local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
-
--- Remote / RemoteFunction Hashes
-local RE_Lucid   = Net:WaitForChild("RE/e9ac7d783b0a45969b782a31dbf972b1f726f4ba411e0ac79aaffb0251ce1122")
-local RF_Pet     = Net:WaitForChild("RF/91d63cabe33404c97c76a97e7ee0e755636be70bad62fd1842ae2075b8c4f017")
-
--- Remote / RemoteFunction Fishing
-local RE_Equip   = Net:WaitForChild("RE/9b6c546becca1c89e67528799e3f682ac47d1c710e74327e05b0607b7d1c49a2")
-local RE_Unequip = Net:WaitForChild("RE/a5a34a2cf701124a334cba4c89dc627c59eb9464a3e2aa712d63f3b8972da2b4")
-local RF_Fish1   = Net:WaitForChild("RF/9bb07b0bed0e4329270407e1e031b642d263c4fd1c5adb0aaa5c019109926adf")
-local RF_Fish2   = Net:WaitForChild("RF/b7d70c290934d44786e87c71988c8512d98a46fc23815d09625b7af6f666353f")
-local RE_Catch   = Net:WaitForChild("RE/4eb73185a014f9a3a545752b04c58280b6f83ceb00ef52f8a6f8063ab2f6da92")
-
-local snakeCFrame = CFrame.new(-4149.7998, 7.94670057, 618.787415, 0.29035899, -7.28464258e-08, 0.956917763, 5.20069392e-08, 1, 6.03455632e-08, -0.956917763, 3.22444862e-08, 0.29035899)
-
 -- Daftar CFrame Hydra Locations (Masing-Masing 2 Spot Acak)
 local volcanoCFrames = {
     CFrame.new(-1334.16516, -855.694641, 5553.63086, -0.525375187, 2.29844161e-08, -0.850870669, -3.3188595e-08, 1, 4.7505317e-08, 0.850870669, 5.3197315e-08, -0.525375187),
@@ -46,28 +31,9 @@ local allHydraCFrames = {
 local isBlizzardSelected = false
 local isStormSelected = false
 local isVolcanoSelected = false
+local isElementalEvent = false
 
 -- Helper Functions
-local function repeatActionForDuration(duration, actionFunc)
-    local startTime = tick()
-    while tick() - startTime < duration do
-        pcall(actionFunc)
-        task.wait(0.1)
-    end
-end
-
-local function equipRod()
-    repeatActionForDuration(2, function()
-        RE_Equip:FireServer(1)
-    end)
-end
-
-local function unequipRod()
-    repeatActionForDuration(2, function()
-        RE_Unequip:FireServer()
-    end)
-end
-
 local function getRandomCFrame(cframeTable)
     return cframeTable[math.random(1, #cframeTable)]
 end
@@ -134,8 +100,8 @@ MainFrame.Name = "ElementalMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
 MainFrame.BackgroundTransparency = 0.1
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
-MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -60)
+MainFrame.Size = UDim2.new(0, 220, 0, 120)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -178,15 +144,11 @@ CloseBtn.TextSize = 16
 CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- State Variables
-local isLucid = false
-local isLucidPaused = false
-local isPet = false
-local isElementalEvent = false
-
 local function resetAll()
-    isLucid = false; isLucidPaused = false; isPet = false; isElementalEvent = false
-    isBlizzardSelected = false; isStormSelected = false; isVolcanoSelected = false
+    isElementalEvent = false
+    isBlizzardSelected = false
+    isStormSelected = false
+    isVolcanoSelected = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -203,200 +165,23 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. BARIS 1: LUCID & PET (2 TOMBOL)
--- ==========================================
-local BtnLucid = Instance.new("TextButton", MainFrame)
-BtnLucid.Size = UDim2.new(0, 95, 0, 28)
-BtnLucid.Position = UDim2.new(0, 10, 0, 45)
-BtnLucid.Text = "LUCID"
-styleBtn(BtnLucid, 9)
-
-local BtnPet = Instance.new("TextButton", MainFrame)
-BtnPet.Size = UDim2.new(0, 95, 0, 28)
-BtnPet.Position = UDim2.new(0, 115, 0, 45)
-BtnPet.Text = "PET"
-styleBtn(BtnPet, 9)
-
--- Logika LUCID
-BtnLucid.MouseButton1Click:Connect(function()
-    isLucid = not isLucid
-    BtnLucid.BackgroundTransparency = isLucid and 0 or 0.4
-    
-    if isLucid then
-        task.spawn(function()
-            local underwaterCFrames = {
-                CFrame.new(-3140.12207, -643.476807, -10412.6221, 0.042624779, 6.91801105e-08, -0.999091148, -8.82980515e-08, 1, 6.54759305e-08, 0.999091148, 8.54269047e-08, 0.042624779),
-                CFrame.new(-3139.31689, -643.262024, -10439.7197, 0.00107784977, 1.20874724e-08, -0.999999404, -2.67054379e-08, 1, 1.20586945e-08, 0.999999404, 2.66924243e-08, 0.00107784977),
-                CFrame.new(-3139.00146, -643.476807, -10457.4102, 0.709533572, 4.93398566e-08, -0.704671621, 1.01340314e-08, 1, 8.0222172e-08, 0.704671621, -6.40614886e-08, 0.709533572)
-            }
-            
-            while isLucid do
-                while isElementalEvent and isLucidPaused and isLucid do
-                    task.wait(1)
-                end
-                
-                if not isLucid then break end
-
-                pcall(function()
-                    RE_Lucid:FireServer("Lucid", 1, 1)
-                end)
-                task.wait(1)
-                
-                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if hrp and not (isElementalEvent and isLucidPaused) then
-                    local randomTarget = underwaterCFrames[math.random(1, #underwaterCFrames)]
-                    hrp.CFrame = randomTarget
-                end
-                
-                local gotStone = false
-                local conn
-                
-                local TextChatService = game:GetService("TextChatService")
-                if TextChatService and TextChatService:FindFirstChild("TextChannels") then
-                    local generalChannel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
-                    if generalChannel then
-                        conn = generalChannel.MessageReceived:Connect(function(message)
-                            if message and message.Text then
-                                local expectedText = Player.DisplayName .. " obtained a Runic Enchant Stone with a 1 in 1M chance!"
-                                if string.find(message.Text, expectedText) then
-                                    gotStone = true
-                                end
-                            end
-                        end)
-                    end
-                end
-                
-                repeat
-                    task.wait(1)
-                until gotStone or not isLucid or (isElementalEvent and isLucidPaused)
-                
-                if conn then conn:Disconnect() end
-                task.wait(1)
-            end
-        end)
-    end
-end)
-
--- Logika PET
-BtnPet.MouseButton1Click:Connect(function()
-    isPet = not isPet
-    BtnPet.BackgroundTransparency = isPet and 0 or 0.4
-    
-    if isPet then
-        task.spawn(function()
-            while isPet do
-                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if not hrp then break end
-                
-                local startCFrame = hrp.CFrame
-                task.wait(3)
-                
-                hrp.CFrame = snakeCFrame
-                task.wait(3)
-                
-                pcall(function()
-                    RF_Pet:InvokeServer({["Action"] = "Stay"})
-                end)
-                task.wait(3)
-                
-                local currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if currentHrp then currentHrp.CFrame = startCFrame end
-                task.wait(3)
-                
-                equipRod()
-                task.wait(3)
-                
-                local fishingLoopActive = true
-                task.spawn(function()
-                    while isPet and fishingLoopActive do
-                        pcall(function()
-                            RF_Fish1:InvokeServer()
-                            task.wait(0.01)
-                            RF_Fish2:InvokeServer(-1.233184814453125, 0.5974168063934951, 1788506749.784816)
-                            task.wait(0.08)
-                            RE_Catch:FireServer()
-                        end)
-                        task.wait(0.05)
-                    end
-                end)
-                
-                for i = 6000, 1, -1 do
-                    if not isPet then break end
-                    task.wait(1)
-                end
-                
-                fishingLoopActive = false
-                task.wait(1)
-                
-                unequipRod()
-                task.wait(3)
-                
-                currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if currentHrp then
-                    local lastCFrame = currentHrp.CFrame
-                    task.wait(3)
-                    
-                    currentHrp.CFrame = snakeCFrame
-                    task.wait(3)
-                    
-                    pcall(function()
-                        RF_Pet:InvokeServer({["Action"] = "Follow"})
-                    end)
-                    task.wait(3)
-                    
-                    if isPet then
-                        currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                        if currentHrp then currentHrp.CFrame = lastCFrame end
-                        task.wait(3)
-                    end
-                end
-            end
-        end)
-    else
-        task.spawn(function()
-            unequipRod()
-            task.wait(3)
-            
-            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local savedCFrame = hrp.CFrame
-                task.wait(3)
-                
-                hrp.CFrame = snakeCFrame
-                task.wait(3)
-                
-                pcall(function()
-                    RF_Pet:InvokeServer({["Action"] = "Follow"})
-                end)
-                task.wait(3)
-                
-                local currentHrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if currentHrp then
-                    currentHrp.CFrame = savedCFrame
-                end
-            end
-        end)
-    end
-end)
-
--- ==========================================
--- 3. BARIS 2: PILIHAN LOKASI HYDRA (3 TOGGLE)
+-- 2. BARIS 1: PILIHAN LOKASI HYDRA (3 TOGGLE)
 -- ==========================================
 local BtnBlizzard = Instance.new("TextButton", MainFrame)
 BtnBlizzard.Size = UDim2.new(0, 63, 0, 28)
-BtnBlizzard.Position = UDim2.new(0, 10, 0, 80)
+BtnBlizzard.Position = UDim2.new(0, 10, 0, 45)
 BtnBlizzard.Text = "BLIZZARD"
 styleBtn(BtnBlizzard, 7)
 
 local BtnStorm = Instance.new("TextButton", MainFrame)
 BtnStorm.Size = UDim2.new(0, 63, 0, 28)
-BtnStorm.Position = UDim2.new(0, 78, 0, 80)
+BtnStorm.Position = UDim2.new(0, 78, 0, 45)
 BtnStorm.Text = "STORM"
 styleBtn(BtnStorm, 7)
 
 local BtnVolcano = Instance.new("TextButton", MainFrame)
 BtnVolcano.Size = UDim2.new(0, 64, 0, 28)
-BtnVolcano.Position = UDim2.new(0, 146, 0, 80)
+BtnVolcano.Position = UDim2.new(0, 146, 0, 45)
 BtnVolcano.Text = "VOLCANO"
 styleBtn(BtnVolcano, 7)
 
@@ -434,21 +219,17 @@ BtnVolcano.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 4. BARIS 3: ELEMENTAL EVENT (AUTOMATION)
+-- 3. BARIS 2: ELEMENTAL EVENT (AUTOMATION)
 -- ==========================================
 local BtnElementalEvent = Instance.new("TextButton", MainFrame)
 BtnElementalEvent.Size = UDim2.new(0, 200, 0, 28)
-BtnElementalEvent.Position = UDim2.new(0, 10, 0, 118)
+BtnElementalEvent.Position = UDim2.new(0, 10, 0, 80)
 BtnElementalEvent.Text = "ELEMENTAL EVENT"
 styleBtn(BtnElementalEvent, 9)
 
 BtnElementalEvent.MouseButton1Click:Connect(function()
     isElementalEvent = not isElementalEvent
     BtnElementalEvent.BackgroundTransparency = isElementalEvent and 0 or 0.4
-    
-    if not isElementalEvent then
-        isLucidPaused = false
-    end
     
     if isElementalEvent then
         task.spawn(function()
@@ -460,11 +241,9 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             -- Pengecekan Awal Saat Tombol Baru Dinyalakan
             local currentHour = os.date("*t").hour
             if startHours[currentHour] then
-                isLucidPaused = true
                 teleportToPocong()
                 lastHandledHour = currentHour
             else
-                isLucidPaused = false
                 teleportToSelectedHydra()
                 lastHandledHour = currentHour
             end
@@ -476,11 +255,9 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 
                 if hour ~= lastHandledHour then
                     if startHours[hour] then
-                        isLucidPaused = true
                         teleportToPocong()
                         lastHandledHour = hour
                     elseif endHours[hour] then
-                        isLucidPaused = false
                         teleportToSelectedHydra()
                         lastHandledHour = hour
                     end

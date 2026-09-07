@@ -71,12 +71,10 @@ end
 
 -- Fungsi Menentukan Lokasi Teleport Saat Selesai Event
 local function teleportToSelectedHydra()
-    -- Kalau ada lokasi ter-save, balik ke lokasi itu (supaya rotasi & tempatnya persis)
     if savedLocation then
         teleportTo(savedLocation)
         savedLocation = nil
     else
-        -- Cadangan jika tidak ada savedLocation
         if isBlizzardSelected then
             teleportTo(getRandomCFrame(blizzardCFrames))
         elseif isStormSelected then
@@ -258,14 +256,14 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             
             local lastHandledHour = -1
             
-            -- Pengecekan Awal Saat Tombol Baru Dinyalakan
+            -- Pengecekan Awal Saat Tombol Aktif
             local currentHour = os.date("*t").hour
             if startHours[currentHour] then
-                saveCurrentLocation() -- Save CFrame dulu sebelum TP
+                saveCurrentLocation()
                 teleportToPocong()
                 lastHandledHour = currentHour
             else
-                teleportToSelectedHydra()
+                -- Jika bukan jam event saat tombol dinyalakan, diam saja dan simpan jam sekarang
                 lastHandledHour = currentHour
             end
             
@@ -276,11 +274,11 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 
                 if hour ~= lastHandledHour then
                     if startHours[hour] then
-                        saveCurrentLocation() -- Pas jam event mulai: Save CFrame dulu baru TP
+                        saveCurrentLocation()
                         teleportToPocong()
                         lastHandledHour = hour
                     elseif endHours[hour] then
-                        teleportToSelectedHydra() -- Pas jam event selesai: Balik ke saved CFrame
+                        teleportToSelectedHydra()
                         lastHandledHour = hour
                     end
                 end

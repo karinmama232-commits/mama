@@ -27,11 +27,14 @@ local allHydraCFrames = {
     stormCFrames[1], stormCFrames[2]
 }
 
--- State Variables Pilihan Lokasi Hydra
+-- State Variables Pilihan Lokasi Hydra & Event
 local isBlizzardSelected = false
 local isStormSelected = false
 local isVolcanoSelected = false
 local isElementalEvent = false
+
+-- Storage CFrame untuk Menyimpan Lokasi & Sudut Pandang Awal
+local savedLocation = nil
 
 -- Helper Functions
 local function getRandomCFrame(cframeTable)
@@ -46,6 +49,23 @@ local function teleportTo(cframe)
     end
 end
 
+-- Simpan Lokasi Presisi Karakter (Preserve Position & Orientation/Rotation)
+local function saveCurrentLocation()
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
+    if hrp then
+        savedLocation = hrp.CFrame
+    end
+end
+
+-- Teleport Kembali ke Lokasi Tersimpan (Jika Ada)
+local function returnToSavedLocation()
+    if savedLocation then
+        teleportTo(savedLocation)
+        savedLocation = nil
+    end
+end
+
 local function teleportToPocong()
     local targetPlayer = Players:FindFirstChild("Rionn603")
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -57,7 +77,7 @@ local function teleportToPocong()
     end
 end
 
--- Fungsi Menentukan Lokasi Teleport Berdasarkan Pilihan Tombol
+-- Fungsi Menentukan Lokasi Teleport Berdasarkan Pilihan Tombol (JIKA TIDAK ADA SAVED LOCATION)
 local function teleportToSelectedHydra()
     if isBlizzardSelected then
         teleportTo(getRandomCFrame(blizzardCFrames))
@@ -149,6 +169,7 @@ local function resetAll()
     isBlizzardSelected = false
     isStormSelected = false
     isVolcanoSelected = false
+    savedLocation = nil
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -241,10 +262,16 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             -- Pengecekan Awal Saat Tombol Baru Dinyalakan
             local currentHour = os.date("*t").hour
             if startHours[currentHour] then
+                saveCurrentLocation() -- Simpan lokasi presisi sebelum teleport event
                 teleportToPocong()
                 lastHandledHour = currentHour
             else
-                teleportToSelectedHydra()
+                -- Jika bukan jam event, kembalikan ke lokasi tersimpan atau teleport ke Hydra
+                if savedLocation then
+                    returnToSavedLocation()
+                else
+                    teleportToSelectedHydra()
+                end
                 lastHandledHour = currentHour
             end
             
@@ -255,10 +282,15 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 
                 if hour ~= lastHandledHour then
                     if startHours[hour] then
+                        saveCurrentLocation() -- Simpan posisi & orientasi awal saat event mulai
                         teleportToPocong()
                         lastHandledHour = hour
                     elseif endHours[hour] then
-                        teleportToSelectedHydra()
+                        if savedLocation then
+                            returnToSavedLocation() -- Kembali ke posisi awal lengkap dengan rotasinya
+                        else
+                            teleportToSelectedHydra()
+                        end
                         lastHandledHour = hour
                     end
                 end
@@ -266,5 +298,10 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 task.wait(3)
             end
         end)
+    else
+        -- Jika toggle dimatikan manual saat di tengah event, kembalikan posisi awal
+        if savedLocation then
+            returnToSavedLocation()
+        end
     end
 end)

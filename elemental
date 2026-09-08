@@ -27,6 +27,32 @@ local allHydraCFrames = {
     stormCFrames[1], stormCFrames[2]
 }
 
+-- 3 CFrame Kunci Lokasi Utama Event
+local eventMainLocations = {
+    Volcano = CFrame.new(-729.789978, 107.056473, 5347.83008, -0.639170587, 5.58780684e-08, 0.769065022, 2.01889794e-08, 1, -5.58780684e-08, -0.769065022, -2.01889794e-08, -0.639170587),
+    Storm = CFrame.new(-936.080017, 54.3766861, 5238.54004, -0.82114917, 5.40987024e-08, -0.57071358, 6.43928999e-08, 1, 2.14209894e-09, 0.57071358, -3.49909186e-08, -0.82114917),
+    Blizzard = CFrame.new(-981.890015, 45.8336372, 5302.85986, -0.855183363, -3.38442554e-08, 0.518325567, -2.5180082e-08, 1, 2.37508431e-08, -0.518325567, 7.25984695e-09, -0.855183363)
+}
+
+-- Sub-Titik Teleport Acak
+local eventSubLocations = {
+    Volcano = {
+        CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922),
+        CFrame.new(-829.322937, 69.4343567, 5324.67871, 0.163617462, -2.55531969e-08, -0.986523867, -2.07891926e-08, 1, -2.93501987e-08, 0.986523867, 2.53112393e-08, 0.163617462),
+        CFrame.new(-753.346375, 83.0565262, 5296.89795, -0.277495742, -3.60556562e-08, 0.960726857, -2.23309158e-08, 1, 3.10795123e-08, -0.960726857, -1.28294788e-08, -0.277495742)
+    },
+    Storm = {
+        CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529),
+        CFrame.new(-942.089539, 54.5860748, 5246.16211, -0.443312645, -2.2901796e-08, -0.896367073, 2.5911937e-09, 1, -2.68310902e-08, 0.896367073, -1.42172221e-08, -0.443312645),
+        CFrame.new(-843.828125, 63.0566406, 5376.01855, 0.276559293, -7.75006228e-08, 0.960996866, 6.65151632e-08, 1, 6.15040889e-08, -0.960996866, 4.69113353e-08, 0.276559293)
+    },
+    Blizzard = {
+        CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862),
+        CFrame.new(-1062.19727, 142.093201, 5585.01758, -0.978403568, -3.10072892e-08, 0.206703663, -3.08190344e-08, 1, 4.13071621e-09, -0.206703663, -2.32889974e-09, -0.978403568),
+        CFrame.new(-1050.10535, 124.093216, 5536.34912, -0.990133822, -8.85865745e-08, 0.140125066, -9.63677493e-08, 1, -4.87450045e-08, -0.140125066, -6.1767615e-08, -0.990133822)
+    }
+}
+
 -- State Variables Pilihan Lokasi Hydra
 local isBlizzardSelected = false
 local isStormSelected = false
@@ -49,7 +75,7 @@ local function teleportTo(cframe)
     end
 end
 
--- Simpan CFrame Awal (Termasuk Orientasi/Sudut Hadap)
+-- Simpan CFrame Awal
 local function saveCurrentLocation()
     local char = Player.Character or Player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
@@ -58,14 +84,29 @@ local function saveCurrentLocation()
     end
 end
 
-local function teleportToPocong()
+-- Teleport ke Pocong (Rionn603)
+local function executePocongTeleport()
     local targetPlayer = Players:FindFirstChild("Rionn603")
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local char = Player.Character or Player.CharacterAdded:Wait()
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+        local rionCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+        local targetCFrame = rionCFrame
+        
+        -- Cek persis CFrame Rion di salah satu dari 3 CFrame Utama
+        if rionCFrame == eventMainLocations.Volcano then
+            targetCFrame = getRandomCFrame(eventSubLocations.Volcano)
+        elseif rionCFrame == eventMainLocations.Storm then
+            targetCFrame = getRandomCFrame(eventSubLocations.Storm)
+        elseif rionCFrame == eventMainLocations.Blizzard then
+            targetCFrame = getRandomCFrame(eventSubLocations.Blizzard)
         end
+
+        -- Jeda 10 detik sebelum TP Pertama
+        task.wait(10)
+        teleportTo(targetCFrame)
+
+        -- Jeda 60 detik (1 menit) lalu TP Ulang ke tempat tujuan untuk memastikan
+        task.wait(60)
+        teleportTo(targetCFrame)
     end
 end
 
@@ -260,10 +301,9 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             local currentHour = os.date("*t").hour
             if startHours[currentHour] then
                 saveCurrentLocation()
-                teleportToPocong()
+                task.spawn(executePocongTeleport)
                 lastHandledHour = currentHour
             else
-                -- Jika bukan jam event saat tombol dinyalakan, diam saja dan simpan jam sekarang
                 lastHandledHour = currentHour
             end
             
@@ -275,7 +315,7 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 if hour ~= lastHandledHour then
                     if startHours[hour] then
                         saveCurrentLocation()
-                        teleportToPocong()
+                        task.spawn(executePocongTeleport)
                         lastHandledHour = hour
                     elseif endHours[hour] then
                         teleportToSelectedHydra()

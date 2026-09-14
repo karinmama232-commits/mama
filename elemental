@@ -1,65 +1,65 @@
--- [[ ELEMENTAL ISLAND - pociXkarin GLOBAL EDITION (HYDRA SELECTION & EVENT LOGIC) ]] --
+-- [[ ELEMENTAL ISLAND - GLOBAL EDITION (LUCID, AUTO ROTATION & RADIUS EVENT) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
--- Daftar CFrame Hydra Locations (Masing-Masing 2 Spot Acak)
-local volcanoCFrames = {
-    CFrame.new(-1334.16516, -855.694641, 5553.63086, -0.525375187, 2.29844161e-08, -0.850870669, -3.3188595e-08, 1, 4.7505317e-08, 0.850870669, 5.3197315e-08, -0.525375187),
-    CFrame.new(-1274.89709, -855.694519, 5539.01025, -0.877271771, -2.46672638e-08, 0.479994029, -6.83745967e-08, 1, -7.35755776e-08, -0.479994029, -9.73651737e-08, -0.877271771)
+-- Daftar CFrame Lokasi Auto Rotation
+local crystalCFrames = {
+    CFrame.new(5614.1748, -903.581665, 15345.8672, -0.996202946, 4.36655512e-08, 0.0870615542, 4.5634021e-08, 1, 2.06198347e-08, -0.0870615542, 2.45145078e-08, -0.996202946),
+    CFrame.new(5751.11133, -907.151062, 15342.292, -0.546385229, 3.77861795e-08, 0.83753401, -6.35920472e-09, 1, -4.92645711e-08, -0.83753401, -3.22434843e-08, -0.546385229),
+    CFrame.new(5664.70166, -899.419739, 15412.9336, 0.802425086, -2.42622846e-08, -0.596752882, 4.27863434e-08, 1, 1.687558e-08, 0.596752882, -3.9074262e-08, 0.802425086)
 }
 
-local blizzardCFrames = {
-    CFrame.new(-1232.67383, -855.691223, 5580.79199, -0.58545351, 1.15176568e-09, 0.81070596, -3.9156113e-08, 1, -2.96973877e-08, -0.81070596, -4.91305343e-08, -0.58545351),
-    CFrame.new(-1247.93469, -855.694702, 5638.97705, 0.809574902, -6.95431908e-08, 0.587016582, 4.83460987e-08, 1, 5.17930836e-08, -0.587016582, -1.35504186e-08, 0.809574902)
+local kohanaCFrames = {
+    CFrame.new(-857.099304, 18.7447453, 468.011353, 0.698352933, 4.55357103e-08, 0.715753555, -5.17154533e-08, 1, -1.31610536e-08, -0.715753555, -2.78244592e-08, 0.698352933),
+    CFrame.new(-918.485107, 36.494709, 361.479797, -0.246149555, 6.81585277e-08, -0.969231844, 6.63947688e-08, 1, 5.3460365e-08, 0.969231844, -5.11926785e-08, -0.246149555),
+    CFrame.new(-824.980469, 17.4950466, 406.304932, -0.532375515, -1.67852787e-09, 0.846508324, 1.60524287e-08, 1, 1.20783783e-08, -0.846508324, 2.00187475e-08, -0.532375515)
 }
 
-local stormCFrames = {
-    CFrame.new(-1305.62073, -855.69458, 5654.5127, 0.990153253, 4.53234854e-08, -0.139987707, -4.6744109e-08, 1, -6.86019552e-09, 0.139987707, 1.3336245e-08, 0.990153253),
-    CFrame.new(-1348.74109, -855.694641, 5611.17334, 0.0830475464, 5.26299582e-09, -0.996545613, 3.34251071e-09, 1, 5.55978907e-09, 0.996545613, -3.79269105e-09, 0.0830475464)
+local runicCFrames = {
+    CFrame.new(-1448.10901, -1041.58875, -10447.0791, -0.0303385258, 8.85526319e-09, 0.999539673, -1.05406357e-07, 1, -1.20586874e-08, -0.999539673, -1.05723679e-07, -0.0303385258),
+    CFrame.new(-1496.54272, -1041.73926, -10447.665, 0.0254561007, -4.19915374e-08, -0.99967593, 1.55008166e-08, 1, -4.16104342e-08, 0.99967593, -1.44365542e-08, 0.0254561007),
+    CFrame.new(-3124.51611, -645.766052, -10489.4082, -0.970125258, 2.84468378e-08, -0.242604554, 2.52244785e-08, 1, 1.63885385e-08, 0.242604554, 9.77936221e-09, -0.970125258)
 }
 
-local allHydraCFrames = {
-    volcanoCFrames[1], volcanoCFrames[2],
-    blizzardCFrames[1], blizzardCFrames[2],
-    stormCFrames[1], stormCFrames[2]
+local coreCFrames = {
+    CFrame.new(-4241.76807, 60.4801407, 414.652008, -0.333387047, -9.76090746e-08, -0.942790031, -8.70125447e-08, 1, -7.27629867e-08, 0.942790031, 5.77763224e-08, -0.333387047),
+    CFrame.new(-4223.59863, 3.2281487, 623.651978, 0.539373219, 2.94790126e-09, -0.842066824, -2.76508985e-08, 1, -1.42105741e-08, 0.842066824, 3.09487085e-08, 0.539373219),
+    CFrame.new(-4079.10596, -547.174011, 548.034973, -0.308991671, -2.20519283e-08, -0.951064765, 2.19208385e-08, 1, -3.03084349e-08, 0.951064765, -3.02131902e-08, -0.308991671)
 }
 
 -- 3 CFrame Kunci Lokasi Utama Event
 local eventMainLocations = {
-    Volcano = CFrame.new(-729.789978, 107.056473, 5347.83008, -0.639170587, 5.58780684e-08, 0.769065022, 2.01889794e-08, 1, -5.58780684e-08, -0.769065022, -2.01889794e-08, -0.639170587),
-    Storm = CFrame.new(-936.080017, 54.3766861, 5238.54004, -0.82114917, 5.40987024e-08, -0.57071358, 6.43928999e-08, 1, 2.14209894e-09, 0.57071358, -3.49909186e-08, -0.82114917),
-    Blizzard = CFrame.new(-981.890015, 45.8336372, 5302.85986, -0.855183363, -3.38442554e-08, 0.518325567, -2.5180082e-08, 1, 2.37508431e-08, -0.518325567, 7.25984695e-09, -0.855183363)
+    Volcano = CFrame.new(-729.789978, 107.056473, 5347.83008),
+    Storm = CFrame.new(-936.080017, 54.3766861, 5238.54004),
+    Blizzard = CFrame.new(-981.890015, 45.8336372, 5302.85986)
 }
 
 -- Sub-Titik Teleport Acak
 local eventSubLocations = {
     Volcano = {
-        CFrame.new(-820.79303, 59.3692894, 5289.58398, -0.405911922, -6.96702003e-08, -0.913912177, 9.40469214e-09, 1, -8.04099969e-08, 0.913912177, -4.12344399e-08, -0.405911922),
-        CFrame.new(-829.322937, 69.4343567, 5324.67871, 0.163617462, -2.55531969e-08, -0.986523867, -2.07891926e-08, 1, -2.93501987e-08, 0.986523867, 2.53112393e-08, 0.163617462),
-        CFrame.new(-753.346375, 83.0565262, 5296.89795, -0.277495742, -3.60556562e-08, 0.960726857, -2.23309158e-08, 1, 3.10795123e-08, -0.960726857, -1.28294788e-08, -0.277495742)
+        CFrame.new(-820.79303, 59.3692894, 5289.58398),
+        CFrame.new(-829.322937, 69.4343567, 5324.67871),
+        CFrame.new(-753.346375, 83.0565262, 5296.89795)
     },
     Storm = {
-        CFrame.new(-859.987, 56.0566597, 5311.89795, -0.579480529, -6.61549393e-08, 0.81498605, -5.75452184e-08, 1, 4.02566442e-08, -0.81498605, -2.35706086e-08, -0.579480529),
-        CFrame.new(-942.089539, 54.5860748, 5246.16211, -0.443312645, -2.2901796e-08, -0.896367073, 2.5911937e-09, 1, -2.68310902e-08, 0.896367073, -1.42172221e-08, -0.443312645),
-        CFrame.new(-843.828125, 63.0566406, 5376.01855, 0.276559293, -7.75006228e-08, 0.960996866, 6.65151632e-08, 1, 6.15040889e-08, -0.960996866, 4.69113353e-08, 0.276559293)
+        CFrame.new(-859.987, 56.0566597, 5311.89795),
+        CFrame.new(-942.089539, 54.5860748, 5246.16211),
+        CFrame.new(-843.828125, 63.0566406, 5376.01855)
     },
     Blizzard = {
-        CFrame.new(-1089.14001, 142.09317, 5577.93506, -0.823221862, 9.13743037e-08, -0.567719817, 1.06568123e-07, 1, 6.4205925e-09, 0.567719817, -5.52152599e-08, -0.823221862),
-        CFrame.new(-1062.19727, 142.093201, 5585.01758, -0.978403568, -3.10072892e-08, 0.206703663, -3.08190344e-08, 1, 4.13071621e-09, -0.206703663, -2.32889974e-09, -0.978403568),
-        CFrame.new(-1050.10535, 124.093216, 5536.34912, -0.990133822, -8.85865745e-08, 0.140125066, -9.63677493e-08, 1, -4.87450045e-08, -0.140125066, -6.1767615e-08, -0.990133822)
+        CFrame.new(-1089.14001, 142.09317, 5577.93506),
+        CFrame.new(-1062.19727, 142.093201, 5585.01758),
+        CFrame.new(-1050.10535, 124.093216, 5536.34912)
     }
 }
 
--- State Variables Pilihan Lokasi Hydra
-local isBlizzardSelected = false
-local isStormSelected = false
-local isVolcanoSelected = false
+-- State Variables
+local isLucidActive = false
+local isAutoActive = false
 local isElementalEvent = false
-
--- Variable Penyimpan CFrame Posisi & Rotasi Awal
 local savedLocation = nil
 
 -- Helper Functions
@@ -70,61 +70,57 @@ end
 local function teleportTo(cframe)
     local char = Player.Character or Player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
-    if hrp then
-        hrp.CFrame = cframe
-    end
+    if hrp then hrp.CFrame = cframe end
 end
 
--- Simpan CFrame Awal
 local function saveCurrentLocation()
     local char = Player.Character or Player.CharacterAdded:Wait()
-    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
-    if hrp then
-        savedLocation = hrp.CFrame
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp then savedLocation = hrp.CFrame end
+end
+
+-- Menghitung Waktu Berjalan Untuk AUTO
+local function getAutoTargetArea()
+    local t = os.date("*t")
+    local h, m = t.hour, t.min
+    -- Menentukan jam terakhir event selesai (modulus 3: event berakhir di jam kelipatan 3)
+    local lastEndHour = h - (h % 3)
+    local elapsedMinutes = ((h - lastEndHour) * 60) + m
+
+    if elapsedMinutes >= 2 and elapsedMinutes < 30 then
+        return "Crystal"
+    elseif elapsedMinutes >= 30 and elapsedMinutes < 58 then
+        return "Kohana"
+    elseif elapsedMinutes >= 58 and elapsedMinutes < 86 then
+        return "Runic"
+    elseif elapsedMinutes >= 86 and elapsedMinutes < 120 then
+        return "Core"
+    else
+        return nil -- Waktu event berlangsung / Standby
     end
 end
 
--- Teleport ke Pocong (Rionn603)
+-- Teleport ke Event dengan Sistem Radius 3 Studs (Target: pociclone)
 local function executePocongTeleport()
-    local targetPlayer = Players:FindFirstChild("Rionn603")
+    local targetPlayer = Players:FindFirstChild("pociclone")
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        local rionCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
-        local targetCFrame = rionCFrame
-        
-        -- Cek persis CFrame Rion di salah satu dari 3 CFrame Utama
-        if rionCFrame == eventMainLocations.Volcano then
+        local pociCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+        local pociPos = pociCFrame.Position
+        local targetCFrame = pociCFrame -- Default jika tidak terdeteksi di radius manapun
+
+        if (pociPos - eventMainLocations.Volcano.Position).Magnitude <= 3 then
             targetCFrame = getRandomCFrame(eventSubLocations.Volcano)
-        elseif rionCFrame == eventMainLocations.Storm then
+        elseif (pociPos - eventMainLocations.Storm.Position).Magnitude <= 3 then
             targetCFrame = getRandomCFrame(eventSubLocations.Storm)
-        elseif rionCFrame == eventMainLocations.Blizzard then
+        elseif (pociPos - eventMainLocations.Blizzard.Position).Magnitude <= 3 then
             targetCFrame = getRandomCFrame(eventSubLocations.Blizzard)
         end
 
-        -- Jeda 10 detik sebelum TP Pertama
         task.wait(10)
         teleportTo(targetCFrame)
 
-        -- Jeda 60 detik (1 menit) lalu TP Ulang ke tempat tujuan untuk memastikan
         task.wait(60)
         teleportTo(targetCFrame)
-    end
-end
-
--- Fungsi Menentukan Lokasi Teleport Saat Selesai Event
-local function teleportToSelectedHydra()
-    if savedLocation then
-        teleportTo(savedLocation)
-        savedLocation = nil
-    else
-        if isBlizzardSelected then
-            teleportTo(getRandomCFrame(blizzardCFrames))
-        elseif isStormSelected then
-            teleportTo(getRandomCFrame(stormCFrames))
-        elseif isVolcanoSelected then
-            teleportTo(getRandomCFrame(volcanoCFrames))
-        else
-            teleportTo(getRandomCFrame(allHydraCFrames))
-        end
     end
 end
 
@@ -204,9 +200,8 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 local function resetAll()
     isElementalEvent = false
-    isBlizzardSelected = false
-    isStormSelected = false
-    isVolcanoSelected = false
+    isLucidActive = false
+    isAutoActive = false
     savedLocation = nil
 end
 
@@ -224,61 +219,66 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. BARIS 1: PILIHAN LOKASI HYDRA (3 TOGGLE)
+-- 2. BARIS 1: LUCID & AUTO (2 TOGGLE PROPOSIONAL)
 -- ==========================================
-local BtnBlizzard = Instance.new("TextButton", MainFrame)
-BtnBlizzard.Size = UDim2.new(0, 63, 0, 28)
-BtnBlizzard.Position = UDim2.new(0, 10, 0, 45)
-BtnBlizzard.Text = "BLIZZARD"
-styleBtn(BtnBlizzard, 7)
+local BtnLucid = Instance.new("TextButton", MainFrame)
+BtnLucid.Size = UDim2.new(0, 96, 0, 28)
+BtnLucid.Position = UDim2.new(0, 10, 0, 45)
+BtnLucid.Text = "LUCID"
+styleBtn(BtnLucid, 9)
 
-local BtnStorm = Instance.new("TextButton", MainFrame)
-BtnStorm.Size = UDim2.new(0, 63, 0, 28)
-BtnStorm.Position = UDim2.new(0, 78, 0, 45)
-BtnStorm.Text = "STORM"
-styleBtn(BtnStorm, 7)
+local BtnAuto = Instance.new("TextButton", MainFrame)
+BtnAuto.Size = UDim2.new(0, 96, 0, 28)
+BtnAuto.Position = UDim2.new(0, 114, 0, 45)
+BtnAuto.Text = "AUTO"
+styleBtn(BtnAuto, 9)
 
-local BtnVolcano = Instance.new("TextButton", MainFrame)
-BtnVolcano.Size = UDim2.new(0, 64, 0, 28)
-BtnVolcano.Position = UDim2.new(0, 146, 0, 45)
-BtnVolcano.Text = "VOLCANO"
-styleBtn(BtnVolcano, 7)
-
-BtnBlizzard.MouseButton1Click:Connect(function()
-    isBlizzardSelected = not isBlizzardSelected
-    if isBlizzardSelected then
-        isStormSelected = false
-        isVolcanoSelected = false
+BtnLucid.MouseButton1Click:Connect(function()
+    isLucidActive = not isLucidActive
+    BtnLucid.BackgroundTransparency = isLucidActive and 0 or 0.4
+    if isLucidActive then
+        task.spawn(function()
+            while isLucidActive do
+                pcall(function()
+                    local args = { "Lucid", 1, 1 }
+                    game:GetService("ReplicatedStorage").Packages._Index["sleitnick_net@0.2.0"].net["RE/dda44bd42f0213f254e73c88dbf6272053010e3d9cf8244a56b0347fd23f948e"]:FireServer(unpack(args))
+                end)
+                -- Jeda 1 Jam (3600 Detik), dipecah agar bisa dimatikan sewaktu-waktu
+                for i = 1, 3600 do
+                    if not isLucidActive then break end
+                    task.wait(1)
+                end
+            end
+        end)
     end
-    BtnBlizzard.BackgroundTransparency = isBlizzardSelected and 0 or 0.4
-    BtnStorm.BackgroundTransparency = isStormSelected and 0 or 0.4
-    BtnVolcano.BackgroundTransparency = isVolcanoSelected and 0 or 0.4
 end)
 
-BtnStorm.MouseButton1Click:Connect(function()
-    isStormSelected = not isStormSelected
-    if isStormSelected then
-        isBlizzardSelected = false
-        isVolcanoSelected = false
+BtnAuto.MouseButton1Click:Connect(function()
+    isAutoActive = not isAutoActive
+    BtnAuto.BackgroundTransparency = isAutoActive and 0 or 0.4
+    if isAutoActive then
+        task.spawn(function()
+            local lastTeleportedArea = nil
+            while isAutoActive do
+                local targetArea = getAutoTargetArea()
+                if targetArea and targetArea ~= lastTeleportedArea then
+                    if targetArea == "Crystal" then teleportTo(getRandomCFrame(crystalCFrames))
+                    elseif targetArea == "Kohana" then teleportTo(getRandomCFrame(kohanaCFrames))
+                    elseif targetArea == "Runic" then teleportTo(getRandomCFrame(runicCFrames))
+                    elseif targetArea == "Core" then teleportTo(getRandomCFrame(coreCFrames))
+                    end
+                    lastTeleportedArea = targetArea
+                elseif targetArea == nil then
+                    lastTeleportedArea = nil
+                end
+                task.wait(3)
+            end
+        end)
     end
-    BtnBlizzard.BackgroundTransparency = isBlizzardSelected and 0 or 0.4
-    BtnStorm.BackgroundTransparency = isStormSelected and 0 or 0.4
-    BtnVolcano.BackgroundTransparency = isVolcanoSelected and 0 or 0.4
-end)
-
-BtnVolcano.MouseButton1Click:Connect(function()
-    isVolcanoSelected = not isVolcanoSelected
-    if isVolcanoSelected then
-        isBlizzardSelected = false
-        isStormSelected = false
-    end
-    BtnBlizzard.BackgroundTransparency = isBlizzardSelected and 0 or 0.4
-    BtnStorm.BackgroundTransparency = isStormSelected and 0 or 0.4
-    BtnVolcano.BackgroundTransparency = isVolcanoSelected and 0 or 0.4
 end)
 
 -- ==========================================
--- 3. BARIS 2: ELEMENTAL EVENT (AUTOMATION)
+-- 3. BARIS 2: ELEMENTAL EVENT (RADIUS SYSTEM)
 -- ==========================================
 local BtnElementalEvent = Instance.new("TextButton", MainFrame)
 BtnElementalEvent.Size = UDim2.new(0, 200, 0, 28)
@@ -297,7 +297,6 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             
             local lastHandledHour = -1
             
-            -- Pengecekan Awal Saat Tombol Aktif
             local currentHour = os.date("*t").hour
             if startHours[currentHour] then
                 saveCurrentLocation()
@@ -307,10 +306,8 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                 lastHandledHour = currentHour
             end
             
-            -- Loop Otomatis Berdasarkan Jam Server
             while isElementalEvent do
-                local dateTable = os.date("*t")
-                local hour = dateTable.hour
+                local hour = os.date("*t").hour
                 
                 if hour ~= lastHandledHour then
                     if startHours[hour] then
@@ -318,11 +315,15 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                         task.spawn(executePocongTeleport)
                         lastHandledHour = hour
                     elseif endHours[hour] then
-                        teleportToSelectedHydra()
+                        -- Jika AUTO tidak menyala, kembali ke savedLocation. 
+                        -- Jika AUTO menyala, script AUTO yang akan mengambil alih rotasi.
+                        if not isAutoActive and savedLocation then
+                            teleportTo(savedLocation)
+                            savedLocation = nil
+                        end
                         lastHandledHour = hour
                     end
                 end
-                
                 task.wait(3)
             end
         end)

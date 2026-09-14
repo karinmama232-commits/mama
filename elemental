@@ -5,6 +5,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 
+-- TABEL JADWAL EVENT (Ubah jam di sini untuk menyesuaikan dengan Cloud Phone)
+local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
+local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
+
 -- Daftar CFrame Lokasi Auto Rotation
 local crystalCFrames = {
     CFrame.new(5614.1748, -903.581665, 15345.8672, -0.996202946, 4.36655512e-08, 0.0870615542, 4.5634021e-08, 1, 2.06198347e-08, -0.0870615542, 2.45145078e-08, -0.996202946),
@@ -79,24 +83,37 @@ local function saveCurrentLocation()
     if hrp then savedLocation = hrp.CFrame end
 end
 
--- Menghitung Waktu Berjalan Untuk AUTO
+-- Menghitung Waktu Berjalan Untuk AUTO (Berdasarkan Tabel endHours Secara Dinamis)
 local function getAutoTargetArea()
     local t = os.date("*t")
     local h, m = t.hour, t.min
-    local lastEndHour = h - (h % 3)
-    local elapsedMinutes = ((h - lastEndHour) * 60) + m
-
-    if elapsedMinutes >= 2 and elapsedMinutes < 30 then
-        return "Crystal"
-    elseif elapsedMinutes >= 30 and elapsedMinutes < 58 then
-        return "Kohana"
-    elseif elapsedMinutes >= 58 and elapsedMinutes < 86 then
-        return "Runic"
-    elseif elapsedMinutes >= 86 and elapsedMinutes < 120 then
-        return "Core"
-    else
-        return nil
+    local elapsedMinutes = 0
+    local foundLastEvent = false
+    
+    -- Mencari jam event selesai yang paling terakhir dilewati
+    for offset = 0, 3 do
+        local checkHour = h - offset
+        if checkHour < 0 then checkHour = checkHour + 24 end
+        if endHours[checkHour] then
+            elapsedMinutes = (offset * 60) + m
+            foundLastEvent = true
+            break
+        end
     end
+
+    if foundLastEvent then
+        if elapsedMinutes >= 2 and elapsedMinutes < 30 then
+            return "Crystal"
+        elseif elapsedMinutes >= 30 and elapsedMinutes < 58 then
+            return "Kohana"
+        elseif elapsedMinutes >= 58 and elapsedMinutes < 86 then
+            return "Runic"
+        elseif elapsedMinutes >= 86 and elapsedMinutes < 120 then
+            return "Core"
+        end
+    end
+    
+    return nil -- Menunggu / Standby / Event sedang berlangsung
 end
 
 -- Teleport ke Event dengan Sistem Tunggu, Radius 3 Studs, dan Re-Check
@@ -109,7 +126,7 @@ local function executePocongTeleport()
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local pociCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
         local pociPos = pociCFrame.Position
-        local targetCFrame = pociCFrame -- Fallback (langsung nempel) jika tidak masuk radius 3 map utama
+        local targetCFrame = pociCFrame -- Fallback jika tidak masuk radius 3 map utama
 
         if (pociPos - eventMainLocations.Volcano.Position).Magnitude <= 3 then
             targetCFrame = getRandomCFrame(eventSubLocations.Volcano)
@@ -311,9 +328,6 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
     
     if isElementalEvent then
         task.spawn(function()
-            local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
-            local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
-            
             local lastHandledHour = -1
             local currentHour = os.date("*t").hour
             

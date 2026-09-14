@@ -83,7 +83,6 @@ end
 local function getAutoTargetArea()
     local t = os.date("*t")
     local h, m = t.hour, t.min
-    -- Menentukan jam terakhir event selesai (modulus 3: event berakhir di jam kelipatan 3)
     local lastEndHour = h - (h % 3)
     local elapsedMinutes = ((h - lastEndHour) * 60) + m
 
@@ -96,17 +95,21 @@ local function getAutoTargetArea()
     elseif elapsedMinutes >= 86 and elapsedMinutes < 120 then
         return "Core"
     else
-        return nil -- Waktu event berlangsung / Standby
+        return nil
     end
 end
 
--- Teleport ke Event dengan Sistem Radius 3 Studs (Target: pociclone)
+-- Teleport ke Event dengan Sistem Tunggu, Radius 3 Studs, dan Re-Check
 local function executePocongTeleport()
+    -- 1. Diam dan tunggu 10 detik PERTAMA (Memberi waktu pociclone mendarat)
+    task.wait(10)
+    
+    -- 2. Deteksi Lokasi Pertama
     local targetPlayer = Players:FindFirstChild("pociclone")
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local pociCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
         local pociPos = pociCFrame.Position
-        local targetCFrame = pociCFrame -- Default jika tidak terdeteksi di radius manapun
+        local targetCFrame = pociCFrame -- Fallback (langsung nempel) jika tidak masuk radius 3 map utama
 
         if (pociPos - eventMainLocations.Volcano.Position).Magnitude <= 3 then
             targetCFrame = getRandomCFrame(eventSubLocations.Volcano)
@@ -116,11 +119,28 @@ local function executePocongTeleport()
             targetCFrame = getRandomCFrame(eventSubLocations.Blizzard)
         end
 
-        task.wait(10)
         teleportTo(targetCFrame)
+    end
 
-        task.wait(60)
-        teleportTo(targetCFrame)
+    -- 3. Jeda Pengaman 60 detik
+    task.wait(60)
+
+    -- 4. CEK ULANG (Re-Check) Lokasi Aktual pociclone agar data tidak basi
+    local targetPlayer2 = Players:FindFirstChild("pociclone")
+    if targetPlayer2 and targetPlayer2.Character and targetPlayer2.Character:FindFirstChild("HumanoidRootPart") then
+        local pociCFrame2 = targetPlayer2.Character.HumanoidRootPart.CFrame
+        local pociPos2 = pociCFrame2.Position
+        local targetCFrame2 = pociCFrame2 
+
+        if (pociPos2 - eventMainLocations.Volcano.Position).Magnitude <= 3 then
+            targetCFrame2 = getRandomCFrame(eventSubLocations.Volcano)
+        elseif (pociPos2 - eventMainLocations.Storm.Position).Magnitude <= 3 then
+            targetCFrame2 = getRandomCFrame(eventSubLocations.Storm)
+        elseif (pociPos2 - eventMainLocations.Blizzard.Position).Magnitude <= 3 then
+            targetCFrame2 = getRandomCFrame(eventSubLocations.Blizzard)
+        end
+
+        teleportTo(targetCFrame2)
     end
 end
 
@@ -243,7 +263,6 @@ BtnLucid.MouseButton1Click:Connect(function()
                     local args = { "Lucid", 1, 1 }
                     game:GetService("ReplicatedStorage").Packages._Index["sleitnick_net@0.2.0"].net["RE/dda44bd42f0213f254e73c88dbf6272053010e3d9cf8244a56b0347fd23f948e"]:FireServer(unpack(args))
                 end)
-                -- Jeda 1 Jam (3600 Detik), dipecah agar bisa dimatikan sewaktu-waktu
                 for i = 1, 3600 do
                     if not isLucidActive then break end
                     task.wait(1)
@@ -296,8 +315,8 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
             local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
             
             local lastHandledHour = -1
-            
             local currentHour = os.date("*t").hour
+            
             if startHours[currentHour] then
                 saveCurrentLocation()
                 task.spawn(executePocongTeleport)
@@ -315,8 +334,6 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                         task.spawn(executePocongTeleport)
                         lastHandledHour = hour
                     elseif endHours[hour] then
-                        -- Jika AUTO tidak menyala, kembali ke savedLocation. 
-                        -- Jika AUTO menyala, script AUTO yang akan mengambil alih rotasi.
                         if not isAutoActive and savedLocation then
                             teleportTo(savedLocation)
                             savedLocation = nil

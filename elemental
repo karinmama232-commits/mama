@@ -37,7 +37,7 @@ local coreCFrames = {
 -- 3 CFrame Kunci Lokasi Utama Event
 local eventMainLocations = {
     Volcano = CFrame.new(-729.789978, 107.056473, 5347.83008),
-    Storm = CFrame.new(-936.080017, 54.3766861, 5238.54004),
+    Storm = CFrame.new(-920.000427, 66.2507858, 5307.02979, 0.290880501, 0, -0.956759393, 0, 1, 0, 0.956759393, 0, 0.290880501),
     Blizzard = CFrame.new(-981.890015, 45.8336372, 5302.85986)
 }
 

@@ -1,0 +1,442 @@
+-- [[ STEAL AN EGG - pociXkarin FIXED EDITION ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local TextChatService = game:GetService("TextChatService")
+
+-- State Variable
+local savedLocation = nil
+local isSaveActive = false
+local isAuto13Active = false
+local isAutoSpawnActive = false
+local activeMapLoop = nil
+
+-- Titik Awal Lari
+local startRunVector = Vector3.new(543.17334, 70.6726074, -364.045776)
+
+-- Data 13 Map
+local mapData = {
+    {name = "forest", minVal = 0, points = {
+        Vector3.new(583.575684, 70.6725006, -324.897827), Vector3.new(590.040894, 70.6725006, -338.681335), Vector3.new(599.808716, 70.6725006, -339.78009), Vector3.new(599.691467, 70.6725006, -327.614838), Vector3.new(594.857605, 70.6725006, -327.760925)
+    }},
+    {name = "lake", minVal = 900, points = {
+        Vector3.new(731.214539, 70.6725006, -412.529663), Vector3.new(736.421448, 70.6725006, -405.615509), Vector3.new(740.805725, 70.6725006, -412.621613), Vector3.new(744.490906, 70.6725006, -406.996979), Vector3.new(747.552429, 70.6725006, -410.208466)
+    }},
+    {name = "desert", minVal = 10000, points = {
+        Vector3.new(940.307617, 70.6725006, -330.520905), Vector3.new(940.110168, 70.6725006, -322.844604), Vector3.new(948.244568, 70.6725006, -321.812317), Vector3.new(950.162231, 70.6725006, -326.626831), Vector3.new(954.84668, 70.6725006, -322.543701)
+    }},
+    {name = "jungle", minVal = 40000, points = {
+        Vector3.new(1182.04578, 70.6725006, -401.700043), Vector3.new(1177.04919, 70.6725006, -412.273926), Vector3.new(1186.6825, 70.6725006, -413.508087), Vector3.new(1190.67004, 70.6725006, -404.616669), Vector3.new(1192.83459, 70.6725006, -410.598633)
+    }},
+    {name = "snow", minVal = 170000, points = {
+        Vector3.new(1479.85596, 70.6725006, -317.241943), Vector3.new(1483.09265, 70.6725006, -320.167175), Vector3.new(1491.99805, 70.6725006, -314.195618), Vector3.new(1494.41052, 70.6725006, -322.98938), Vector3.new(1502.09436, 70.6725006, -316.203674)
+    }},
+    {name = "volcano", minVal = 700000, points = {
+        Vector3.new(1865.54553, 70.6725769, -395.927948), Vector3.new(1868.31494, 70.6725769, -393.746613), Vector3.new(1876.2804, 70.6725769, -399.040833), Vector3.new(1881.62915, 70.6725769, -392.023193), Vector3.new(1883.5022, 70.6725769, -399.125366)
+    }},
+    {name = "abyss ocean", minVal = 2500000, points = {
+        Vector3.new(2268.84839, 70.6725769, -326.098877), Vector3.new(2273.05444, 70.6725769, -334.673615), Vector3.new(2281.51855, 70.6725769, -322.787872), Vector3.new(2285.50732, 70.6725769, -334.61731), Vector3.new(2289.56128, 70.6725769, -327.855377)
+    }},
+    {name = "prehistoric", minVal = 18000000, points = {
+        Vector3.new(2803.46606, 70.6725159, -390.222626), Vector3.new(2798.60596, 70.6725159, -401.036041), Vector3.new(2811.27441, 70.6725159, -402.439575), Vector3.new(2819.35083, 70.6725159, -391.356689), Vector3.new(2821.13257, 70.6725159, -400.353668)
+    }},
+    {name = "cosmic", minVal = 700000000, points = {
+        Vector3.new(3381.99146, 70.6726074, -330.806976), Vector3.new(3381.28052, 70.6726074, -323.766968), Vector3.new(3389.96802, 70.6726074, -322.605835), Vector3.new(3392.58325, 70.6726074, -330.354736), Vector3.new(3399.86353, 70.6726074, -327.382507)
+    }},
+    {name = "cherry blossom", minVal = 2500000000, points = {
+        Vector3.new(4012.60059, 70.6726074, -397.219879), Vector3.new(4019.30688, 70.6726074, -391.911987), Vector3.new(4029.95703, 70.6726074, -390.587341), Vector3.new(4027.6792, 70.6726074, -399.118225), Vector3.new(4035.12549, 70.6726074, -397.261414)
+    }},
+    {name = "titan temple", minVal = 7000000000, points = {
+        Vector3.new(4782.38672, 70.6726074, -329.370178), Vector3.new(4788.53857, 70.6726074, -334.601685), Vector3.new(4795.29248, 70.6726074, -326.980347), Vector3.new(4800.87305, 70.6726074, -337.50827), Vector3.new(4809.06689, 70.6726074, -329.524017)
+    }},
+    {name = "demons", minVal = 20000000000, points = {
+        Vector3.new(5649.43701, 70.6726074, -336.48056), Vector3.new(5649.68066, 70.6726074, -329.890106), Vector3.new(5662.59961, 70.6726074, -326.271271), Vector3.new(5669.45068, 70.6726074, -338.397858), Vector3.new(5675.05713, 70.6726074, -329.624359)
+    }},
+    {name = "angels", minVal = 20000000000, points = {
+        Vector3.new(5649.11084, 70.6726074, -327.446777), Vector3.new(5654.10303, 70.6726074, -335.832062), Vector3.new(5661.19092, 70.6726074, -324.205353), Vector3.new(5666.88135, 70.6726074, -338.484528), Vector3.new(5674.32764, 70.6726074, -329.63623)
+    }}
+}
+
+local function getPlayerSpeed()
+    local success, val = pcall(function()
+        local leaderstats = Player:FindFirstChild("leaderstats")
+        if leaderstats then
+            local speedStat = leaderstats:FindFirstChild("Speed")
+            if speedStat then
+                return speedStat.Value
+            end
+        end
+        return 0
+    end)
+    return success and val or 0
+end
+
+local function walkToVector(targetVector)
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    
+    if humanoid and hrp then
+        humanoid:MoveTo(targetVector)
+        local startTime = tick()
+        while (hrp.Position - targetVector).Magnitude > 3 do
+            if not isAuto13Active and not isAutoSpawnActive and not activeMapLoop then break end
+            if tick() - startTime > 1 then
+                humanoid:MoveTo(targetVector)
+                startTime = tick()
+            end
+            task.wait(0.2)
+        end
+    end
+end
+
+local function secureInteractFast(duration)
+    local startTime = tick()
+    while tick() - startTime < duration do
+        if not isAuto13Active and not isAutoSpawnActive and not activeMapLoop then break end
+        pcall(function()
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("ProximityPrompt") then
+                    local char = Player.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
+                        if dist < 25 then
+                            fireproximityprompt(obj)
+                        end
+                    end
+                end
+            end
+        end)
+        task.wait(0.05)
+    end
+end
+
+local function runMapRoutine(map, checkActiveFunc)
+    for _, pointVector in ipairs(map.points) do
+        if checkActiveFunc and not checkActiveFunc() then break end
+        walkToVector(startRunVector)
+        task.wait(0.1)
+        if checkActiveFunc and not checkActiveFunc() then break end
+        walkToVector(pointVector)
+        task.wait(0.1)
+        if checkActiveFunc and not checkActiveFunc() then break end
+        secureInteractFast(0.33)
+        task.wait(0.1)
+    end
+    if savedLocation then
+        walkToVector(savedLocation.Position)
+    end
+end
+
+-- ==========================================
+-- SETUP UI (LANGSUNG MUNCUL)
+-- ==========================================
+if CoreGui:FindFirstChild("StealAnEggUI") then
+    CoreGui.StealAnEggUI:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "StealAnEggUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "EggIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "🥚"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 25
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "EggMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -135, 0.5, -195)
+MainFrame.Size = UDim2.new(0, 270, 0, 420)
+MainFrame.Visible = true -- Langsung terlihat saat di-execute
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 30)
+Header.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Steal An Egg 🥚"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 12
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local HideBtn = Instance.new("TextButton", Header)
+HideBtn.Position = UDim2.new(0.74, 0, 0.15, 0)
+HideBtn.Size = UDim2.new(0, 22, 0, 22)
+HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HideBtn.BackgroundTransparency = 0.4
+HideBtn.Text = "-"
+HideBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+HideBtn.TextSize = 16
+HideBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 5)
+
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.87, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 22, 0, 22)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+CloseBtn.TextSize = 14
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
+
+IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+local function styleBtn(b, fSize)
+    b.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+    b.BackgroundTransparency = 0.4
+    b.TextColor3 = Color3.new(1,1,1)
+    b.TextSize = fSize
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
+
+-- Elemen UI: Stats Label
+local StatsLabel = Instance.new("TextLabel", MainFrame)
+StatsLabel.Size = UDim2.new(0, 250, 0, 20)
+StatsLabel.Position = UDim2.new(0, 10, 0, 36)
+StatsLabel.BackgroundTransparency = 1
+StatsLabel.Text = "Speed: Loading..."
+StatsLabel.TextColor3 = Color3.fromRGB(80, 80, 80)
+StatsLabel.TextSize = 12
+StatsLabel.Font = Enum.Font.GothamBold
+StatsLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Elemen UI: Save Loc
+local BtnSaveLoc = Instance.new("TextButton", MainFrame)
+BtnSaveLoc.Size = UDim2.new(0, 250, 0, 25)
+BtnSaveLoc.Position = UDim2.new(0, 10, 0, 58)
+BtnSaveLoc.Text = "SAVE LOC: OFF"
+styleBtn(BtnSaveLoc, 9)
+
+-- Pembuatan 13 Tombol Map
+local mapButtons = {}
+local startY = 88
+local btnWidth = 78
+local btnHeight = 22
+local spacing = 8
+
+for i, map in ipairs(mapData) do
+    local mapBtn = Instance.new("TextButton", MainFrame)
+    mapBtn.Text = map.name:upper()
+    mapBtn.Font = Enum.Font.GothamBold
+    mapBtn.TextSize = 9
+    Instance.new("UICorner", mapBtn).CornerRadius = UDim.new(0, 5)
+    
+    if i <= 12 then
+        local col = (i - 1) % 3
+        local row = math.floor((i - 1) / 3)
+        mapBtn.Size = UDim2.new(0, btnWidth, 0, btnHeight)
+        mapBtn.Position = UDim2.new(0, 10 + col * (btnWidth + spacing), 0, startY + row * (btnHeight + 5))
+    else
+        mapBtn.Size = UDim2.new(0, 250, 0, btnHeight)
+        mapBtn.Position = UDim2.new(0, 10, 0, startY + 4 * (btnHeight + 5))
+    end
+    
+    mapButtons[map.name] = mapBtn
+end
+
+local autoYPos = startY + 5 * (btnHeight + 5) + 2
+
+-- Tombol Auto 13 Map
+local BtnAuto13 = Instance.new("TextButton", MainFrame)
+BtnAuto13.Size = UDim2.new(0, 250, 0, 25)
+BtnAuto13.Position = UDim2.new(0, 10, 0, autoYPos)
+BtnAuto13.Text = "AUTO 13 MAP: OFF"
+styleBtn(BtnAuto13, 9)
+
+-- Tombol Auto Spawn
+local BtnAutoSpawn = Instance.new("TextButton", MainFrame)
+BtnAutoSpawn.Size = UDim2.new(0, 250, 0, 25)
+BtnAutoSpawn.Position = UDim2.new(0, 10, 0, autoYPos + 28)
+BtnAutoSpawn.Text = "AUTO SPAWNED: OFF"
+styleBtn(BtnAutoSpawn, 9)
+
+-- Task Pengecekan Speed & Warna Tombol
+task.spawn(function()
+    while true do
+        pcall(function()
+            local currentSpeed = getPlayerSpeed()
+            StatsLabel.Text = "Speed Value: " .. tostring(currentSpeed)
+            
+            for _, map in ipairs(mapData) do
+                local btn = mapButtons[map.name]
+                if btn and activeMapLoop ~= map.name then
+                    if currentSpeed >= map.minVal then
+                        btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                        btn.BackgroundTransparency = 0.3
+                        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    else
+                        btn.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+                        btn.BackgroundTransparency = 0.3
+                        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    end
+                end
+            end
+        end)
+        task.wait(1)
+    end
+end)
+
+-- Logic Save Loc
+BtnSaveLoc.MouseButton1Click:Connect(function()
+    isSaveActive = not isSaveActive
+    if isSaveActive then
+        local char = Player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            savedLocation = hrp.CFrame
+            BtnSaveLoc.Text = "SAVE LOC: ON"
+            BtnSaveLoc.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+            BtnSaveLoc.BackgroundTransparency = 0
+        else
+            isSaveActive = false
+            BtnSaveLoc.Text = "SAVE LOC: OFF"
+            styleBtn(BtnSaveLoc, 9)
+        end
+    else
+        savedLocation = nil
+        BtnSaveLoc.Text = "SAVE LOC: OFF"
+        styleBtn(BtnSaveLoc, 9)
+    end
+end)
+
+-- Logic Manual Map Buttons
+for _, map in ipairs(mapData) do
+    local btn = mapButtons[map.name]
+    if btn then
+        btn.MouseButton1Click:Connect(function()
+            local currentSpeed = getPlayerSpeed()
+            if currentSpeed < map.minVal then return end
+            
+            if activeMapLoop == map.name then
+                activeMapLoop = nil
+                btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                btn.BackgroundTransparency = 0.3
+            else
+                activeMapLoop = map.name
+                for _, m in ipairs(mapData) do
+                    if m.name ~= map.name and mapButtons[m.name] then
+                        mapButtons[m.name].BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                        mapButtons[m.name].BackgroundTransparency = 0.3
+                    end
+                end
+                btn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
+                btn.BackgroundTransparency = 0
+                
+                task.spawn(function()
+                    while activeMapLoop == map.name do
+                        runMapRoutine(map, function() return activeMapLoop == map.name end)
+                        task.wait(0.5)
+                    end
+                    btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                    btn.BackgroundTransparency = 0.3
+                end)
+            end
+        end)
+    end
+end
+
+-- Logic Auto 13 Map
+BtnAuto13.MouseButton1Click:Connect(function()
+    if not isSaveActive or not savedLocation then
+        BtnAuto13.Text = "SAVE LOC DULU!"
+        task.wait(1.5)
+        BtnAuto13.Text = "AUTO 13 MAP: OFF"
+        return
+    end
+
+    isAuto13Active = not isAuto13Active
+    BtnAuto13.BackgroundTransparency = isAuto13Active and 0 or 0.4
+    BtnAuto13.Text = isAuto13Active and "AUTO 13 MAP: ON" or "AUTO 13 MAP: OFF"
+
+    if isAuto13Active then
+        task.spawn(function()
+            while isAuto13Active do
+                local currentSpeed = getPlayerSpeed()
+                for _, map in ipairs(mapData) do
+                    if not isAuto13Active then break end
+                    if currentSpeed >= map.minVal then
+                        runMapRoutine(map, function() return isAuto13Active end)
+                        for s = 60, 1, -1 do
+                            if not isAuto13Active then break end
+                            task.wait(1)
+                        end
+                    end
+                end
+                task.wait(1)
+            end
+        end)
+    end
+end)
+
+-- Logic Auto Spawn
+local function processEggSpawnMessage(messageText)
+    if not isAutoSpawnActive then return end
+    local lowerMsg = string.lower(messageText)
+    if string.find(lowerMsg, "egg spawned in") then
+        for _, map in ipairs(mapData) do
+            if string.find(lowerMsg, map.name) then
+                local currentSpeed = getPlayerSpeed()
+                if currentSpeed >= map.minVal then
+                    task.spawn(function()
+                        runMapRoutine(map, function() return isAutoSpawnActive end)
+                    end)
+                else
+                    if savedLocation then
+                        walkToVector(savedLocation.Position)
+                    end
+                end
+                break
+            end
+        end
+    end
+end
+
+pcall(function()
+    TextChatService.OnIncomingMessage = function(message: TextChatMessage)
+        if message.TextSource then
+            processEggSpawnMessage(message.Text)
+        end
+    end
+end)
+
+pcall(function()
+    for _, p in pairs(Players:GetPlayers()) do
+        p.Chatted:Connect(function(msg) processEggSpawnMessage(msg) end)
+    end
+    Players.PlayerAdded:Connect(function(p)
+        p.Chatted:Connect(function(msg) processEggSpawnMessage(msg) end)
+    end
+end)
+
+BtnAutoSpawn.MouseButton1Click:Connect(function()
+    isAutoSpawnActive = not isAutoSpawnActive
+    BtnAutoSpawn.BackgroundTransparency = isAutoSpawnActive and 0 or 0.4
+    BtnAutoSpawn.Text = isAutoSpawnActive and "AUTO SPAWNED: ON" or "AUTO SPAWNED: OFF"
+end)

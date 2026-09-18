@@ -305,8 +305,8 @@ local function executeMapRoutine(map, loopType)
             
             walkToTarget(ptCFrame.Position, loopType)
             task.wait(0.2)
-            secureInteractForDuration(0.5, loopType)
-            task.wait(0.3)
+            secureInteractForDuration(0.1, loopType)
+            task.wait(0.1)
         end
         
         if savedLocation then
@@ -315,7 +315,7 @@ local function executeMapRoutine(map, loopType)
         end
         
         local waitStartTime = tick()
-        while tick() - waitStartTime < 60 do
+        while tick() - waitStartTime < 150 do
             if (loopType == "map" and activeMapLoop ~= map.name) or (loopType == "auto" and not isAutoSpawnActive) or (loopType == "allmap" and not isAutoAllMapActive) then break end
             task.wait(1)
         end

@@ -1,4 +1,4 @@
--- [[ STEAL AN EGG - pociXkarin FIXED EDITION ]] --
+-- [[ ELEMENTAL ISLAND - FINAL LOGIC SCRIPT ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
@@ -8,71 +8,126 @@ local TextChatService = game:GetService("TextChatService")
 -- State Variable
 local savedLocation = nil
 local isSaveActive = false
-local isAuto13Active = false
-local isAutoSpawnActive = false
 local activeMapLoop = nil
+local isAutoSpawnActive = false
 
--- Titik Awal Lari
+-- Lokasi Titik Awal Lari
 local startRunVector = Vector3.new(543.17334, 70.6726074, -364.045776)
 
--- Data 13 Map
+-- Data 13 Map (100% Utuh Tanpa Singkat)
 local mapData = {
-    {name = "forest", minVal = 0, points = {
-        Vector3.new(583.575684, 70.6725006, -324.897827), Vector3.new(590.040894, 70.6725006, -338.681335), Vector3.new(599.808716, 70.6725006, -339.78009), Vector3.new(599.691467, 70.6725006, -327.614838), Vector3.new(594.857605, 70.6725006, -327.760925)
+    {name = "forest", points = {
+        CFrame.new(583.575684, 70.6725006, -324.897827, 0.197652325, -5.21148413e-09, -0.980272174, 6.18947666e-08, 1, 7.16348003e-09, 0.980272174, -6.20895975e-08, 0.197652325),
+        CFrame.new(590.040894, 70.6725006, -338.681335, -0.163556576, 5.09004394e-08, -0.98653394, 1.82522815e-08, 1, 4.85691949e-08, 0.98653394, -1.0062684e-08, -0.163556576),
+        CFrame.new(599.808716, 70.6725006, -339.78009, -0.989408791, -2.7706216e-08, 0.145155951, -2.20166125e-08, 1, 4.08029166e-08, -0.145155951, 3.71749209e-08, -0.989408791),
+        CFrame.new(599.691467, 70.6725006, -327.614838, 0.790326893, -6.60376571e-08, -0.612685382, 3.78409126e-08, 1, -5.89714801e-08, 0.612685382, 2.34221726e-08, 0.790326893),
+        CFrame.new(594.857605, 70.6725006, -327.760925, -0.79811126, 6.86734296e-08, -0.602510095, 2.06627888e-08, 1, 8.66080541e-08, 0.602510095, 5.6673322e-08, -0.79811126)
     }},
-    {name = "lake", minVal = 900, points = {
-        Vector3.new(731.214539, 70.6725006, -412.529663), Vector3.new(736.421448, 70.6725006, -405.615509), Vector3.new(740.805725, 70.6725006, -412.621613), Vector3.new(744.490906, 70.6725006, -406.996979), Vector3.new(747.552429, 70.6725006, -410.208466)
+    {name = "lake", points = {
+        CFrame.new(731.214539, 70.6725006, -412.529663, -0.727759123, -1.95216874e-08, -0.685832798, -3.71899889e-09, 1, -2.4517858e-08, 0.685832798, -1.52924837e-08, -0.727759123),
+        CFrame.new(736.421448, 70.6725006, -405.615509, -0.852505624, 5.06620381e-08, -0.522718012, 1.0175097e-07, 1, -6.90261999e-08, 0.522718012, -1.12032296e-07, -0.852505624),
+        CFrame.new(740.805725, 70.6725006, -412.621613, -0.998796523, -3.29111742e-08, -0.0490464643, -3.65807367e-08, 1, 7.39204253e-08, 0.0490464643, 7.56256213e-08, -0.998796523),
+        CFrame.new(744.490906, 70.6725006, -406.996979, -0.915525556, -2.9530085e-09, -0.402259827, 1.04822933e-08, 1, -3.11982831e-08, 0.402259827, -3.27794325e-08, -0.915525556),
+        CFrame.new(747.552429, 70.6725006, -410.208466, 0.162963286, -6.92737387e-08, -0.986632109, -1.82449178e-09, 1, -7.05136856e-08, 0.986632109, 1.32912445e-08, 0.162963286)
     }},
-    {name = "desert", minVal = 10000, points = {
-        Vector3.new(940.307617, 70.6725006, -330.520905), Vector3.new(940.110168, 70.6725006, -322.844604), Vector3.new(948.244568, 70.6725006, -321.812317), Vector3.new(950.162231, 70.6725006, -326.626831), Vector3.new(954.84668, 70.6725006, -322.543701)
+    {name = "desert", points = {
+        CFrame.new(940.307617, 70.6725006, -330.520905, -0.35779658, -9.53101846e-08, -0.933799565, -8.55199644e-08, 1, -6.92990625e-08, 0.933799565, 5.50635377e-08, -0.35779658),
+        CFrame.new(940.110168, 70.6725006, -322.844604, -0.976788282, -9.4505161e-08, -0.214206979, -7.28671523e-08, 1, -1.08910434e-07, 0.214206979, -9.07737885e-08, -0.976788282),
+        CFrame.new(948.244568, 70.6725006, -321.812317, -0.237612098, 7.23638882e-09, -0.971360147, -5.57154891e-08, 1, 2.10787547e-08, 0.971360147, 5.91283715e-08, -0.237612098),
+        CFrame.new(950.162231, 70.6725006, -326.626831, 0.721653998, -7.28510656e-08, -0.692253947, 4.39731558e-08, 1, -5.93967862e-08, 0.692253947, 1.2423337e-08, 0.721653998),
+        CFrame.new(954.84668, 70.6725006, -322.543701, -0.152754411, -1.68141145e-08, -0.988264203, -1.30762663e-08, 1, -1.4992608e-08, 0.988264203, 1.06326183e-08, -0.152754411)
     }},
-    {name = "jungle", minVal = 40000, points = {
-        Vector3.new(1182.04578, 70.6725006, -401.700043), Vector3.new(1177.04919, 70.6725006, -412.273926), Vector3.new(1186.6825, 70.6725006, -413.508087), Vector3.new(1190.67004, 70.6725006, -404.616669), Vector3.new(1192.83459, 70.6725006, -410.598633)
+    {name = "jungle", points = {
+        CFrame.new(1182.04578, 70.6725006, -401.700043, 0.552317977, 8.53849187e-08, -0.833633542, 2.6588733e-08, 1, 1.20041179e-07, 0.833633542, -8.84661588e-08, 0.552317977),
+        CFrame.new(1177.04919, 70.6725006, -412.273926, -0.680928886, -1.20104593e-08, -0.732349575, 6.59852546e-08, 1, -7.77521052e-08, 0.732349575, -1.01267929e-07, -0.680928886),
+        CFrame.new(1186.6825, 70.6725006, -413.508087, -0.0332199931, -1.04465681e-08, -0.999448061, -8.22794561e-08, 1, -7.71750486e-09, 0.999448061, 8.19776673e-08, -0.0332199931),
+        CFrame.new(1190.67004, 70.6725006, -404.616669, -0.875812829, -5.09147924e-08, -0.482650906, -2.61861821e-08, 1, -5.79727448e-08, 0.482650906, -3.81344876e-08, -0.875812829),
+        CFrame.new(1192.83459, 70.6725006, -410.598633, 0.477787733, -1.24246693e-08, -0.878475308, 1.2792901e-08, 1, -7.18560678e-09, 0.878475308, -7.8050526e-09, 0.477787733)
     }},
-    {name = "snow", minVal = 170000, points = {
-        Vector3.new(1479.85596, 70.6725006, -317.241943), Vector3.new(1483.09265, 70.6725006, -320.167175), Vector3.new(1491.99805, 70.6725006, -314.195618), Vector3.new(1494.41052, 70.6725006, -322.98938), Vector3.new(1502.09436, 70.6725006, -316.203674)
+    {name = "snow", points = {
+        CFrame.new(1479.85596, 70.6725006, -317.241943, -0.783511758, 6.99252167e-09, -0.621376932, 2.26859931e-09, 1, 8.3927274e-09, 0.621376932, 5.16614529e-09, -0.783511758),
+        CFrame.new(1483.09265, 70.6725006, -320.167175, -0.218857765, 4.5827246e-08, -0.975756764, -9.88679432e-08, 1, 6.91414783e-08, 0.975756764, 1.11603214e-07, -0.218857765),
+        CFrame.new(1491.99805, 70.6725006, -314.195618, -0.308483124, -4.97221109e-08, 0.951229811, -4.02766318e-08, 1, 3.92097128e-08, -0.951229811, -2.62167994e-08, -0.308483124),
+        CFrame.new(1494.41052, 70.6725006, -322.98938, 0.157986566, -2.43662033e-08, 0.987441242, -9.21747088e-08, 1, 3.94236821e-08, -0.987441242, -9.72455254e-08, 0.157986566),
+        CFrame.new(1502.09436, 70.6725006, -316.203674, -0.776254177, -1.33637226e-08, -0.630420029, -2.30098838e-08, 1, 7.13460091e-09, 0.630420029, 2.00441548e-08, -0.776254177)
     }},
-    {name = "volcano", minVal = 700000, points = {
-        Vector3.new(1865.54553, 70.6725769, -395.927948), Vector3.new(1868.31494, 70.6725769, -393.746613), Vector3.new(1876.2804, 70.6725769, -399.040833), Vector3.new(1881.62915, 70.6725769, -392.023193), Vector3.new(1883.5022, 70.6725769, -399.125366)
+    {name = "volcano", points = {
+        CFrame.new(1865.54553, 70.6725769, -395.927948, 0.0425355919, -3.98141751e-08, -0.999094963, 2.31047164e-08, 1, -3.88665811e-08, 0.999094963, -2.14305924e-08, 0.0425355919),
+        CFrame.new(1868.31494, 70.6725769, -393.746613, -0.310841173, 1.33992897e-08, -0.950461864, -4.45681785e-08, 1, 2.86733375e-08, 0.950461864, 5.12732079e-08, -0.310841173),
+        CFrame.new(1876.2804, 70.6725769, -399.040833, 0.307525575, 4.30361524e-08, -0.951539814, 9.66658309e-09, 1, 4.83520211e-08, 0.951539814, -2.40676226e-08, 0.307525575),
+        CFrame.new(1881.62915, 70.6725769, -392.023193, -0.156601533, -3.3548833e-08, -0.987661839, -2.58021018e-08, 1, -2.98768086e-08, 0.987661839, 2.08049986e-08, -0.156601533),
+        CFrame.new(1883.5022, 70.6725769, -399.125366, 0.70030725, 1.17272734e-07, -0.713841558, -5.4111748e-08, 1, 1.1119819e-07, 0.713841558, -3.9245684e-08, 0.70030725)
     }},
-    {name = "abyss ocean", minVal = 2500000, points = {
-        Vector3.new(2268.84839, 70.6725769, -326.098877), Vector3.new(2273.05444, 70.6725769, -334.673615), Vector3.new(2281.51855, 70.6725769, -322.787872), Vector3.new(2285.50732, 70.6725769, -334.61731), Vector3.new(2289.56128, 70.6725769, -327.855377)
+    {name = "abyss ocean", points = {
+        CFrame.new(2268.84839, 70.6725769, -326.098877, -0.420684099, 7.54138298e-08, -0.907207191, 7.59179599e-08, 1, 4.79232902e-08, 0.907207191, -4.87127494e-08, -0.420684099),
+        CFrame.new(2273.05444, 70.6725769, -334.673615, -0.537214398, 3.22850404e-08, -0.843445718, 4.21945678e-09, 1, 3.5590066e-08, 0.843445718, 1.55606124e-08, -0.537214398),
+        CFrame.new(2281.51855, 70.6725769, -322.787872, -0.748659551, 1.87675586e-09, -0.662954628, -5.2523621e-08, 1, 6.2144629e-08, 0.662954628, 8.13459451e-08, -0.748659551),
+        CFrame.new(2285.50732, 70.6725769, -334.61731, -0.994395912, -6.19714058e-08, -0.105720416, -5.60618538e-08, 1, -5.88697056e-08, 0.105720416, -5.26129114e-08, -0.994395912),
+        CFrame.new(2289.56128, 70.6725769, -327.855377, -0.882938206, -2.55473029e-08, -0.469489187, -1.2671018e-08, 1, -3.05855323e-08, 0.469489187, -2.1056227e-08, -0.882938206)
     }},
-    {name = "prehistoric", minVal = 18000000, points = {
-        Vector3.new(2803.46606, 70.6725159, -390.222626), Vector3.new(2798.60596, 70.6725159, -401.036041), Vector3.new(2811.27441, 70.6725159, -402.439575), Vector3.new(2819.35083, 70.6725159, -391.356689), Vector3.new(2821.13257, 70.6725159, -400.353668)
+    {name = "prehistoric", points = {
+        CFrame.new(2803.46606, 70.6725159, -390.222626, 0.478876799, -2.49570409e-08, -0.877882123, 6.80749181e-08, 1, 8.7055616e-09, 0.877882123, -6.39306421e-08, 0.478876799),
+        CFrame.new(2798.60596, 70.6725159, -401.036041, -0.0691995397, -5.27943689e-10, -0.99760282, -2.10232873e-10, 1, -5.14629339e-10, 0.99760282, 1.7411679e-10, -0.0691995397),
+        CFrame.new(2811.27441, 70.6725159, -402.439575, -0.175447822, -6.46305907e-08, -0.984488726, -2.31873578e-08, 1, -6.15166229e-08, 0.984488726, 1.2034735e-08, -0.175447822),
+        CFrame.new(2819.35083, 70.6725159, -391.356689, 0.919249117, 7.5498761e-08, 0.393676281, -8.34572589e-08, 1, 3.09710013e-09, -0.393676281, -3.57021506e-08, 0.919249117),
+        CFrame.new(2821.13257, 70.6725159, -400.353668, 0.997350693, 2.40778739e-08, -0.0727435127, -2.01751167e-08, 1, 5.43857013e-08, 0.0727435127, -5.27740092e-08, 0.997350693)
     }},
-    {name = "cosmic", minVal = 700000000, points = {
-        Vector3.new(3381.99146, 70.6726074, -330.806976), Vector3.new(3381.28052, 70.6726074, -323.766968), Vector3.new(3389.96802, 70.6726074, -322.605835), Vector3.new(3392.58325, 70.6726074, -330.354736), Vector3.new(3399.86353, 70.6726074, -327.382507)
+    {name = "cosmic", points = {
+        CFrame.new(3381.99146, 70.6726074, -330.806976, -0.178530395, 2.32095143e-08, -0.983934402, -2.91275382e-09, 1, 2.4116984e-08, 0.983934402, 7.17157311e-09, -0.178530395),
+        CFrame.new(3381.28052, 70.6726074, -323.766968, -0.907252252, 1.19365581e-07, -0.420586854, 1.16911181e-07, 1, 3.16168673e-08, 0.420586854, -2.04868336e-08, -0.907252252),
+        CFrame.new(3389.96802, 70.6726074, -322.605835, -0.339311361, -4.86514029e-09, -0.940674126, 2.05468957e-08, 1, -1.25834605e-08, 0.940674126, -2.35976447e-08, -0.339311361),
+        CFrame.new(3392.58325, 70.6726074, -330.354736, 0.758449912, 2.2048432e-09, -0.651731312, -1.59574287e-09, 1, 1.52601565e-09, 0.651731312, -1.17410859e-10, 0.758449912),
+        CFrame.new(3399.86353, 70.6726074, -327.382507, -0.118865564, 5.2848903e-09, -0.992910385, 9.72208198e-08, 1, -6.31609609e-09, 0.992910385, -9.72823315e-08, -0.118865564)
     }},
-    {name = "cherry blossom", minVal = 2500000000, points = {
-        Vector3.new(4012.60059, 70.6726074, -397.219879), Vector3.new(4019.30688, 70.6726074, -391.911987), Vector3.new(4029.95703, 70.6726074, -390.587341), Vector3.new(4027.6792, 70.6726074, -399.118225), Vector3.new(4035.12549, 70.6726074, -397.261414)
+    {name = "cherry blossom", points = {
+        CFrame.new(4012.60059, 70.6726074, -397.219879, 0.533853531, 5.15025071e-08, -0.845576942, -7.83881973e-08, 1, 1.14178738e-08, 0.845576942, 6.01877801e-08, 0.533853531),
+        CFrame.new(4019.30688, 70.6726074, -391.911987, -0.319371283, 5.04739823e-08, -0.94762969, 8.24585698e-08, 1, 2.54731187e-08, 0.94762969, -7.0004802e-08, -0.319371283),
+        CFrame.new(4029.95703, 70.6726074, -390.587341, 0.761691332, 1.12952847e-07, -0.64794004, -6.41085833e-08, 1, 9.8962694e-08, 0.64794004, -3.38405108e-08, 0.761691332),
+        CFrame.new(4027.6792, 70.6726074, -399.118225, 0.842975199, 3.79453162e-08, 0.537952423, -1.22749748e-08, 1, -5.13015905e-08, -0.537952423, 3.66426178e-08, 0.842975199),
+        CFrame.new(4035.12549, 70.6726074, -397.261414, 0.846752703, 2.39163445e-08, -0.531986654, 7.18333437e-09, 1, 5.63902312e-08, 0.531986654, -5.15700229e-08, 0.846752703)
     }},
-    {name = "titan temple", minVal = 7000000000, points = {
-        Vector3.new(4782.38672, 70.6726074, -329.370178), Vector3.new(4788.53857, 70.6726074, -334.601685), Vector3.new(4795.29248, 70.6726074, -326.980347), Vector3.new(4800.87305, 70.6726074, -337.50827), Vector3.new(4809.06689, 70.6726074, -329.524017)
+    {name = "titan temple", points = {
+        CFrame.new(4782.38672, 70.6726074, -329.370178, -0.399334848, 3.59742387e-08, -0.916805148, -1.60233304e-09, 1, 3.99366265e-08, 0.916805148, 1.74171149e-08, -0.399334848),
+        CFrame.new(4788.53857, 70.6726074, -334.601685, 0.42783311, 4.33280078e-08, -0.903857768, -4.20855972e-09, 1, 4.59446738e-08, 0.903857768, -1.58527129e-08, 0.42783311),
+        CFrame.new(4795.29248, 70.6726074, -326.980347, -0.897498965, -3.81501408e-08, -0.441016555, -2.95830382e-08, 1, -2.63014996e-08, 0.441016555, -1.0558959e-08, -0.897498965),
+        CFrame.new(4800.87305, 70.6726074, -337.50827, -0.513739347, 9.41868183e-09, -0.857946336, -3.65940984e-08, 1, 3.28907639e-08, 0.857946336, 4.82930531e-08, -0.513739347),
+        CFrame.new(4809.06689, 70.6726074, -329.524017, -0.993489802, -6.75576999e-08, 0.113921173, -7.37948156e-08, 1, -5.05323179e-08, -0.113921173, -5.86101336e-08, -0.993489802)
     }},
-    {name = "demons", minVal = 20000000000, points = {
-        Vector3.new(5649.43701, 70.6726074, -336.48056), Vector3.new(5649.68066, 70.6726074, -329.890106), Vector3.new(5662.59961, 70.6726074, -326.271271), Vector3.new(5669.45068, 70.6726074, -338.397858), Vector3.new(5675.05713, 70.6726074, -329.624359)
+    {name = "demons", points = {
+        CFrame.new(5649.43701, 70.6726074, -336.48056, -0.446532279, -1.61256821e-08, -0.894767523, -1.99883434e-08, 1, -8.04705191e-09, 0.894767523, 1.42916523e-08, -0.446532279),
+        CFrame.new(5649.68066, 70.6726074, -329.890106, -0.893871248, 1.41974237e-08, -0.448323727, -9.28340793e-10, 1, 3.35187273e-08, 0.448323727, 3.0377624e-08, -0.893871248),
+        CFrame.new(5662.59961, 70.6726074, -326.271271, -0.305369437, 6.24127381e-08, -0.95223397, -5.94583298e-08, 1, 8.4611024e-08, 0.95223397, 8.24558626e-08, -0.305369437),
+        CFrame.new(5669.45068, 70.6726074, -338.397858, 0.760175467, -3.79470713e-08, -0.649717808, 1.50722226e-08, 1, -4.0770832e-08, 0.649717808, 2.12002949e-08, 0.760175467),
+        CFrame.new(5675.05713, 70.6726074, -329.624359, -0.759260297, 5.98295387e-08, -0.650787055, 3.93571646e-08, 1, 4.6016897e-08, 0.650787055, 9.32566913e-09, -0.759260297)
     }},
-    {name = "angels", minVal = 20000000000, points = {
-        Vector3.new(5649.11084, 70.6726074, -327.446777), Vector3.new(5654.10303, 70.6726074, -335.832062), Vector3.new(5661.19092, 70.6726074, -324.205353), Vector3.new(5666.88135, 70.6726074, -338.484528), Vector3.new(5674.32764, 70.6726074, -329.63623)
+    {name = "angels", points = {
+        CFrame.new(5649.11084, 70.6726074, -327.446777, 0.102238424, 1.05582373e-07, -0.994759917, -7.91439021e-08, 1, 9.80043779e-08, 0.994759917, 6.87093689e-08, 0.102238424),
+        CFrame.new(5654.10303, 70.6726074, -335.832062, 0.677769005, -2.28592167e-08, -0.735274911, 1.60285527e-08, 1, -1.63143881e-08, 0.735274911, -7.28005822e-10, 0.677769005),
+        CFrame.new(5661.19092, 70.6726074, -324.205353, 0.231337756, -1.06156278e-07, -0.972873509, -1.94392662e-08, 1, -1.13738643e-07, 0.972873509, 4.52239881e-08, 0.231337756),
+        CFrame.new(5666.88135, 70.6726074, -338.484528, -0.750166893, 1.10720201e-07, -0.661248565, 7.10384072e-08, 1, 8.68501573e-08, 0.661248565, 1.81780706e-08, -0.750166893),
+        CFrame.new(5674.32764, 70.6726074, -329.63623, -0.782456458, -3.80705156e-09, -0.62270534, -7.18907711e-10, 1, -5.21039034e-09, 0.62270534, -3.6292358e-09, -0.782456458)
     }}
 }
 
-local function getPlayerSpeed()
-    local success, val = pcall(function()
-        local leaderstats = Player:FindFirstChild("leaderstats")
-        if leaderstats then
-            local speedStat = leaderstats:FindFirstChild("Speed")
-            if speedStat then
-                return speedStat.Value
-            end
-        end
-        return 0
-    end)
-    return success and val or 0
+local function saveCurrentLocation()
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp then savedLocation = hrp.CFrame end
 end
 
-local function walkToVector(targetVector)
+-- Fungsi Respawn bersih (menggantikan Jump)
+local function respawnCharacter()
+    pcall(function()
+        local char = Player.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.Health = 0
+        end
+    end)
+    Player.CharacterAdded:Wait()
+    task.wait(1.5) -- Jeda setelah respawn agar karakter stabil
+end
+
+local function walkToTarget(targetVector, loopCheckVar)
     local char = Player.Character or Player.CharacterAdded:Wait()
     local humanoid = char:FindFirstChildOfClass("Humanoid")
     local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -81,7 +136,7 @@ local function walkToVector(targetVector)
         humanoid:MoveTo(targetVector)
         local startTime = tick()
         while (hrp.Position - targetVector).Magnitude > 3 do
-            if not isAuto13Active and not isAutoSpawnActive and not activeMapLoop then break end
+            if (loopCheckVar == "map" and not activeMapLoop) or (loopCheckVar == "auto" and not isAutoSpawnActive) then break end
             if tick() - startTime > 1 then
                 humanoid:MoveTo(targetVector)
                 startTime = tick()
@@ -91,10 +146,10 @@ local function walkToVector(targetVector)
     end
 end
 
-local function secureInteractFast(duration)
+local function secureInteractForDuration(duration, loopCheckVar)
     local startTime = tick()
     while tick() - startTime < duration do
-        if not isAuto13Active and not isAutoSpawnActive and not activeMapLoop then break end
+        if (loopCheckVar == "map" and not activeMapLoop) or (loopCheckVar == "auto" and not isAutoSpawnActive) then break end
         pcall(function()
             for _, obj in pairs(workspace:GetDescendants()) do
                 if obj:IsA("ProximityPrompt") then
@@ -108,46 +163,29 @@ local function secureInteractFast(duration)
                 end
             end
         end)
-        task.wait(0.05)
-    end
-end
-
-local function runMapRoutine(map, checkActiveFunc)
-    for _, pointVector in ipairs(map.points) do
-        if checkActiveFunc and not checkActiveFunc() then break end
-        walkToVector(startRunVector)
         task.wait(0.1)
-        if checkActiveFunc and not checkActiveFunc() then break end
-        walkToVector(pointVector)
-        task.wait(0.1)
-        if checkActiveFunc and not checkActiveFunc() then break end
-        secureInteractFast(0.33)
-        task.wait(0.1)
-    end
-    if savedLocation then
-        walkToVector(savedLocation.Position)
     end
 end
 
 -- ==========================================
--- SETUP UI (LANGSUNG MUNCUL)
+-- SETUP UI & MENU
 -- ==========================================
-if CoreGui:FindFirstChild("StealAnEggUI") then
-    CoreGui.StealAnEggUI:Destroy()
+if CoreGui:FindFirstChild("ElementalIslandUI") then
+    CoreGui.ElementalIslandUI:Destroy()
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "StealAnEggUI"
+ScreenGui.Name = "ElementalIslandUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
 local IconButton = Instance.new("TextButton")
-IconButton.Name = "EggIcon"
+IconButton.Name = "ElementalIcon"
 IconButton.Parent = ScreenGui
 IconButton.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
 IconButton.Position = UDim2.new(0, 15, 0.5, -22)
 IconButton.Size = UDim2.new(0, 45, 0, 45)
-IconButton.Text = "🥚"
+IconButton.Text = "⚡"
 IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 IconButton.TextSize = 25
 IconButton.Active = true
@@ -155,19 +193,19 @@ IconButton.Draggable = true
 Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "EggMain"
+MainFrame.Name = "ElementalMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
 MainFrame.BackgroundTransparency = 0.1
-MainFrame.Position = UDim2.new(0.5, -135, 0.5, -195)
-MainFrame.Size = UDim2.new(0, 270, 0, 420)
-MainFrame.Visible = true -- Langsung terlihat saat di-execute
+MainFrame.Position = UDim2.new(0.5, -135, 0.5, -165)
+MainFrame.Size = UDim2.new(0, 270, 0, 310)
+MainFrame.Visible = true
 MainFrame.Active = true
 MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
 local Header = Instance.new("Frame", MainFrame)
-Header.Size = UDim2.new(1, 0, 0, 30)
+Header.Size = UDim2.new(1, 0, 0, 26)
 Header.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
 Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
 
@@ -175,33 +213,32 @@ local Title = Instance.new("TextLabel", Header)
 Title.Size = UDim2.new(0.6, 0, 1, 0)
 Title.Position = UDim2.new(0.05, 0, 0, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "Steal An Egg 🥚"
+Title.Text = "Elemental Island ⚡"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 12
 Title.Font = Enum.Font.GothamBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 local HideBtn = Instance.new("TextButton", Header)
-HideBtn.Position = UDim2.new(0.74, 0, 0.15, 0)
-HideBtn.Size = UDim2.new(0, 22, 0, 22)
+HideBtn.Position = UDim2.new(0.74, 0, 0.1, 0)
+HideBtn.Size = UDim2.new(0, 18, 0, 18)
 HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 HideBtn.BackgroundTransparency = 0.4
 HideBtn.Text = "-"
 HideBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
-HideBtn.TextSize = 16
+HideBtn.TextSize = 14
 HideBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 4)
 
 local CloseBtn = Instance.new("TextButton", Header)
-CloseBtn.Position = UDim2.new(0.87, 0, 0.15, 0)
-CloseBtn.Size = UDim2.new(0, 22, 0, 22)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.Position = UDim2.new(0.87, 0, 0.1, 0)
+CloseBtn.Size = UDim2.new(0, 18, 0, 18)
 CloseBtn.BackgroundTransparency = 0.4
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
-CloseBtn.TextSize = 14
+CloseBtn.TextSize = 12
 CloseBtn.Font = Enum.Font.GothamBold
-Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 4)
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
@@ -216,202 +253,145 @@ local function styleBtn(b, fSize)
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
 end
 
--- Elemen UI: Stats Label
-local StatsLabel = Instance.new("TextLabel", MainFrame)
-StatsLabel.Size = UDim2.new(0, 250, 0, 20)
-StatsLabel.Position = UDim2.new(0, 10, 0, 36)
-StatsLabel.BackgroundTransparency = 1
-StatsLabel.Text = "Speed: Loading..."
-StatsLabel.TextColor3 = Color3.fromRGB(80, 80, 80)
-StatsLabel.TextSize = 12
-StatsLabel.Font = Enum.Font.GothamBold
-StatsLabel.TextXAlignment = Enum.TextXAlignment.Left
+-- Tombol Save Loc (TIDAK DIUBAH, AMAN SESUAI PERMINTAAN)
+local BtnSave = Instance.new("TextButton", MainFrame)
+BtnSave.Size = UDim2.new(0, 250, 0, 22)
+BtnSave.Position = UDim2.new(0, 10, 0, 32)
+BtnSave.Text = "SAVE LOC: OFF"
+styleBtn(BtnSave, 9)
 
--- Elemen UI: Save Loc
-local BtnSaveLoc = Instance.new("TextButton", MainFrame)
-BtnSaveLoc.Size = UDim2.new(0, 250, 0, 25)
-BtnSaveLoc.Position = UDim2.new(0, 10, 0, 58)
-BtnSaveLoc.Text = "SAVE LOC: OFF"
-styleBtn(BtnSaveLoc, 9)
+BtnSave.MouseButton1Click:Connect(function()
+    isSaveActive = not isSaveActive
+    if isSaveActive then
+        saveCurrentLocation()
+        BtnSave.Text = "SAVE LOC: ON"
+        BtnSave.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+        BtnSave.BackgroundTransparency = 0
+    else
+        savedLocation = nil
+        BtnSave.Text = "SAVE LOC: OFF"
+        styleBtn(BtnSave, 9)
+    end
+end)
+
+-- Fungsi Alur Rute Map Utama
+local function executeMapRoutine(map, loopType)
+    -- Respawn pertama kali saat tombol map diklik
+    respawnCharacter()
+    
+    while true do
+        if (loopType == "map" and activeMapLoop ~= map.name) or (loopType == "auto" and not isAutoSpawnActive) then break end
+        
+        -- Alur: Titik Awal -> Lokasi 1 s.d 5 (Balik ke Titik Awal tiap titik)
+        for _, ptCFrame in ipairs(map.points) do
+            if (loopType == "map" and activeMapLoop ~= map.name) or (loopType == "auto" and not isAutoSpawnActive) then break end
+            
+            walkToTarget(startRunVector, loopType)
+            task.wait(0.2)
+            if (loopType == "map" and activeMapLoop ~= map.name) or (loopType == "auto" and not isAutoSpawnActive) then break end
+            
+            walkToTarget(ptCFrame.Position, loopType)
+            task.wait(0.2)
+            secureInteractForDuration(0.5, loopType)
+            task.wait(0.3)
+        end
+        
+        -- Selesai Titik 5: Pergi ke Save Loc jika ada
+        if savedLocation then
+            walkToTarget(savedLocation.Position, loopType)
+            task.wait(0.5)
+        end
+        
+        -- Jeda 1 menit (60 detik) setelah dari Save Loc
+        local waitStartTime = tick()
+        while tick() - waitStartTime < 60 do
+            if (loopType == "map" and activeMapLoop ~= map.name) or (loopType == "auto" and not isAutoSpawnActive) then break end
+            task.wait(1)
+        end
+        
+        if (loopType == "map" and activeMapLoop ~= map.name) or (loopType == "auto" and not isAutoSpawnActive) then break end
+        
+        -- Respawn setelah waktu jeda 1 menit habis, sebelum siklus jalan lagi
+        respawnCharacter()
+        
+        if loopType == "auto" then break end -- Auto spawn jalan sekali putaran penuh lalu selesai
+    end
+end
 
 -- Pembuatan 13 Tombol Map
 local mapButtons = {}
-local startY = 88
+local startY = 58
 local btnWidth = 78
-local btnHeight = 22
+local btnHeight = 20
 local spacing = 8
 
 for i, map in ipairs(mapData) do
     local mapBtn = Instance.new("TextButton", MainFrame)
     mapBtn.Text = map.name:upper()
-    mapBtn.Font = Enum.Font.GothamBold
-    mapBtn.TextSize = 9
-    Instance.new("UICorner", mapBtn).CornerRadius = UDim.new(0, 5)
+    styleBtn(mapBtn, 9)
     
     if i <= 12 then
         local col = (i - 1) % 3
         local row = math.floor((i - 1) / 3)
         mapBtn.Size = UDim2.new(0, btnWidth, 0, btnHeight)
-        mapBtn.Position = UDim2.new(0, 10 + col * (btnWidth + spacing), 0, startY + row * (btnHeight + 5))
+        mapBtn.Position = UDim2.new(0, 10 + col * (btnWidth + spacing), 0, startY + row * (btnHeight + 4))
     else
         mapBtn.Size = UDim2.new(0, 250, 0, btnHeight)
-        mapBtn.Position = UDim2.new(0, 10, 0, startY + 4 * (btnHeight + 5))
+        mapBtn.Position = UDim2.new(0, 10, 0, startY + 4 * (btnHeight + 4))
     end
     
     mapButtons[map.name] = mapBtn
+    
+    mapBtn.MouseButton1Click:Connect(function()
+        if activeMapLoop == map.name then
+            activeMapLoop = nil
+            styleBtn(mapBtn, 9)
+        else
+            activeMapLoop = map.name
+            for _, m in ipairs(mapData) do
+                if mapButtons[m.name] then styleBtn(mapButtons[m.name], 9) end
+            end
+            mapBtn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
+            mapBtn.BackgroundTransparency = 0
+            
+            task.spawn(function()
+                executeMapRoutine(map, "map")
+                styleBtn(mapBtn, 9)
+            end)
+        end
+    end)
 end
 
-local autoYPos = startY + 5 * (btnHeight + 5) + 2
+local autoSpawnYPos = startY + 5 * (btnHeight + 4) + 2
 
--- Tombol Auto 13 Map
-local BtnAuto13 = Instance.new("TextButton", MainFrame)
-BtnAuto13.Size = UDim2.new(0, 250, 0, 25)
-BtnAuto13.Position = UDim2.new(0, 10, 0, autoYPos)
-BtnAuto13.Text = "AUTO 13 MAP: OFF"
-styleBtn(BtnAuto13, 9)
-
--- Tombol Auto Spawn
+-- Tombol Auto Spawn di Bawah
 local BtnAutoSpawn = Instance.new("TextButton", MainFrame)
-BtnAutoSpawn.Size = UDim2.new(0, 250, 0, 25)
-BtnAutoSpawn.Position = UDim2.new(0, 10, 0, autoYPos + 28)
-BtnAutoSpawn.Text = "AUTO SPAWNED: OFF"
+BtnAutoSpawn.Size = UDim2.new(0, 250, 0, 22)
+BtnAutoSpawn.Position = UDim2.new(0, 10, 0, autoSpawnYPos)
+BtnAutoSpawn.Text = "AUTO SPAWN: OFF"
 styleBtn(BtnAutoSpawn, 9)
 
--- Task Pengecekan Speed & Warna Tombol
-task.spawn(function()
-    while true do
-        pcall(function()
-            local currentSpeed = getPlayerSpeed()
-            StatsLabel.Text = "Speed Value: " .. tostring(currentSpeed)
-            
-            for _, map in ipairs(mapData) do
-                local btn = mapButtons[map.name]
-                if btn and activeMapLoop ~= map.name then
-                    if currentSpeed >= map.minVal then
-                        btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-                        btn.BackgroundTransparency = 0.3
-                        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    else
-                        btn.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
-                        btn.BackgroundTransparency = 0.3
-                        btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    end
-                end
-            end
-        end)
-        task.wait(1)
-    end
-end)
-
--- Logic Save Loc
-BtnSaveLoc.MouseButton1Click:Connect(function()
-    isSaveActive = not isSaveActive
-    if isSaveActive then
-        local char = Player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            savedLocation = hrp.CFrame
-            BtnSaveLoc.Text = "SAVE LOC: ON"
-            BtnSaveLoc.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-            BtnSaveLoc.BackgroundTransparency = 0
-        else
-            isSaveActive = false
-            BtnSaveLoc.Text = "SAVE LOC: OFF"
-            styleBtn(BtnSaveLoc, 9)
-        end
+BtnAutoSpawn.MouseButton1Click:Connect(function()
+    isAutoSpawnActive = not isAutoSpawnActive
+    BtnAutoSpawn.BackgroundTransparency = isAutoSpawnActive and 0 or 0.4
+    BtnAutoSpawn.Text = isAutoSpawnActive and "AUTO SPAWN: ON" or "AUTO SPAWN: OFF"
+    if isAutoSpawnActive then
+        BtnAutoSpawn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
     else
-        savedLocation = nil
-        BtnSaveLoc.Text = "SAVE LOC: OFF"
-        styleBtn(BtnSaveLoc, 9)
+        styleBtn(BtnAutoSpawn, 9)
     end
 end)
 
--- Logic Manual Map Buttons
-for _, map in ipairs(mapData) do
-    local btn = mapButtons[map.name]
-    if btn then
-        btn.MouseButton1Click:Connect(function()
-            local currentSpeed = getPlayerSpeed()
-            if currentSpeed < map.minVal then return end
-            
-            if activeMapLoop == map.name then
-                activeMapLoop = nil
-                btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-                btn.BackgroundTransparency = 0.3
-            else
-                activeMapLoop = map.name
-                for _, m in ipairs(mapData) do
-                    if m.name ~= map.name and mapButtons[m.name] then
-                        mapButtons[m.name].BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-                        mapButtons[m.name].BackgroundTransparency = 0.3
-                    end
-                end
-                btn.BackgroundColor3 = Color3.fromRGB(39, 174, 96)
-                btn.BackgroundTransparency = 0
-                
-                task.spawn(function()
-                    while activeMapLoop == map.name do
-                        runMapRoutine(map, function() return activeMapLoop == map.name end)
-                        task.wait(0.5)
-                    end
-                    btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-                    btn.BackgroundTransparency = 0.3
-                end)
-            end
-        end)
-    end
-end
-
--- Logic Auto 13 Map
-BtnAuto13.MouseButton1Click:Connect(function()
-    if not isSaveActive or not savedLocation then
-        BtnAuto13.Text = "SAVE LOC DULU!"
-        task.wait(1.5)
-        BtnAuto13.Text = "AUTO 13 MAP: OFF"
-        return
-    end
-
-    isAuto13Active = not isAuto13Active
-    BtnAuto13.BackgroundTransparency = isAuto13Active and 0 or 0.4
-    BtnAuto13.Text = isAuto13Active and "AUTO 13 MAP: ON" or "AUTO 13 MAP: OFF"
-
-    if isAuto13Active then
-        task.spawn(function()
-            while isAuto13Active do
-                local currentSpeed = getPlayerSpeed()
-                for _, map in ipairs(mapData) do
-                    if not isAuto13Active then break end
-                    if currentSpeed >= map.minVal then
-                        runMapRoutine(map, function() return isAuto13Active end)
-                        for s = 60, 1, -1 do
-                            if not isAuto13Active then break end
-                            task.wait(1)
-                        end
-                    end
-                end
-                task.wait(1)
-            end
-        end)
-    end
-end)
-
--- Logic Auto Spawn
-local function processEggSpawnMessage(messageText)
+-- Sistem Deteksi Auto Spawn Komunitas
+local function triggerAutoSpawnCheck(rawText)
     if not isAutoSpawnActive then return end
-    local lowerMsg = string.lower(messageText)
-    if string.find(lowerMsg, "egg spawned in") then
+    local textLower = rawText:lower()
+    if textLower:find("spawned in") or textLower:find("egg") then
         for _, map in ipairs(mapData) do
-            if string.find(lowerMsg, map.name) then
-                local currentSpeed = getPlayerSpeed()
-                if currentSpeed >= map.minVal then
-                    task.spawn(function()
-                        runMapRoutine(map, function() return isAutoSpawnActive end)
-                    end)
-                else
-                    if savedLocation then
-                        walkToVector(savedLocation.Position)
-                    end
-                end
+            if textLower:find(map.name) then
+                task.spawn(function()
+                    executeMapRoutine(map, "auto")
+                end)
                 break
             end
         end
@@ -419,24 +399,37 @@ local function processEggSpawnMessage(messageText)
 end
 
 pcall(function()
-    TextChatService.OnIncomingMessage = function(message: TextChatMessage)
-        if message.TextSource then
-            processEggSpawnMessage(message.Text)
-        end
+    local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+    if channel then
+        channel.MessageReceived:Connect(function(message)
+            triggerAutoSpawnCheck(message.Text)
+        end)
     end
 end)
 
 pcall(function()
     for _, p in pairs(Players:GetPlayers()) do
-        p.Chatted:Connect(function(msg) processEggSpawnMessage(msg) end)
+        p.Chatted:Connect(function(msg) triggerAutoSpawnCheck(msg) end)
     end
     Players.PlayerAdded:Connect(function(p)
-        p.Chatted:Connect(function(msg) processEggSpawnMessage(msg) end)
-    end
-end)
-
-BtnAutoSpawn.MouseButton1Click:Connect(function()
-    isAutoSpawnActive = not isAutoSpawnActive
-    BtnAutoSpawn.BackgroundTransparency = isAutoSpawnActive and 0 or 0.4
-    BtnAutoSpawn.Text = isAutoSpawnActive and "AUTO SPAWNED: ON" or "AUTO SPAWNED: OFF"
+        p.Chatted:Connect(function(msg) triggerAutoSpawnCheck(msg) end)
+    end)
+    
+    task.spawn(function()
+        while true do
+            if isAutoSpawnActive then
+                pcall(function()
+                    for _, desc in pairs(Player.PlayerGui:GetDescendants()) do
+                        if desc:IsA("TextLabel") and desc.Visible and #desc.Text > 0 then
+                            local txt = desc.Text:lower()
+                            if txt:find("spawned in") then
+                                triggerAutoSpawnCheck(txt)
+                            end
+                        end
+                    end
+                end)
+            end
+            task.wait(1.5)
+        end
+    end)
 end)

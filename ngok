@@ -13,7 +13,7 @@ local serverCount = {
 local playerCount = {}
 
 -- Daftar item untuk deteksi
-local list_evo       = {"Evolved Enchant Stone"}
+local list_evo       = {"VeloByte"}
 local list_runic     = {"Runic Enchant Stone"}
 local list_withering = {"Withering Core"}
 local list_ruby      = {"GEMSTONE Ruby"}
@@ -23,7 +23,7 @@ local list_megalodon = {"Megalodon"}
 
 -- Mapping suffix
 local suffixMap = {
-    evo = "Stone",
+    evo = "Game",
     runic = "Stone",
     withering = "item",
     ruby = "Stone",
@@ -91,7 +91,15 @@ local function sendWebhook(fishName, fullText, category, isStart)
         if category == "forgotten" then 
             color = 16777215
         elseif category == "secret" then 
-            color = 65280
+            if cleanerText:lower():find("pyrocoil") then
+                color = 10813440 -- Pink Gelap
+            elseif cleanerText:lower():find("stormshell brute") then
+                color = 16753920 -- Orange
+            elseif cleanerText:lower():find("wintertusk mammofin") then
+                color = 255 -- Biru
+            else
+                color = 65280 -- Hijau standar secret
+            end
         elseif category == "evo" then 
             color = 0
         elseif category == "ruby" then 
@@ -134,7 +142,7 @@ if channel then
         local txt = message.Text:lower()
         
         if txt:find("obtained") then
-            for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "evo", false) return end end
+            for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Test, "evo", false) return end end
             for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false) return end end
             for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false) return end end
             for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false) return end end

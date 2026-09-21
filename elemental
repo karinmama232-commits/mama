@@ -296,13 +296,53 @@ BtnGhost.MouseButton1Click:Connect(function()
         task.spawn(function()
             while isGhostActive do
                 pcall(function()
+                    -- Jeda 1 detik
+                    task.wait(1)
+                    if not isGhostActive then return end
+                    
+                    -- Simpan lokasi lengkap beserta orientasi arahnya
+                    saveCurrentLocation()
+                    
+                    -- Jeda 1 detik
+                    task.wait(1)
+                    if not isGhostActive then return end
+                    
+                    -- Teleport ke lokasi tujuan secara presisi
+                    teleportTo(CFrame.new(1322.38953, 13.3374681, 2975.84473, 0.0149500482, 4.94851697e-08, 0.999888241, 9.17929626e-08, 1, -5.08631608e-08, -0.999888241, 9.2543111e-08, 0.0149500482))
+                    
+                    -- Jeda 5 detik menunggu teleport sempurna
+                    task.wait(5)
+                    if not isGhostActive then return end
+                    
+                    -- Lakukan pembelian server (InvokeServer) sebanyak 4 tahap (total 8 kali beli)
                     for i = 1, 4 do
                         if not isGhostActive then break end
+                        
+                        -- Pembelian 1 dalam satu tahap
                         game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RF/bd21b2ff0e7f7b1d926b19af02781fb08ede9b8fd8d5b19c29711b15cf3a083c"):InvokeServer()
                         task.wait(0.5)
+                        if not isGhostActive then break end
+                        
+                        -- Pembelian 2 dalam satu tahap
+                        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RF/bd21b2ff0e7f7b1d926b19af02781fb08ede9b8fd8d5b19c29711b15cf3a083c"):InvokeServer()
+                        
+                        -- Jeda 1 detik antar tahap (kecuali setelah tahap terakhir)
+                        if i < 4 then
+                            task.wait(1)
+                        end
+                    end
+                    
+                    -- Jeda 1 detik sebelum kembali ke tempat semula
+                    task.wait(1)
+                    
+                    -- Kembali ke tempat semula jika tersimpan
+                    if savedLocation then
+                        teleportTo(savedLocation)
+                        savedLocation = nil
                     end
                 end)
-                -- Jeda 30 menit 10 detik (1810 detik)
+                
+                -- Jeda 30 menit 10 detik (1810 detik) sebelum loop selanjutnya
                 for i = 1, 1810 do
                     if not isGhostActive then break end
                     task.wait(1)

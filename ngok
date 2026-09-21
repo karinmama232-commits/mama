@@ -4,7 +4,7 @@ local startTime = os.time()
 
 -- Counter Server
 local serverCount = {
-    evo = 0, runic = 0, withering = 0, ruby = 0,
+    game = 0, runic = 0, withering = 0, ruby = 0,
     kraken = 0, lochness = 0, secret = 0,
     megalodon = 0, forgotten = 0
 }
@@ -13,7 +13,7 @@ local serverCount = {
 local playerCount = {}
 
 -- Daftar item untuk deteksi
-local list_evo       = {"VeloByte"}
+local list_game      = {"VeloByte"}
 local list_runic     = {"Runic Enchant Stone"}
 local list_withering = {"Withering Core"}
 local list_ruby      = {"GEMSTONE Ruby"}
@@ -23,7 +23,7 @@ local list_megalodon = {"Megalodon"}
 
 -- Mapping suffix
 local suffixMap = {
-    evo = "Game",
+    game = "Game",
     runic = "Stone",
     withering = "item",
     ruby = "Stone",
@@ -55,7 +55,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
 
         -- Update Counter Player
         playerCount[luckyPlayer] = playerCount[luckyPlayer] or {
-            evo=0, runic=0, withering=0, ruby=0,
+            game=0, runic=0, withering=0, ruby=0,
             kraken=0, lochness=0, secret=0,
             megalodon=0, forgotten=0
         }
@@ -80,7 +80,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
         local verb = (suffix == "Fish") and "Menangkap" or "Mendapatkan"
         local playerStats = "Player " .. luckyPlayer .. "\nSudah " .. verb .. " " .. pStats .. " " .. displayCategory
 
-        local serverStats = "\nEvo: " .. serverCount.evo .. " | Runic: " .. serverCount.runic .. " | Withering: " .. serverCount.withering ..
+        local serverStats = "\nGame: " .. serverCount.game .. " | Runic: " .. serverCount.runic .. " | Withering: " .. serverCount.withering ..
             "\nRuby: " .. serverCount.ruby .. " | Kraken: " .. serverCount.kraken .. " | Lochness: " .. serverCount.lochness ..
             "\nSecret: " .. serverCount.secret .. " | Megalodon: " .. serverCount.megalodon .. " | Forgotten: " .. serverCount.forgotten
 
@@ -100,7 +100,7 @@ local function sendWebhook(fishName, fullText, category, isStart)
             else
                 color = 65280 -- Hijau standar secret
             end
-        elseif category == "evo" then 
+        elseif category == "game" then 
             color = 0
         elseif category == "ruby" then 
             color = 16711935
@@ -142,7 +142,7 @@ if channel then
         local txt = message.Text:lower()
         
         if txt:find("obtained") then
-            for _, n in pairs(list_evo) do if txt:find(n:lower()) then sendWebhook(n, message.Test, "evo", false) return end end
+            for _, n in pairs(list_game) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "game", false) return end end
             for _, n in pairs(list_runic) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "runic", false) return end end
             for _, n in pairs(list_withering) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "withering", false) return end end
             for _, n in pairs(list_ruby) do if txt:find(n:lower()) then sendWebhook(n, message.Text, "ruby", false) return end end

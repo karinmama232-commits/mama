@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - GLOBAL EDITION (LUCID, AUTO ROTATION & RADIUS EVENT) ]] --
+-- [[ ELEMENTAL ISLAND - GLOBAL EDITION (LUCID, GHOST, AUTO ROTATION & RADIUS EVENT) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -9,59 +9,61 @@ local Player = Players.LocalPlayer
 local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
 local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
 
--- Daftar CFrame Lokasi Auto Rotation
-local crystalCFrames = {
-    CFrame.new(5614.1748, -903.581665, 15345.8672, -0.996202946, 4.36655512e-08, 0.0870615542, 4.5634021e-08, 1, 2.06198347e-08, -0.0870615542, 2.45145078e-08, -0.996202946),
-    CFrame.new(5751.11133, -907.151062, 15342.292, -0.546385229, 3.77861795e-08, 0.83753401, -6.35920472e-09, 1, -4.92645711e-08, -0.83753401, -3.22434843e-08, -0.546385229),
-    CFrame.new(5664.70166, -899.419739, 15412.9336, 0.802425086, -2.42622846e-08, -0.596752882, 4.27863434e-08, 1, 1.687558e-08, 0.596752882, -3.9074262e-08, 0.802425086)
-}
-
-local kohanaCFrames = {
-    CFrame.new(-857.099304, 18.7447453, 468.011353, 0.698352933, 4.55357103e-08, 0.715753555, -5.17154533e-08, 1, -1.31610536e-08, -0.715753555, -2.78244592e-08, 0.698352933),
-    CFrame.new(-918.485107, 36.494709, 361.479797, -0.246149555, 6.81585277e-08, -0.969231844, 6.63947688e-08, 1, 5.3460365e-08, 0.969231844, -5.11926785e-08, -0.246149555),
-    CFrame.new(-824.980469, 17.4950466, 406.304932, -0.532375515, -1.67852787e-09, 0.846508324, 1.60524287e-08, 1, 1.20783783e-08, -0.846508324, 2.00187475e-08, -0.532375515)
-}
-
+-- Daftar CFrame Lokasi Auto Rotation (Hanya Runic & Game, durasi 58 menit)
 local runicCFrames = {
-    CFrame.new(-1448.10901, -1041.58875, -10447.0791, -0.0303385258, 8.85526319e-09, 0.999539673, -1.05406357e-07, 1, -1.20586874e-08, -0.999539673, -1.05723679e-07, -0.0303385258),
-    CFrame.new(-1496.54272, -1041.73926, -10447.665, 0.0254561007, -4.19915374e-08, -0.99967593, 1.55008166e-08, 1, -4.16104342e-08, 0.99967593, -1.44365542e-08, 0.0254561007),
-    CFrame.new(-3124.51611, -645.766052, -10489.4082, -0.970125258, 2.84468378e-08, -0.242604554, 2.52244785e-08, 1, 1.63885385e-08, 0.242604554, 9.77936221e-09, -0.970125258)
+    CFrame.new(-3124.51611, -645.766052, -10489.4082, -0.970125258, 6.2887433e-09, -0.242604554, 2.3836324e-09, 1, 1.63901355e-08, 0.242604554, 1.5322204e-08, -0.970125258),
+    CFrame.new(-3071.29272, -640.617676, -10448.9697, -0.44114086, 8.65284093e-08, 0.897437871, 1.52282613e-08, 1, -8.89316212e-08, -0.897437871, -2.55649528e-08, -0.44114086),
+    CFrame.new(-2994.47168, -640.617737, -10458.3516, -0.354215205, -1.68267109e-10, -0.935163915, -3.83074283e-09, 1, 1.27105015e-09, 0.935163915, 4.03259781e-09, -0.354215205),
+    CFrame.new(-3034.85986, -640.617676, -10424.8838, -0.972873211, 1.12870902e-09, 0.231338978, 1.27621602e-09, 1, 4.87973661e-10, -0.231338978, 7.69975028e-10, -0.972873211),
+    CFrame.new(-1448.10901, -1041.58875, -10447.0791, -0.0303385258, 4.47999291e-08, 0.999539673, -3.17397237e-08, 1, -4.5783942e-08, -0.999539673, -3.31141301e-08, -0.0303385258),
+    CFrame.new(-1477.60303, -1041.58875, -10417.3838, 0.998032153, -4.1820563e-08, 0.0627044588, 4.18002344e-08, 1, 1.63606795e-09, -0.0627044588, 9.88212623e-10, 0.998032153),
+    CFrame.new(-1493.9906, -1041.58875, -10476.7852, -0.752234042, -6.43336833e-08, -0.658895969, -4.15886028e-08, 1, -5.01586257e-08, 0.658895969, -1.03284652e-08, -0.752234042)
 }
 
-local coreCFrames = {
-    CFrame.new(-4241.76807, 60.4801407, 414.652008, -0.333387047, -9.76090746e-08, -0.942790031, -8.70125447e-08, 1, -7.27629867e-08, 0.942790031, 5.77763224e-08, -0.333387047),
-    CFrame.new(-4223.59863, 3.2281487, 623.651978, 0.539373219, 2.94790126e-09, -0.842066824, -2.76508985e-08, 1, -1.42105741e-08, 0.842066824, 3.09487085e-08, 0.539373219),
-    CFrame.new(-4079.10596, -547.174011, 548.034973, -0.308991671, -2.20519283e-08, -0.951064765, 2.19208385e-08, 1, -3.03084349e-08, 0.951064765, -3.02131902e-08, -0.308991671)
+local gameCFrames = {
+    CFrame.new(1420.15454, 13.3374681, 3025.39551, 0.062436413, 3.24422018e-08, -0.998048961, -2.76572667e-08, 1, 3.07754249e-08, 0.998048961, 2.5681798e-08, 0.062436413),
+    CFrame.new(1438.73547, 23.3373432, 3095.80249, 0.89884907, 7.40498294e-08, -0.43825832, -4.06671177e-08, 1, 8.55573745e-08, 0.43825832, -5.90804632e-08, 0.89884907),
+    CFrame.new(1337.86035, 13.3374681, 2951.22339, -0.99989152, -2.20964083e-08, -0.0147298612, -2.29029133e-08, 1, 5.45844081e-08, 0.0147298612, 5.49158408e-08, -0.99989152),
+    CFrame.new(1258.85242, 13.3374681, 3028.37573, 0.0746286064, -5.4099079e-08, 0.997211397, -7.66203385e-08, 1, 5.99844228e-08, -0.997211397, -8.08832326e-08, 0.0746286064),
+    CFrame.new(1248.17468, 23.3371105, 3060.79028, -0.519150734, 3.01907122e-08, 0.854682684, 2.54594656e-08, 1, -1.9859316e-08, -0.854682684, 1.14497869e-08, -0.519150734),
+    CFrame.new(1339.46179, 13.3374681, 3004.32959, 0.999971747, -4.2000508e-08, -0.00751512125, 4.1557886e-08, 1, -5.90539067e-08, 0.00751512125, 5.87399249e-08, 0.999971747)
 }
 
--- 3 CFrame Kunci Lokasi Utama Event
+-- 3 CFrame Kunci Lokasi Utama Event (Acuan Tetap)
 local eventMainLocations = {
-    Volcano = CFrame.new(-729.789978, 107.056473, 5347.83008, -0.639170587, 9.98638399e-08, 0.769065022, 3.79481904e-08, 1, -9.83121993e-08, -0.769065022, -3.36536381e-08, -0.639170587),
+    Volcano = CFrame.new(-751.531616, 107.056473, 5337.02588, -0.993458986, 9.46330658e-09, -0.114189468, 9.78137749e-09, 1, -2.22516827e-09, 0.114189468, -3.3275438e-09, -0.993458986),
     Storm = CFrame.new(-920.000427, 66.2507858, 5307.02979, 0.290880501, 0, -0.956759393, 0, 1, 0, 0.956759393, 0, 0.290880501),
     Blizzard = CFrame.new(-981.890015, 45.8336372, 5302.85986, -0.855183363, -1.93981435e-08, 0.518325567, -1.31614017e-08, 1, 1.5709686e-08, -0.518325567, 6.61277122e-09, -0.855183363)
 }
 
--- Sub-Titik Teleport Acak
+-- Sub-Titik Teleport Acak (Baru)
 local eventSubLocations = {
     Volcano = {
-        CFrame.new(-820.79303, 59.3692894, 5289.58398),
-        CFrame.new(-829.322937, 69.4343567, 5324.67871),
-        CFrame.new(-753.346375, 83.0565262, 5296.89795)
+        CFrame.new(-721.949585, 107.056473, 5373.57275, 0.334296286, 0, 0.942468047, 0, 1, 0, -0.942468047, 0, 0.334296286),
+        CFrame.new(-653.498474, 98.5989685, 5384.63477, -0.645521402, -4.40322268e-08, 0.763742208, -7.10628569e-08, 1, -2.40967024e-09, -0.763742208, -5.58291973e-08, -0.645521402),
+        CFrame.new(-676.921326, 95.082016, 5510.46924, -0.986786783, -4.21056718e-08, 0.162024319, -4.16536707e-08, 1, 6.1866019e-09, -0.162024319, -6.44050591e-10, -0.986786783),
+        CFrame.new(-728.019958, 98.0565262, 5553.01904, 0.0465074293, -1.31750024e-08, -0.998917937, 3.41580844e-08, 1, -1.15989485e-08, 0.998917937, -3.3581685e-08, 0.0465074293),
+        CFrame.new(-817.815186, 59.36623, 5269.53857, -0.785528302, -7.54550769e-08, -0.618825734, -1.03933729e-07, 1, 9.99927163e-09, 0.618825734, 7.21715736e-08, -0.785528302)
     },
     Storm = {
-        CFrame.new(-859.987, 56.0566597, 5311.89795),
-        CFrame.new(-942.089539, 54.5860748, 5246.16211),
-        CFrame.new(-843.828125, 63.0566406, 5376.01855)
+        CFrame.new(-856.587036, 56.0565376, 5315.60205, -0.894435823, -1.05789162e-07, 0.447196335, -7.08139254e-08, 1, 9.49262002e-08, -0.447196335, 5.32376667e-08, -0.894435823),
+        CFrame.new(-862.940491, 56.0565376, 5309.75293, -0.338348925, 7.26319485e-08, 0.941020727, 2.40280578e-08, 1, -6.85448001e-08, -0.941020727, -5.81159509e-10, -0.338348925),
+        CFrame.new(-866.3479, 56.0565376, 5288.81738, 0.119692698, -1.05014784e-07, 0.992810965, 1.58255844e-08, 1, 1.03867286e-07, -0.992810965, 3.27965832e-09, 0.119692698),
+        CFrame.new(-855.017334, 58.2002106, 5266.35986, -0.24067013, -2.01202717e-08, 0.970606983, 9.96425058e-08, 1, 4.54367708e-08, -0.970606983, 1.07648987e-07, -0.24067013),
+        CFrame.new(-938.639465, 54.9124527, 5236.48145, -0.686380565, 9.00352433e-08, -0.727242529, 5.67547254e-08, 1, 7.02377818e-08, 0.727242529, 6.93539715e-09, -0.686380565)
     },
     Blizzard = {
-        CFrame.new(-1089.14001, 142.09317, 5577.93506),
-        CFrame.new(-1062.19727, 142.093201, 5585.01758),
-        CFrame.new(-1050.10535, 124.093216, 5536.34912)
+        CFrame.new(-1091.47754, 142.09317, 5578.62598, -0.677479208, -4.1085741e-08, -0.73554194, -8.84027251e-09, 1, -4.77153499e-08, 0.73554194, -2.58237662e-08, -0.677479208),
+        CFrame.new(-1056.52429, 124.093216, 5535.38525, -0.998791993, -9.29699553e-08, 0.0491381213, -8.980507e-08, 1, 6.66156552e-08, -0.0491381213, 6.21223322e-08, -0.998791993),
+        CFrame.new(-1030.68567, 76.6534348, 5467.99365, -0.932308733, -3.21736096e-08, 0.361663401, -2.28642296e-08, 1, 3.00198693e-08, -0.361663401, 1.97186303e-08, -0.932308733),
+        CFrame.new(-1053.52722, 76.6641541, 5449.8418, -0.631283164, 2.14597922e-08, 0.775552452, -4.27987636e-08, 1, -6.25076098e-08, -0.775552452, -7.26526892e-08, -0.631283164),
+        CFrame.new(-1042.71619, 76.6641235, 5379.95752, 0.172886401, 7.32934211e-08, -0.984941781, -7.05081575e-08, 1, 6.20376994e-08, 0.984941781, 5.8720957e-08, 0.172886401)
     }
 }
 
 -- State Variables
 local isLucidActive = false
+local isGhostActive = false
 local isAutoActive = false
 local isElementalEvent = false
 local savedLocation = nil
@@ -83,14 +85,13 @@ local function saveCurrentLocation()
     if hrp then savedLocation = hrp.CFrame end
 end
 
--- Menghitung Waktu Berjalan Untuk AUTO (Berdasarkan Tabel endHours Secara Dinamis)
+-- Menghitung Waktu Berjalan Untuk AUTO (58 menit per lokasi: Runic & Game)
 local function getAutoTargetArea()
     local t = os.date("*t")
     local h, m = t.hour, t.min
     local elapsedMinutes = 0
     local foundLastEvent = false
     
-    -- Mencari jam event selesai yang paling terakhir dilewati
     for offset = 0, 3 do
         local checkHour = h - offset
         if checkHour < 0 then checkHour = checkHour + 24 end
@@ -102,31 +103,25 @@ local function getAutoTargetArea()
     end
 
     if foundLastEvent then
-        if elapsedMinutes >= 2 and elapsedMinutes < 30 then
-            return "Crystal"
-        elseif elapsedMinutes >= 30 and elapsedMinutes < 58 then
-            return "Kohana"
-        elseif elapsedMinutes >= 58 and elapsedMinutes < 86 then
+        if elapsedMinutes >= 2 and elapsedMinutes < 60 then
             return "Runic"
-        elseif elapsedMinutes >= 86 and elapsedMinutes < 120 then
-            return "Core"
+        elseif elapsedMinutes >= 60 and elapsedMinutes < 118 then
+            return "Game"
         end
     end
     
-    return nil -- Menunggu / Standby / Event sedang berlangsung
+    return nil 
 end
 
 -- Teleport ke Event dengan Sistem Tunggu, Radius 3 Studs, dan Re-Check
 local function executePocongTeleport()
-    -- 1. Diam dan tunggu 10 detik PERTAMA (Memberi waktu pociclone mendarat)
     task.wait(10)
     
-    -- 2. Deteksi Lokasi Pertama
     local targetPlayer = Players:FindFirstChild("pociclone")
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local pociCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
         local pociPos = pociCFrame.Position
-        local targetCFrame = pociCFrame -- Fallback jika tidak masuk radius 3 map utama
+        local targetCFrame = pociCFrame 
 
         if (pociPos - eventMainLocations.Volcano.Position).Magnitude <= 3 then
             targetCFrame = getRandomCFrame(eventSubLocations.Volcano)
@@ -139,10 +134,8 @@ local function executePocongTeleport()
         teleportTo(targetCFrame)
     end
 
-    -- 3. Jeda Pengaman 60 detik
     task.wait(60)
 
-    -- 4. CEK ULANG (Re-Check) Lokasi Aktual pociclone agar data tidak basi
     local targetPlayer2 = Players:FindFirstChild("pociclone")
     if targetPlayer2 and targetPlayer2.Character and targetPlayer2.Character:FindFirstChild("HumanoidRootPart") then
         local pociCFrame2 = targetPlayer2.Character.HumanoidRootPart.CFrame
@@ -162,7 +155,7 @@ local function executePocongTeleport()
 end
 
 -- ==========================================
--- 1. SETUP UI COMPACT
+-- 1. SETUP UI COMPACT (ICON MENU TIDAK DIOTAK-ATIK)
 -- ==========================================
 if CoreGui:FindFirstChild("ElementalIslandUI") then
     CoreGui.ElementalIslandUI:Destroy()
@@ -238,6 +231,7 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 local function resetAll()
     isElementalEvent = false
     isLucidActive = false
+    isGhostActive = false
     isAutoActive = false
     savedLocation = nil
 end
@@ -256,19 +250,25 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. BARIS 1: LUCID & AUTO (2 TOGGLE PROPOSIONAL)
+-- 2. BARIS 1: LUCID, GHOST & AUTO (3 TOMBOL)
 -- ==========================================
 local BtnLucid = Instance.new("TextButton", MainFrame)
-BtnLucid.Size = UDim2.new(0, 96, 0, 28)
+BtnLucid.Size = UDim2.new(0, 63, 0, 28)
 BtnLucid.Position = UDim2.new(0, 10, 0, 45)
 BtnLucid.Text = "LUCID"
-styleBtn(BtnLucid, 9)
+styleBtn(BtnLucid, 8)
+
+local BtnGhost = Instance.new("TextButton", MainFrame)
+BtnGhost.Size = UDim2.new(0, 63, 0, 28)
+BtnGhost.Position = UDim2.new(0, 78, 0, 45)
+BtnGhost.Text = "GHOST"
+styleBtn(BtnGhost, 8)
 
 local BtnAuto = Instance.new("TextButton", MainFrame)
-BtnAuto.Size = UDim2.new(0, 96, 0, 28)
-BtnAuto.Position = UDim2.new(0, 114, 0, 45)
+BtnAuto.Size = UDim2.new(0, 63, 0, 28)
+BtnAuto.Position = UDim2.new(0, 146, 0, 45)
 BtnAuto.Text = "AUTO"
-styleBtn(BtnAuto, 9)
+styleBtn(BtnAuto, 8)
 
 BtnLucid.MouseButton1Click:Connect(function()
     isLucidActive = not isLucidActive
@@ -278,10 +278,33 @@ BtnLucid.MouseButton1Click:Connect(function()
             while isLucidActive do
                 pcall(function()
                     local args = { "Lucid", 1, 1 }
-                    game:GetService("ReplicatedStorage").Packages._Index["sleitnick_net@0.2.0"].net["RE/bcd394290e315c47a6b755f798d5f3c6571383fea10a9a0b2b63c0e495c1fda"]:FireServer(unpack(args))
+                    game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/8a09ea93db67b2b154012f63bc48d24b580b0ad4a20220e162308cbf20229b59"):FireServer(unpack(args))
                 end)
                 for i = 1, 3600 do
                     if not isLucidActive then break end
+                    task.wait(1)
+                end
+            end
+        end)
+    end
+end)
+
+BtnGhost.MouseButton1Click:Connect(function()
+    isGhostActive = not isGhostActive
+    BtnGhost.BackgroundTransparency = isGhostActive and 0 or 0.4
+    if isGhostActive then
+        task.spawn(function()
+            while isGhostActive do
+                pcall(function()
+                    for i = 1, 4 do
+                        if not isGhostActive then break end
+                        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RF/bd21b2ff0e7f7b1d926b19af02781fb08ede9b8fd8d5b19c29711b15cf3a083c"):InvokeServer()
+                        task.wait(0.5)
+                    end
+                end)
+                -- Jeda 30 menit 10 detik (1810 detik)
+                for i = 1, 1810 do
+                    if not isGhostActive then break end
                     task.wait(1)
                 end
             end
@@ -298,10 +321,8 @@ BtnAuto.MouseButton1Click:Connect(function()
             while isAutoActive do
                 local targetArea = getAutoTargetArea()
                 if targetArea and targetArea ~= lastTeleportedArea then
-                    if targetArea == "Crystal" then teleportTo(getRandomCFrame(crystalCFrames))
-                    elseif targetArea == "Kohana" then teleportTo(getRandomCFrame(kohanaCFrames))
-                    elseif targetArea == "Runic" then teleportTo(getRandomCFrame(runicCFrames))
-                    elseif targetArea == "Core" then teleportTo(getRandomCFrame(coreCFrames))
+                    if targetArea == "Runic" then teleportTo(getRandomCFrame(runicCFrames))
+                    elseif targetArea == "Game" then teleportTo(getRandomCFrame(gameCFrames))
                     end
                     lastTeleportedArea = targetArea
                 elseif targetArea == nil then

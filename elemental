@@ -325,12 +325,12 @@ BtnGhost.MouseButton1Click:Connect(function()
             local RF_Ghost = Net:WaitForChild("RF/bafa79cf0c5841ed594acfa0b8a31ea476a2bc57c099d2640706bfcd178956ec")
             while isGhostActive do
                 pcall(function()
-                    task.wait(1)
+                    task.wait(2)
                     if not isGhostActive then return end
                     
                     saveCurrentLocation()
                     
-                    task.wait(1)
+                    task.wait(2)
                     if not isGhostActive then return end
                     
                     teleportTo(CFrame.new(1322.38953, 13.3374681, 2975.84473, 0.0149500482, 4.94851697e-08, 0.999888241, 9.17929626e-08, 1, -5.08631608e-08, -0.999888241, 9.2543111e-08, 0.0149500482))
@@ -348,16 +348,16 @@ BtnGhost.MouseButton1Click:Connect(function()
                         RF_Ghost:InvokeServer()
                         
                         if i < 4 then
-                            task.wait(1)
+                            task.wait(2)
                         end
                     end
                     
-                    task.wait(1)
+                    task.wait(2)
                     if not isGhostActive then return end
                     
                     -- Teleport ke tempat kedua
                     teleportTo(CFrame.new(1261.48755, -963.121582, 3009.27783, 0.000512959843, 2.27065904e-08, 0.999999881, -2.46320675e-09, 1, -2.27053309e-08, -0.999999881, -2.45155962e-09, 0.000512959843))
-                    task.wait(1.5)
+                    task.wait(2)
                     
                     -- Auto-Click pada tombol GUI game sebanyak 8 kali dengan interval 0.5 detik
                     pcall(function()
@@ -367,7 +367,6 @@ BtnGhost.MouseButton1Click:Connect(function()
                             for clickCount = 1, 8 do
                                 if not isGhostActive then break end
                                 
-                                -- Mengambil posisi absolut tombol di layar untuk VirtualInputManager
                                 local absolutePosition = targetButton.AbsolutePosition
                                 local absoluteSize = targetButton.AbsoluteSize
                                 local clickX = absolutePosition.X + (absoluteSize.X / 2)
@@ -382,7 +381,7 @@ BtnGhost.MouseButton1Click:Connect(function()
                         end
                     end)
                     
-                    task.wait(1)
+                    task.wait(2)
                     
                     if savedLocation then
                         teleportTo(savedLocation)

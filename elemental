@@ -1,4 +1,4 @@
--- [[ ELEMENTAL ISLAND - GLOBAL EDITION (LUCID, GHOST, AUTO, 8-BIT & RADIUS EVENT) ]] --
+-- [[ ELEMENTAL ISLAND - GLOBAL EDITION (ARCADIA, GHOST, GOTTEN, 8-BIT & RADIUS EVENT) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -11,8 +11,18 @@ local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):Wa
 local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
 local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
 
--- Daftar CFrame Lokasi Auto Rotation (Baru: 9 CFrame Room Baru, durasi 16 menit per rotasi)
-local autoCFrames = {
+-- Daftar CFrame Lokasi Arcadia Rotation (Menggantikan Lucid, durasi 16 menit per rotasi)
+local arcadiaCFrames = {
+    CFrame.new(1420.15454, 13.3374681, 3025.39551, 0.062436413, 3.24422018e-08, -0.998048961, -2.76572667e-08, 1, 3.07754249e-08, 0.998048961, 2.5681798e-08, 0.062436413),
+    CFrame.new(1438.73547, 23.3373432, 3095.80249, 0.89884907, 7.40498294e-08, -0.43825832, -4.06671177e-08, 1, 8.55573745e-08, 0.43825832, -5.90804632e-08, 0.89884907),
+    CFrame.new(1337.86035, 13.3374681, 2951.22339, -0.99989152, -2.20964083e-08, -0.0147298612, -2.29029133e-08, 1, 5.45844081e-08, 0.0147298612, 5.49158408e-08, -0.99989152),
+    CFrame.new(1258.85242, 13.3374681, 3028.37573, 0.0746286064, -5.4099079e-08, 0.997211397, -7.66203385e-08, 1, 5.99844228e-08, -0.997211397, -8.08832326e-08, 0.0746286064),
+    CFrame.new(1248.17468, 23.3371105, 3060.79028, -0.519150734, 3.01907122e-08, 0.854682684, 2.54594656e-08, 1, -1.9859316e-08, -0.854682684, 1.14497869e-08, -0.519150734),
+    CFrame.new(1339.46179, 13.3374681, 3004.32959, 0.999971747, -4.2000508e-08, -0.00751512125, 4.1557886e-08, 1, -5.90539067e-08, 0.00751512125, 5.87399249e-08, 0.999971747)
+}
+
+-- Daftar CFrame Lokasi Gotten Rotation (Menggantikan Auto, durasi 16 menit per rotasi)
+local gottenCFrames = {
     CFrame.new(1306.60327, -955.843018, 3008.66675, -0.0466647446, 4.04241369e-08, -0.998910606, -6.14684268e-08, 1, 4.33397567e-08, 0.998910606, 6.34239044e-08, -0.0466647446),
     CFrame.new(1360.18652, -960.899231, 2977.875, -0.924472332, 1.01492233e-07, 0.3812491, 9.35265518e-08, 1, -3.94217778e-08, -0.3812491, -7.87430066e-10, -0.924472332),
     CFrame.new(1340.74817, -964.482056, 3040.99048, 0.99682194, -2.87193398e-08, 0.0796616673, 3.01768317e-08, 1, -1.7092157e-08, -0.0796616673, 1.94417726e-08, 0.99682194),
@@ -71,9 +81,9 @@ local eventSubLocations = {
 }
 
 -- State Variables
-local isLucidActive = false
+local isArcadiaActive = false
 local isGhostActive = false
-local isAutoActive = false
+local isGottenActive = false
 local is8BitActive = false
 local isElementalEvent = false
 local savedLocation = nil
@@ -93,24 +103,6 @@ local function saveCurrentLocation()
     local char = Player.Character or Player.CharacterAdded:Wait()
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if hrp then savedLocation = hrp.CFrame end
-end
-
--- Fungsi Global Secure Click (Diambil dari skrip kedua)
-local function secureClick()
-    pcall(function()
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("ProximityPrompt") then
-                local char = Player.Character
-                if char and char:FindFirstChild("HumanoidRootPart") then
-                    local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
-                    if dist < 25 then
-                        task.wait(0.2)
-                        fireproximityprompt(obj)
-                    end
-                end
-            end
-        end
-    end)
 end
 
 -- Menghitung Waktu Berjalan Untuk 8-BIT (58 menit per lokasi: Tribunal & Core)
@@ -183,7 +175,7 @@ local function executePocongTeleport()
 end
 
 -- ==========================================
--- 1. SETUP UI COMPACT (ICON MENU TIDAK DIOTAK-ATIK)
+-- 1. SETUP UI COMPACT
 -- ==========================================
 if CoreGui:FindFirstChild("ElementalIslandUI") then
     CoreGui.ElementalIslandUI:Destroy()
@@ -258,9 +250,9 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
 local function resetAll()
     isElementalEvent = false
-    isLucidActive = false
+    isArcadiaActive = false
     isGhostActive = false
-    isAutoActive = false
+    isGottenActive = false
     is8BitActive = false
     savedLocation = nil
 end
@@ -279,13 +271,13 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. BARIS 1: LUCID, GHOST & AUTO (3 TOMBOL)
+-- 2. BARIS 1: ARCADIA, GHOST & GOTTEN (3 TOMBOL)
 -- ==========================================
-local BtnLucid = Instance.new("TextButton", MainFrame)
-BtnLucid.Size = UDim2.new(0, 63, 0, 28)
-BtnLucid.Position = UDim2.new(0, 10, 0, 45)
-BtnLucid.Text = "LUCID"
-styleBtn(BtnLucid, 8)
+local BtnArcadia = Instance.new("TextButton", MainFrame)
+BtnArcadia.Size = UDim2.new(0, 63, 0, 28)
+BtnArcadia.Position = UDim2.new(0, 10, 0, 45)
+BtnArcadia.Text = "ARCADIA"
+styleBtn(BtnArcadia, 7)
 
 local BtnGhost = Instance.new("TextButton", MainFrame)
 BtnGhost.Size = UDim2.new(0, 63, 0, 28)
@@ -293,24 +285,33 @@ BtnGhost.Position = UDim2.new(0, 78, 0, 45)
 BtnGhost.Text = "GHOST"
 styleBtn(BtnGhost, 8)
 
-local BtnAuto = Instance.new("TextButton", MainFrame)
-BtnAuto.Size = UDim2.new(0, 63, 0, 28)
-BtnAuto.Position = UDim2.new(0, 146, 0, 45)
-BtnAuto.Text = "AUTO"
-styleBtn(BtnAuto, 8)
+local BtnGotten = Instance.new("TextButton", MainFrame)
+BtnGotten.Size = UDim2.new(0, 63, 0, 28)
+BtnGotten.Position = UDim2.new(0, 146, 0, 45)
+BtnGotten.Text = "GOTTEN"
+styleBtn(BtnGotten, 8)
 
-BtnLucid.MouseButton1Click:Connect(function()
-    isLucidActive = not isLucidActive
-    BtnLucid.BackgroundTransparency = isLucidActive and 0 or 0.4
-    if isLucidActive then
+BtnArcadia.MouseButton1Click:Connect(function()
+    isArcadiaActive = not isArcadiaActive
+    BtnArcadia.BackgroundTransparency = isArcadiaActive and 0 or 0.4
+    if isArcadiaActive then
         task.spawn(function()
-            while isLucidActive do
-                pcall(function()
-                    local args = { "Lucid", 1, 1 }
-                    game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/8a09ea93db67b2b154012f63bc48d24b580b0ad4a20220e162308cbf20229b59"):FireServer(unpack(args))
-                end)
-                for i = 1, 3600 do
-                    if not isLucidActive then break end
+            local lastTargetCFrame = nil
+            while isArcadiaActive do
+                local chosenCFrame = getRandomCFrame(arcadiaCFrames)
+                if #arcadiaCFrames > 1 then
+                    while chosenCFrame == lastTargetCFrame and isArcadiaActive do
+                        chosenCFrame = getRandomCFrame(arcadiaCFrames)
+                        task.wait(0.1)
+                    end
+                end
+                
+                if not isArcadiaActive then break end
+                teleportTo(chosenCFrame)
+                lastTargetCFrame = chosenCFrame
+                
+                for i = 960, 1, -1 do
+                    if not isArcadiaActive then break end
                     task.wait(1)
                 end
             end
@@ -360,12 +361,18 @@ BtnGhost.MouseButton1Click:Connect(function()
                     teleportTo(CFrame.new(1261.48755, -963.121582, 3009.27783, 0.000512959843, 2.27065904e-08, 0.999999881, -2.46320675e-09, 1, -2.27053309e-08, -0.999999881, -2.45155962e-09, 0.000512959843))
                     task.wait(1.5)
                     
-                    -- Klik klik 15x
-                    for i = 1, 15 do
-                        if not isGhostActive then break end
-                        secureClick()
-                        task.wait(0.8)
-                    end
+                    -- Auto click pada PlayerGui sebanyak 8 kali dengan interval 0.5 detik
+                    pcall(function()
+                        local playerGui = Player:WaitForChild("PlayerGui")
+                        local targetButton = playerGui:WaitForChild("MainGui"):WaitForChild("CenterFrame"):WaitForChild("TextButton")
+                        if targetButton then
+                            for clickCount = 1, 8 do
+                                if not isGhostActive then break end
+                                targetButton.MouseButton1Click:Fire()
+                                task.wait(0.5)
+                            end
+                        end
+                    end)
                     
                     task.wait(1)
                     
@@ -384,29 +391,27 @@ BtnGhost.MouseButton1Click:Connect(function()
     end
 end)
 
-BtnAuto.MouseButton1Click:Connect(function()
-    isAutoActive = not isAutoActive
-    BtnAuto.BackgroundTransparency = isAutoActive and 0 or 0.4
-    if isAutoActive then
+BtnGotten.MouseButton1Click:Connect(function()
+    isGottenActive = not isGottenActive
+    BtnGotten.BackgroundTransparency = isGottenActive and 0 or 0.4
+    if isGottenActive then
         task.spawn(function()
             local lastTargetCFrame = nil
-            while isAutoActive do
-                local chosenCFrame = getRandomCFrame(autoCFrames)
-                -- Pastikan tidak memilih CFrame yang sama persis berturut-turut jika memungkinkan
-                if #autoCFrames > 1 then
-                    while chosenCFrame == lastTargetCFrame and isAutoActive do
-                        chosenCFrame = getRandomCFrame(autoCFrames)
+            while isGottenActive do
+                local chosenCFrame = getRandomCFrame(gottenCFrames)
+                if #gottenCFrames > 1 then
+                    while chosenCFrame == lastTargetCFrame and isGottenActive do
+                        chosenCFrame = getRandomCFrame(gottenCFrames)
                         task.wait(0.1)
                     end
                 end
                 
-                if not isAutoActive then break end
+                if not isGottenActive then break end
                 teleportTo(chosenCFrame)
                 lastTargetCFrame = chosenCFrame
                 
-                -- Jeda 16 menit (960 detik) sebelum rotasi/teleport acak berikutnya
                 for i = 960, 1, -1 do
-                    if not isAutoActive then break end
+                    if not isGottenActive then break end
                     task.wait(1)
                 end
             end
@@ -477,7 +482,7 @@ BtnElementalEvent.MouseButton1Click:Connect(function()
                         task.spawn(executePocongTeleport)
                         lastHandledHour = hour
                     elseif endHours[hour] then
-                        if not isAutoActive and not is8BitActive and savedLocation then
+                        if not isArcadiaActive and not isGottenActive and not is8BitActive and savedLocation then
                             teleportTo(savedLocation)
                             savedLocation = nil
                         end

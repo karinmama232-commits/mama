@@ -1,0 +1,491 @@
+-- [[ ELEMENTAL ISLAND - GLOBAL EDITION (LUCID, GHOST, AUTO, 8-BIT & RADIUS EVENT) ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- TABEL JADWAL EVENT (Ubah jam di sini untuk menyesuaikan dengan Cloud Phone)
+local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
+local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
+
+-- Daftar CFrame Lokasi Auto Rotation (Baru: 9 CFrame Room Baru, durasi 16 menit per rotasi)
+local autoCFrames = {
+    CFrame.new(1306.60327, -955.843018, 3008.66675, -0.0466647446, 4.04241369e-08, -0.998910606, -6.14684268e-08, 1, 4.33397567e-08, 0.998910606, 6.34239044e-08, -0.0466647446),
+    CFrame.new(1360.18652, -960.899231, 2977.875, -0.924472332, 1.01492233e-07, 0.3812491, 9.35265518e-08, 1, -3.94217778e-08, -0.3812491, -7.87430066e-10, -0.924472332),
+    CFrame.new(1340.74817, -964.482056, 3040.99048, 0.99682194, -2.87193398e-08, 0.0796616673, 3.01768317e-08, 1, -1.7092157e-08, -0.0796616673, 1.94417726e-08, 0.99682194),
+    CFrame.new(1409.35791, -952.899231, 3047.04785, -0.994252205, 3.14363611e-08, 0.107063197, 2.88053954e-08, 1, -2.61204001e-08, -0.107063197, -2.28862671e-08, -0.994252205),
+    CFrame.new(1308.73999, -961.171265, 3074.46582, 0.39718774, -1.28460254e-09, 0.917737365, -2.61146993e-09, 1, 2.52996823e-09, -0.917737365, -3.40151596e-09, 0.39718774),
+    CFrame.new(1421.68127, -964.39386, 2971.04224, 0.0397536121, 8.34481018e-09, 0.999209523, -5.27231858e-09, 1, -8.1416518e-09, -0.999209523, -4.94449059e-09, 0.0397536121),
+    CFrame.new(1391.88721, -956.105835, 3087.96753, 0.496611327, -7.43990256e-08, -0.86797303, 6.65828424e-08, 1, -4.76204072e-08, 0.86797303, -3.41432802e-08, 0.496611327),
+    CFrame.new(1259.66907, -963.671692, 3095.90479, 0.844428957, 8.55057247e-10, -0.535667598, -7.37611361e-10, 1, 4.33472008e-10, 0.535667598, 2.90781739e-11, 0.844428957),
+    CFrame.new(1389.05615, -955.781921, 3009.03687, 0.043311011, -5.8283657e-08, 0.999061644, 5.87621791e-08, 1, 5.57909594e-08, -0.999061644, 5.62906735e-08, 0.043311011)
+}
+
+-- Daftar CFrame Lokasi 8-BIT Rotation (Tribunal & Core, durasi 58 menit)
+local tribunalCFrames = {
+    CFrame.new(-1286.0614, -854.303528, 5597.25098, -0.21573934, 5.64967486e-08, -0.97645098, -6.388332e-08, 1, 7.19738082e-08, 0.97645098, 7.79065132e-08, -0.21573934),
+    CFrame.new(-1293.16333, -854.381226, 5599.79443, -0.690387607, 4.58410163e-08, 0.723439693, 8.74911947e-08, 1, 2.0128585e-08, -0.723439693, 7.71911246e-08, -0.690387607),
+    CFrame.new(-1290.67773, -854.250793, 5592.79932, 0.970382512, -8.71736194e-09, 0.241573542, 8.11169176e-09, 1, 3.50170026e-09, -0.241573542, -1.4384185e-09, 0.970382512)
+}
+
+local coreCFrames = {
+    CFrame.new(-4025.61914, -550.423401, 517.647217, -0.493542224, -1.81228259e-08, 0.86972183, -6.3739968e-08, 1, -1.5333109e-08, -0.86972183, -6.30035757e-08, -0.493542224),
+    CFrame.new(-4040.32544, -550.518982, 511.217163, -0.99537605, 2.17682938e-09, 0.096054554, -1.6686208e-09, 1, -3.99536972e-08, -0.096054554, -3.99292333e-08, -0.99537605),
+    CFrame.new(-4040.87085, -550.570312, 510.848999, -0.776145279, 6.40725872e-08, 0.63055414, 2.92357356e-08, 1, -6.56270558e-08, -0.63055414, -3.25014184e-08, -0.776145279),
+    CFrame.new(-4026.24487, -550.356934, 519.751343, -0.982813001, 4.54301734e-08, 0.184604004, 4.19538857e-08, 1, -2.27370389e-08, -0.184604004, -1.46014028e-08, -0.982813001)
+}
+
+-- 3 CFrame Kunci Lokasi Utama Event (Acuan Tetap)
+local eventMainLocations = {
+    Volcano = CFrame.new(-751.531616, 107.056473, 5337.02588, -0.993458986, 9.46330658e-09, -0.114189468, 9.78137749e-09, 1, -2.22516827e-09, 0.114189468, -3.3275438e-09, -0.993458986),
+    Storm = CFrame.new(-920.000427, 66.2507858, 5307.02979, 0.290880501, 0, -0.956759393, 0, 1, 0, 0.956759393, 0, 0.290880501),
+    Blizzard = CFrame.new(-981.890015, 45.8336372, 5302.85986, -0.855183363, -1.93981435e-08, 0.518325567, -1.31614017e-08, 1, 1.5709686e-08, -0.518325567, 6.61277122e-09, -0.855183363)
+}
+
+-- Sub-Titik Teleport Acak
+local eventSubLocations = {
+    Volcano = {
+        CFrame.new(-721.949585, 107.056473, 5373.57275, 0.334296286, 0, 0.942468047, 0, 1, 0, -0.942468047, 0, 0.334296286),
+        CFrame.new(-653.498474, 98.5989685, 5384.63477, -0.645521402, -4.40322268e-08, 0.763742208, -7.10628569e-08, 1, -2.40967024e-09, -0.763742208, -5.58291973e-08, -0.645521402),
+        CFrame.new(-676.921326, 95.082016, 5510.46924, -0.986786783, -4.21056718e-08, 0.162024319, -4.16536707e-08, 1, 6.1866019e-09, -0.162024319, -6.44050591e-10, -0.986786783),
+        CFrame.new(-728.019958, 98.0565262, 5553.01904, 0.0465074293, -1.31750024e-08, -0.998917937, 3.41580844e-08, 1, -1.15989485e-08, 0.998917937, -3.3581685e-08, 0.0465074293),
+        CFrame.new(-817.815186, 59.36623, 5269.53857, -0.785528302, -7.54550769e-08, -0.618825734, -1.03933729e-07, 1, 9.99927163e-09, 0.618825734, 7.21715736e-08, -0.785528302)
+    },
+    Storm = {
+        CFrame.new(-856.587036, 56.0565376, 5315.60205, -0.894435823, -1.05789162e-07, 0.447196335, -7.08139254e-08, 1, 9.49262002e-08, -0.447196335, 5.32376667e-08, -0.894435823),
+        CFrame.new(-862.940491, 56.0565376, 5309.75293, -0.338348925, 7.26319485e-08, 0.941020727, 2.40280578e-08, 1, -6.85448001e-08, -0.941020727, -5.81159509e-10, -0.338348925),
+        CFrame.new(-866.3479, 56.0565376, 5288.81738, 0.119692698, -1.05014784e-07, 0.992810965, 1.58255844e-08, 1, 1.03867286e-07, -0.992810965, 3.27965832e-09, 0.119692698),
+        CFrame.new(-855.017334, 58.2002106, 5266.35986, -0.24067013, -2.01202717e-08, 0.970606983, 9.96425058e-08, 1, 4.54367708e-08, -0.970606983, 1.07648987e-07, -0.24067013),
+        CFrame.new(-938.639465, 54.9124527, 5236.48145, -0.686380565, 9.00352433e-08, -0.727242529, 5.67547254e-08, 1, 7.02377818e-08, 0.727242529, 6.93539715e-09, -0.686380565)
+    },
+    Blizzard = {
+        CFrame.new(-1091.47754, 142.09317, 5578.62598, -0.677479208, -4.1085741e-08, -0.73554194, -8.84027251e-09, 1, -4.77153499e-08, 0.73554194, -2.58237662e-08, -0.677479208),
+        CFrame.new(-1056.52429, 124.093216, 5535.38525, -0.998791993, -9.29699553e-08, 0.0491381213, -8.980507e-08, 1, 6.66156552e-08, -0.0491381213, 6.21223322e-08, -0.998791993),
+        CFrame.new(-1030.68567, 76.6534348, 5467.99365, -0.932308733, -3.21736096e-08, 0.361663401, -2.28642296e-08, 1, 3.00198693e-08, -0.361663401, 1.97186303e-08, -0.932308733),
+        CFrame.new(-1053.52722, 76.6641541, 5449.8418, -0.631283164, 2.14597922e-08, 0.775552452, -4.27987636e-08, 1, -6.25076098e-08, -0.775552452, -7.26526892e-08, -0.631283164),
+        CFrame.new(-1042.71619, 76.6641235, 5379.95752, 0.172886401, 7.32934211e-08, -0.984941781, -7.05081575e-08, 1, 6.20376994e-08, 0.984941781, 5.8720957e-08, 0.172886401)
+    }
+}
+
+-- State Variables
+local isLucidActive = false
+local isGhostActive = false
+local isAutoActive = false
+local is8BitActive = false
+local isElementalEvent = false
+local savedLocation = nil
+
+-- Helper Functions
+local function getRandomCFrame(cframeTable)
+    return cframeTable[math.random(1, #cframeTable)]
+end
+
+local function teleportTo(cframe)
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 5)
+    if hrp then hrp.CFrame = cframe end
+end
+
+local function saveCurrentLocation()
+    local char = Player.Character or Player.CharacterAdded:Wait()
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp then savedLocation = hrp.CFrame end
+end
+
+-- Fungsi Global Secure Click (Diambil dari skrip kedua)
+local function secureClick()
+    pcall(function()
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") then
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
+                    if dist < 25 then
+                        task.wait(0.2)
+                        fireproximityprompt(obj)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+-- Menghitung Waktu Berjalan Untuk 8-BIT (58 menit per lokasi: Tribunal & Core)
+local function get8BitTargetArea()
+    local t = os.date("*t")
+    local h, m = t.hour, t.min
+    local elapsedMinutes = 0
+    local foundLastEvent = false
+    
+    for offset = 0, 3 do
+        local checkHour = h - offset
+        if checkHour < 0 then checkHour = checkHour + 24 end
+        if endHours[checkHour] then
+            elapsedMinutes = (offset * 60) + m
+            foundLastEvent = true
+            break
+        end
+    end
+
+    if foundLastEvent then
+        if elapsedMinutes >= 2 and elapsedMinutes < 60 then
+            return "Tribunal"
+        elseif elapsedMinutes >= 60 and elapsedMinutes < 118 then
+            return "Core"
+        end
+    end
+    
+    return nil 
+end
+
+-- Teleport ke Event dengan Sistem Tunggu, Radius 3 Studs, dan Re-Check
+local function executePocongTeleport()
+    task.wait(10)
+    
+    local targetPlayer = Players:FindFirstChild("pociclone")
+    if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local pociCFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+        local pociPos = pociCFrame.Position
+        local targetCFrame = pociCFrame 
+
+        if (pociPos - eventMainLocations.Volcano.Position).Magnitude <= 3 then
+            targetCFrame = getRandomCFrame(eventSubLocations.Volcano)
+        elseif (pociPos - eventMainLocations.Storm.Position).Magnitude <= 3 then
+            targetCFrame = getRandomCFrame(eventSubLocations.Storm)
+        elseif (pociPos - eventMainLocations.Blizzard.Position).Magnitude <= 3 then
+            targetCFrame = getRandomCFrame(eventSubLocations.Blizzard)
+        end
+
+        teleportTo(targetCFrame)
+    end
+
+    task.wait(60)
+
+    local targetPlayer2 = Players:FindFirstChild("pociclone")
+    if targetPlayer2 and targetPlayer2.Character and targetPlayer2.Character:FindFirstChild("HumanoidRootPart") then
+        local pociCFrame2 = targetPlayer2.Character.HumanoidRootPart.CFrame
+        local pociPos2 = pociCFrame2.Position
+        local targetCFrame2 = pociCFrame2 
+
+        if (pociPos2 - eventMainLocations.Volcano.Position).Magnitude <= 3 then
+            targetCFrame2 = getRandomCFrame(eventSubLocations.Volcano)
+        elseif (pociPos2 - eventMainLocations.Storm.Position).Magnitude <= 3 then
+            targetCFrame2 = getRandomCFrame(eventSubLocations.Storm)
+        elseif (pociPos2 - eventMainLocations.Blizzard.Position).Magnitude <= 3 then
+            targetCFrame2 = getRandomCFrame(eventSubLocations.Blizzard)
+        end
+
+        teleportTo(targetCFrame2)
+    end
+end
+
+-- ==========================================
+-- 1. SETUP UI COMPACT (ICON MENU TIDAK DIOTAK-ATIK)
+-- ==========================================
+if CoreGui:FindFirstChild("ElementalIslandUI") then
+    CoreGui.ElementalIslandUI:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ElementalIslandUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "ElementalIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "⚡"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 25
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "ElementalMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(250, 245, 255)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -60)
+MainFrame.Size = UDim2.new(0, 220, 0, 120)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Elemental Island ⚡"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 13
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local HideBtn = Instance.new("TextButton", Header)
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
+HideBtn.Size = UDim2.new(0, 25, 0, 25)
+HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HideBtn.BackgroundTransparency = 0.4
+HideBtn.Text = "-"
+HideBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+HideBtn.TextSize = 18
+HideBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
+
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(142, 68, 173)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+
+local function resetAll()
+    isElementalEvent = false
+    isLucidActive = false
+    isGhostActive = false
+    isAutoActive = false
+    is8BitActive = false
+    savedLocation = nil
+end
+
+IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() resetAll() ScreenGui:Destroy() end)
+
+local function styleBtn(b, fSize)
+    b.BackgroundColor3 = Color3.fromRGB(142, 68, 173)
+    b.BackgroundTransparency = 0.4
+    b.TextColor3 = Color3.new(1,1,1)
+    b.TextSize = fSize
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
+
+-- ==========================================
+-- 2. BARIS 1: LUCID, GHOST & AUTO (3 TOMBOL)
+-- ==========================================
+local BtnLucid = Instance.new("TextButton", MainFrame)
+BtnLucid.Size = UDim2.new(0, 63, 0, 28)
+BtnLucid.Position = UDim2.new(0, 10, 0, 45)
+BtnLucid.Text = "LUCID"
+styleBtn(BtnLucid, 8)
+
+local BtnGhost = Instance.new("TextButton", MainFrame)
+BtnGhost.Size = UDim2.new(0, 63, 0, 28)
+BtnGhost.Position = UDim2.new(0, 78, 0, 45)
+BtnGhost.Text = "GHOST"
+styleBtn(BtnGhost, 8)
+
+local BtnAuto = Instance.new("TextButton", MainFrame)
+BtnAuto.Size = UDim2.new(0, 63, 0, 28)
+BtnAuto.Position = UDim2.new(0, 146, 0, 45)
+BtnAuto.Text = "AUTO"
+styleBtn(BtnAuto, 8)
+
+BtnLucid.MouseButton1Click:Connect(function()
+    isLucidActive = not isLucidActive
+    BtnLucid.BackgroundTransparency = isLucidActive and 0 or 0.4
+    if isLucidActive then
+        task.spawn(function()
+            while isLucidActive do
+                pcall(function()
+                    local args = { "Lucid", 1, 1 }
+                    game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/8a09ea93db67b2b154012f63bc48d24b580b0ad4a20220e162308cbf20229b59"):FireServer(unpack(args))
+                end)
+                for i = 1, 3600 do
+                    if not isLucidActive then break end
+                    task.wait(1)
+                end
+            end
+        end)
+    end
+end)
+
+BtnGhost.MouseButton1Click:Connect(function()
+    isGhostActive = not isGhostActive
+    BtnGhost.BackgroundTransparency = isGhostActive and 0 or 0.4
+    if isGhostActive then
+        task.spawn(function()
+            local RF_Ghost = Net:WaitForChild("RF/bafa79cf0c5841ed594acfa0b8a31ea476a2bc57c099d2640706bfcd178956ec")
+            while isGhostActive do
+                pcall(function()
+                    task.wait(1)
+                    if not isGhostActive then return end
+                    
+                    saveCurrentLocation()
+                    
+                    task.wait(1)
+                    if not isGhostActive then return end
+                    
+                    teleportTo(CFrame.new(1322.38953, 13.3374681, 2975.84473, 0.0149500482, 4.94851697e-08, 0.999888241, 9.17929626e-08, 1, -5.08631608e-08, -0.999888241, 9.2543111e-08, 0.0149500482))
+                    
+                    task.wait(5)
+                    if not isGhostActive then return end
+                    
+                    for i = 1, 4 do
+                        if not isGhostActive then break end
+                        
+                        RF_Ghost:InvokeServer()
+                        task.wait(0.5)
+                        if not isGhostActive then break end
+                        
+                        RF_Ghost:InvokeServer()
+                        
+                        if i < 4 then
+                            task.wait(1)
+                        end
+                    end
+                    
+                    task.wait(1)
+                    if not isGhostActive then return end
+                    
+                    -- Teleport ke tempat kedua
+                    teleportTo(CFrame.new(1261.48755, -963.121582, 3009.27783, 0.000512959843, 2.27065904e-08, 0.999999881, -2.46320675e-09, 1, -2.27053309e-08, -0.999999881, -2.45155962e-09, 0.000512959843))
+                    task.wait(1.5)
+                    
+                    -- Klik klik 15x
+                    for i = 1, 15 do
+                        if not isGhostActive then break end
+                        secureClick()
+                        task.wait(0.8)
+                    end
+                    
+                    task.wait(1)
+                    
+                    if savedLocation then
+                        teleportTo(savedLocation)
+                        savedLocation = nil
+                    end
+                end)
+                
+                for i = 1, 1810 do
+                    if not isGhostActive then break end
+                    task.wait(1)
+                end
+            end
+        end)
+    end
+end)
+
+BtnAuto.MouseButton1Click:Connect(function()
+    isAutoActive = not isAutoActive
+    BtnAuto.BackgroundTransparency = isAutoActive and 0 or 0.4
+    if isAutoActive then
+        task.spawn(function()
+            local lastTargetCFrame = nil
+            while isAutoActive do
+                local chosenCFrame = getRandomCFrame(autoCFrames)
+                -- Pastikan tidak memilih CFrame yang sama persis berturut-turut jika memungkinkan
+                if #autoCFrames > 1 then
+                    while chosenCFrame == lastTargetCFrame and isAutoActive do
+                        chosenCFrame = getRandomCFrame(autoCFrames)
+                        task.wait(0.1)
+                    end
+                end
+                
+                if not isAutoActive then break end
+                teleportTo(chosenCFrame)
+                lastTargetCFrame = chosenCFrame
+                
+                -- Jeda 16 menit (960 detik) sebelum rotasi/teleport acak berikutnya
+                for i = 960, 1, -1 do
+                    if not isAutoActive then break end
+                    task.wait(1)
+                end
+            end
+        end)
+    end
+end)
+
+-- ==========================================
+-- 3. BARIS 2: 8-BIT & ELEMENTAL EVENT (2 TOMBOL)
+-- ==========================================
+local Btn8Bit = Instance.new("TextButton", MainFrame)
+Btn8Bit.Size = UDim2.new(0, 95, 0, 28)
+Btn8Bit.Position = UDim2.new(0, 10, 0, 80)
+Btn8Bit.Text = "8-BIT"
+styleBtn(Btn8Bit, 9)
+
+local BtnElementalEvent = Instance.new("TextButton", MainFrame)
+BtnElementalEvent.Size = UDim2.new(0, 95, 0, 28)
+BtnElementalEvent.Position = UDim2.new(0, 114, 0, 80)
+BtnElementalEvent.Text = "ELEMENTAL EVENT"
+styleBtn(BtnElementalEvent, 9)
+
+Btn8Bit.MouseButton1Click:Connect(function()
+    is8BitActive = not is8BitActive
+    Btn8Bit.BackgroundTransparency = is8BitActive and 0 or 0.4
+    if is8BitActive then
+        task.spawn(function()
+            local lastTeleportedArea = nil
+            while is8BitActive do
+                local targetArea = get8BitTargetArea()
+                if targetArea and targetArea ~= lastTeleportedArea then
+                    if targetArea == "Tribunal" then teleportTo(getRandomCFrame(tribunalCFrames))
+                    elseif targetArea == "Core" then teleportTo(getRandomCFrame(coreCFrames))
+                    end
+                    lastTeleportedArea = targetArea
+                elseif targetArea == nil then
+                    lastTeleportedArea = nil
+                end
+                task.wait(3)
+            end
+        end)
+    end
+end)
+
+BtnElementalEvent.MouseButton1Click:Connect(function()
+    isElementalEvent = not isElementalEvent
+    BtnElementalEvent.BackgroundTransparency = isElementalEvent and 0 or 0.4
+    
+    if isElementalEvent then
+        task.spawn(function()
+            local lastHandledHour = -1
+            local currentHour = os.date("*t").hour
+            
+            if startHours[currentHour] then
+                saveCurrentLocation()
+                task.spawn(executePocongTeleport)
+                lastHandledHour = currentHour
+            else
+                lastHandledHour = currentHour
+            end
+            
+            while isElementalEvent do
+                local hour = os.date("*t").hour
+                
+                if hour ~= lastHandledHour then
+                    if startHours[hour] then
+                        saveCurrentLocation()
+                        task.spawn(executePocongTeleport)
+                        lastHandledHour = hour
+                    elseif endHours[hour] then
+                        if not isAutoActive and not is8BitActive and savedLocation then
+                            teleportTo(savedLocation)
+                            savedLocation = nil
+                        end
+                        lastHandledHour = hour
+                    end
+                end
+                task.wait(3)
+            end
+        end)
+    end
+end)

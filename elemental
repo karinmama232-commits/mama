@@ -3,6 +3,7 @@
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local VirtualInputManager = game:GetService("VirtualInputManager")
 local Player = Players.LocalPlayer
 
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
@@ -11,7 +12,7 @@ local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):Wa
 local startHours = { [2]=true, [5]=true, [8]=true, [11]=true, [14]=true, [17]=true, [20]=true, [23]=true }
 local endHours   = { [3]=true, [6]=true, [9]=true, [12]=true, [15]=true, [18]=true, [21]=true, [0]=true }
 
--- Daftar CFrame Lokasi Arcadia Rotation (Menggantikan Lucid, durasi 16 menit per rotasi)
+-- Daftar CFrame Lokasi Arcadia Rotation (Durasi 16 menit per rotasi)
 local arcadiaCFrames = {
     CFrame.new(1420.15454, 13.3374681, 3025.39551, 0.062436413, 3.24422018e-08, -0.998048961, -2.76572667e-08, 1, 3.07754249e-08, 0.998048961, 2.5681798e-08, 0.062436413),
     CFrame.new(1438.73547, 23.3373432, 3095.80249, 0.89884907, 7.40498294e-08, -0.43825832, -4.06671177e-08, 1, 8.55573745e-08, 0.43825832, -5.90804632e-08, 0.89884907),
@@ -21,7 +22,7 @@ local arcadiaCFrames = {
     CFrame.new(1339.46179, 13.3374681, 3004.32959, 0.999971747, -4.2000508e-08, -0.00751512125, 4.1557886e-08, 1, -5.90539067e-08, 0.00751512125, 5.87399249e-08, 0.999971747)
 }
 
--- Daftar CFrame Lokasi Gotten Rotation (Menggantikan Auto, durasi 16 menit per rotasi)
+-- Daftar CFrame Lokasi Gotten Rotation (Durasi 16 menit per rotasi)
 local gottenCFrames = {
     CFrame.new(1306.60327, -955.843018, 3008.66675, -0.0466647446, 4.04241369e-08, -0.998910606, -6.14684268e-08, 1, 4.33397567e-08, 0.998910606, 6.34239044e-08, -0.0466647446),
     CFrame.new(1360.18652, -960.899231, 2977.875, -0.924472332, 1.01492233e-07, 0.3812491, 9.35265518e-08, 1, -3.94217778e-08, -0.3812491, -7.87430066e-10, -0.924472332),
@@ -34,7 +35,7 @@ local gottenCFrames = {
     CFrame.new(1389.05615, -955.781921, 3009.03687, 0.043311011, -5.8283657e-08, 0.999061644, 5.87621791e-08, 1, 5.57909594e-08, -0.999061644, 5.62906735e-08, 0.043311011)
 }
 
--- Daftar CFrame Lokasi 8-BIT Rotation (Tribunal & Core, durasi 58 menit)
+-- Daftar CFrame Lokasi 8-BIT Rotation (Tribunal & Core)
 local tribunalCFrames = {
     CFrame.new(-1286.0614, -854.303528, 5597.25098, -0.21573934, 5.64967486e-08, -0.97645098, -6.388332e-08, 1, 7.19738082e-08, 0.97645098, 7.79065132e-08, -0.21573934),
     CFrame.new(-1293.16333, -854.381226, 5599.79443, -0.690387607, 4.58410163e-08, 0.723439693, 8.74911947e-08, 1, 2.0128585e-08, -0.723439693, 7.71911246e-08, -0.690387607),
@@ -48,14 +49,13 @@ local coreCFrames = {
     CFrame.new(-4026.24487, -550.356934, 519.751343, -0.982813001, 4.54301734e-08, 0.184604004, 4.19538857e-08, 1, -2.27370389e-08, -0.184604004, -1.46014028e-08, -0.982813001)
 }
 
--- 3 CFrame Kunci Lokasi Utama Event (Acuan Tetap)
+-- 3 CFrame Kunci Lokasi Utama Event
 local eventMainLocations = {
     Volcano = CFrame.new(-751.531616, 107.056473, 5337.02588, -0.993458986, 9.46330658e-09, -0.114189468, 9.78137749e-09, 1, -2.22516827e-09, 0.114189468, -3.3275438e-09, -0.993458986),
     Storm = CFrame.new(-920.000427, 66.2507858, 5307.02979, 0.290880501, 0, -0.956759393, 0, 1, 0, 0.956759393, 0, 0.290880501),
     Blizzard = CFrame.new(-981.890015, 45.8336372, 5302.85986, -0.855183363, -1.93981435e-08, 0.518325567, -1.31614017e-08, 1, 1.5709686e-08, -0.518325567, 6.61277122e-09, -0.855183363)
 }
 
--- Sub-Titik Teleport Acak
 local eventSubLocations = {
     Volcano = {
         CFrame.new(-721.949585, 107.056473, 5373.57275, 0.334296286, 0, 0.942468047, 0, 1, 0, -0.942468047, 0, 0.334296286),
@@ -105,7 +105,6 @@ local function saveCurrentLocation()
     if hrp then savedLocation = hrp.CFrame end
 end
 
--- Menghitung Waktu Berjalan Untuk 8-BIT (58 menit per lokasi: Tribunal & Core)
 local function get8BitTargetArea()
     local t = os.date("*t")
     local h, m = t.hour, t.min
@@ -133,7 +132,6 @@ local function get8BitTargetArea()
     return nil 
 end
 
--- Teleport ke Event dengan Sistem Tunggu, Radius 3 Studs, dan Re-Check
 local function executePocongTeleport()
     task.wait(10)
     
@@ -361,14 +359,24 @@ BtnGhost.MouseButton1Click:Connect(function()
                     teleportTo(CFrame.new(1261.48755, -963.121582, 3009.27783, 0.000512959843, 2.27065904e-08, 0.999999881, -2.46320675e-09, 1, -2.27053309e-08, -0.999999881, -2.45155962e-09, 0.000512959843))
                     task.wait(1.5)
                     
-                    -- Auto click pada PlayerGui sebanyak 8 kali dengan interval 0.5 detik
+                    -- Auto-Click pada tombol GUI game sebanyak 8 kali dengan interval 0.5 detik
                     pcall(function()
                         local playerGui = Player:WaitForChild("PlayerGui")
                         local targetButton = playerGui:WaitForChild("MainGui"):WaitForChild("CenterFrame"):WaitForChild("TextButton")
                         if targetButton then
                             for clickCount = 1, 8 do
                                 if not isGhostActive then break end
-                                targetButton.MouseButton1Click:Fire()
+                                
+                                -- Mengambil posisi absolut tombol di layar untuk VirtualInputManager
+                                local absolutePosition = targetButton.AbsolutePosition
+                                local absoluteSize = targetButton.AbsoluteSize
+                                local clickX = absolutePosition.X + (absoluteSize.X / 2)
+                                local clickY = absolutePosition.Y + (absoluteSize.Y / 2)
+                                
+                                VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, true, game, 1)
+                                task.wait(0.05)
+                                VirtualInputManager:SendMouseButtonEvent(clickX, clickY, 0, false, game, 1)
+                                
                                 task.wait(0.5)
                             end
                         end

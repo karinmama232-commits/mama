@@ -1,0 +1,363 @@
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- ==========================================
+-- FUNGSI GLOBAL & HELPER
+-- ==========================================
+local function secureClick()
+    pcall(function()
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") then
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
+                    if dist < 25 then
+                        task.wait(0.2)
+                        fireproximityprompt(obj)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function repeatActionForDuration(duration, actionFunc)
+    local startTime = tick()
+    while tick() - startTime < duration do
+        pcall(actionFunc)
+        task.wait(0.1)
+    end
+end
+
+local function interactForDuration(duration)
+    local startTime = tick()
+    while tick() - startTime < duration do
+        secureClick()
+        task.wait(0.1)
+    end
+end
+
+local function closeRod()
+    repeatActionForDuration(5, function()
+        local RE_Close = Net:WaitForChild("RE/49e0ee289b3eb646121cd0d355dfb2243f23076b891a1d78db649c18c69404c2")
+        RE_Close:FireServer()
+    end)
+end
+
+local function openFragment1()
+    repeatActionForDuration(5, function()
+        local RE_Open = Net:WaitForChild("RE/a17c6d92f2da35b0df072406f0460c01a2dcc42decd3da3a2a3896b74a736fa0")
+        RE_Open:FireServer(2)
+    end)
+end
+
+local function closeFragment1()
+    repeatActionForDuration(5, function()
+        local RE_Close = Net:WaitForChild("RE/49e0ee289b3eb646121cd0d355dfb2243f23076b891a1d78db649c18c69404c2")
+        RE_Close:FireServer()
+    end)
+end
+
+local function openFragment2()
+    repeatActionForDuration(5, function()
+        local RE_Open = Net:WaitForChild("RE/a17c6d92f2da35b0df072406f0460c01a2dcc42decd3da3a2a3896b74a736fa0")
+        RE_Open:FireServer(3)
+    end)
+end
+
+local function closeFragment2()
+    repeatActionForDuration(5, function()
+        local RE_Close = Net:WaitForChild("RE/49e0ee289b3eb646121cd0d355dfb2243f23076b891a1d78db649c18c69404c2")
+        RE_Close:FireServer()
+    end)
+end
+
+local function openFragment3()
+    repeatActionForDuration(5, function()
+        local RE_Open = Net:WaitForChild("RE/a17c6d92f2da35b0df072406f0460c01a2dcc42decd3da3a2a3896b74a736fa0")
+        RE_Open:FireServer(4)
+    end)
+end
+
+local function closeFragment3()
+    repeatActionForDuration(5, function()
+        local RE_Close = Net:WaitForChild("RE/49e0ee289b3eb646121cd0d355dfb2243f23076b891a1d78db649c18c69404c2")
+        RE_Close:FireServer()
+    end)
+end
+
+-- ==========================================
+-- 1. SETUP UI COMPACT
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "HallowsEveUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "HallowsIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "🎃"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 25
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "HallowsMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(253, 243, 226)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -75)
+MainFrame.Size = UDim2.new(0, 220, 0, 160)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 35)
+Header.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "🎃 Hallows eve 🎃"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 12
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local HideBtn = Instance.new("TextButton", Header)
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
+HideBtn.Size = UDim2.new(0, 25, 0, 25)
+HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HideBtn.BackgroundTransparency = 0.4
+HideBtn.Text = "-"
+HideBtn.TextColor3 = Color3.fromRGB(230, 126, 34)
+HideBtn.TextSize = 18
+HideBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
+
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(230, 126, 34)
+CloseBtn.TextSize = 16
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+
+local isFishing = false
+local isMesin = false
+local isPintu = false
+local isFishingPaused = false
+
+local function resetAll()
+    isFishing = false; isMesin = false; isPintu = false; isFishingPaused = false
+end
+
+IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() resetAll() ScreenGui:Destroy() end)
+
+local function styleBtn(b, fSize)
+    b.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+    b.BackgroundTransparency = 0.4
+    b.TextColor3 = Color3.new(1,1,1)
+    b.TextSize = fSize
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
+
+-- ==========================================
+-- 2. TOMBOL & LOGIKA (BARIS ATAS)
+-- ==========================================
+local BtnMesin = Instance.new("TextButton", MainFrame)
+BtnMesin.Size = UDim2.new(0, 95, 0, 28)
+BtnMesin.Position = UDim2.new(0, 10, 0, 45)
+BtnMesin.Text = "MESIN"
+styleBtn(BtnMesin, 9)
+
+local BtnPintu = Instance.new("TextButton", MainFrame)
+BtnPintu.Size = UDim2.new(0, 95, 0, 28)
+BtnPintu.Position = UDim2.new(0, 115, 0, 45)
+BtnPintu.Text = "PINTU"
+styleBtn(BtnPintu, 9)
+
+BtnMesin.MouseButton1Click:Connect(function()
+    isMesin = not isMesin
+    BtnMesin.BackgroundTransparency = isMesin and 0 or 0.4
+    if isMesin then
+        task.spawn(function()
+            local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
+            
+            while isMesin do
+                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local wasFishingActive = isFishing
+                    if wasFishingActive then
+                        isFishingPaused = true
+                        pcall(function()
+                            RE_FishToggle:FireServer(false)
+                        end)
+                        task.wait(3)
+                    end
+                    
+                    local saved = hrp.CFrame
+                    task.wait(0.5)
+                    
+                    hrp.CFrame = CFrame.new(542.045593, 1899.39062, -5635.92188, -0.998666584, 0, -0.0516242422, 0, 1, 0, 0.0516242422, 0, -0.998666584)
+                    task.wait(1.5)
+                    
+                    closeRod()
+                    task.wait(1)
+                    
+                    openFragment1()
+                    interactForDuration(3)
+                    task.wait(1)
+                    closeFragment1()
+                    task.wait(1)
+                    
+                    openFragment2()
+                    interactForDuration(4)
+                    task.wait(1)
+                    closeFragment2()
+                    task.wait(1)
+                    
+                    openFragment3()
+                    interactForDuration(5)
+                    task.wait(1)
+                    closeFragment3()
+                    task.wait(1)
+                    
+                    if hrp then hrp.CFrame = saved end
+                    task.wait(1)
+                    
+                    if wasFishingActive and isFishing then
+                        pcall(function()
+                            RE_FishToggle:FireServer(true)
+                        end)
+                        task.wait(3)
+                        isFishingPaused = false
+                    end
+                end
+                
+                for i = 7260, 1, -1 do
+                    if not isMesin then break end
+                    task.wait(1)
+                end
+            end
+        end)
+    end
+end)
+
+BtnPintu.MouseButton1Click:Connect(function()
+    isPintu = not isPintu
+    BtnPintu.BackgroundTransparency = isPintu and 0 or 0.4
+    if isPintu then
+        task.spawn(function()
+            while isPintu do
+                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local saved = hrp.CFrame
+                    task.wait(0.5)
+                    
+                    local pintuList = {
+                        CFrame.new(439.730164, 1900.56018, -5559.40967, -0.575096548, 7.02793601e-09, 0.818085551, 1.95856185e-08, 1, 5.17755838e-09, -0.818085551, 1.90003071e-08, -0.575096548),
+                        CFrame.new(458.525299, 1900.65515, -5544.83301, -0.705812395, 1.41247432e-08, 0.708398819, -4.1446131e-09, 1, -2.40684521e-08, -0.708398819, -1.9923851e-08, -0.705812395),
+                        CFrame.new(473.343903, 1900.66016, -5527.29541, -0.864727378, 5.62911175e-08, 0.502241552, 2.96155207e-08, 1, -6.10896649e-08, -0.502241552, -3.79517573e-08, -0.864727378),
+                        CFrame.new(674.678162, 1900.77307, -5642.85889, -0.501198769, -4.59321203e-09, -0.865332186, 2.76936714e-08, 1, -2.13481552e-08, 0.865332186, -3.46638949e-08, -0.501198769),
+                        CFrame.new(684.5625, 1900.77307, -5659.90283, -0.43978247, -8.17217494e-09, -0.89810431, 1.08992804e-09, 1, -9.63307478e-09, 0.89810431, -5.21532639e-09, -0.43978247),
+                        CFrame.new(658.132263, 1900.77307, -5714.92773, 0.583243549, 1.4201369e-08, 0.812297344, -7.09926411e-08, 1, 3.34909771e-08, -0.812297344, -7.72005322e-08, 0.583243549),
+                        CFrame.new(631.639832, 1900.77307, -5735.64697, -0.505768418, -3.81679151e-08, -0.862669289, -1.5043307e-08, 1, -3.54243319e-08, 0.862669289, -4.93910912e-09, -0.505768418)
+                    }
+                    
+                    for _, targetCFrame in ipairs(pintuList) do
+                        if not isPintu then break end
+                        hrp.CFrame = targetCFrame
+                        task.wait(1)
+                        interactForDuration(2)
+                        task.wait(0.5)
+                    end
+                    
+                    if hrp and isPintu then
+                        hrp.CFrame = saved
+                    end
+                end
+                
+                for i = 7260, 1, -1 do
+                    if not isPintu then break end
+                    task.wait(1)
+                end
+            end
+        end)
+    end
+end)
+
+-- ==========================================
+-- 3. TOMBOL & LOGIKA (BARIS TENGAH)
+-- ==========================================
+local BtnFishing = Instance.new("TextButton", MainFrame)
+BtnFishing.Size = UDim2.new(0, 200, 0, 28)
+BtnFishing.Position = UDim2.new(0, 10, 0, 80)
+BtnFishing.Text = "FISHING"
+styleBtn(BtnFishing, 9)
+
+BtnFishing.MouseButton1Click:Connect(function()
+    isFishing = not isFishing
+    BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
+    if isFishing then
+        task.spawn(function()
+            local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
+            
+            pcall(function()
+                RE_FishToggle:FireServer(true)
+            end)
+            
+            while isFishing do
+                if not isFishingPaused then
+                    pcall(function()
+                        RE_FishToggle:FireServer(true)
+                    end)
+                end
+                task.wait(1)
+            end
+        end)
+    else
+        pcall(function()
+            local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
+            RE_FishToggle:FireServer(false)
+        end)
+    end
+end)
+
+-- ==========================================
+-- 4. TOMBOL TELEPORT (BARIS BAWAH)
+-- ==========================================
+local BtnTeleportEve = Instance.new("TextButton", MainFrame)
+BtnTeleportEve.Size = UDim2.new(0, 200, 0, 28)
+BtnTeleportEve.Position = UDim2.new(0, 10, 0, 118)
+BtnTeleportEve.Text = "TELEPORT EVE"
+styleBtn(BtnTeleportEve, 10)
+
+BtnTeleportEve.MouseButton1Click:Connect(function()
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then 
+        hrp.CFrame = CFrame.new(542.045593, 1899.39062, -5635.92188, -0.998666584, 0, -0.0516242422, 0, 1, 0, 0.0516242422, 0, -0.998666584)
+    end
+end)

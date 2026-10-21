@@ -43,6 +43,13 @@ local function interactForDuration(duration)
     end
 end
 
+local function openRod()
+    repeatActionForDuration(5, function()
+        local RE_Open = Net:WaitForChild("RE/a17c6d92f2da35b0df072406f0460c01a2dcc42decd3da3a2a3896b74a736fa0")
+        RE_Open:FireServer(1)
+    end)
+end
+
 local function closeRod()
     repeatActionForDuration(5, function()
         local RE_Close = Net:WaitForChild("RE/49e0ee289b3eb646121cd0d355dfb2243f23076b891a1d78db649c18c69404c2")
@@ -89,6 +96,18 @@ local function closeFragment3()
     repeatActionForDuration(5, function()
         local RE_Close = Net:WaitForChild("RE/49e0ee289b3eb646121cd0d355dfb2243f23076b891a1d78db649c18c69404c2")
         RE_Close:FireServer()
+    end)
+end
+
+local function stopFishing(RE_FishToggle)
+    pcall(function()
+        RE_FishToggle:FireServer(false)
+    end)
+end
+
+local function startFishing(RE_FishToggle)
+    pcall(function()
+        RE_FishToggle:FireServer(true)
     end)
 end
 
@@ -198,10 +217,16 @@ BtnPintu.Position = UDim2.new(0, 115, 0, 45)
 BtnPintu.Text = "PINTU"
 styleBtn(BtnPintu, 9)
 
--- Helper Fungsi Jalankan Mesin
+-- Helper Routine Mesin
 local function runMesinRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
+        local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
+        
+        -- Stop mancing
+        stopFishing(RE_FishToggle)
+        task.wait(3)
+        
         local saved = hrp.CFrame
         task.wait(0.5)
         
@@ -234,22 +259,77 @@ local function runMesinRoutine()
         closeFragment3()
         task.wait(1)
         
+        -- Buka pancing kembali
+        openRod()
+        task.wait(1)
+        
         -- Balik ke tempat save
         if hrp then hrp.CFrame = saved end
         task.wait(1)
+        
+        -- Auto mancing
+        startFishing(RE_FishToggle)
+        task.wait(3)
     end
 end
 
--- Mesin Logic (Eksekusi pertama langsung, lalu tunggu jadwal jam 03.00, 06.00, 09.00, 12.00, 15.00, 18.00, 21.00, 00.00)
+-- Helper Routine Pintu
+local function runPintuRoutine()
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
+        
+        -- Stop mancing
+        stopFishing(RE_FishToggle)
+        task.wait(3)
+        
+        -- Tutup pancing
+        closeRod()
+        task.wait(1)
+        
+        local saved = hrp.CFrame
+        task.wait(0.5)
+        
+        local pintuList = {
+            CFrame.new(439.730164, 1900.56018, -5559.40967, -0.575096548, 7.02793601e-09, 0.818085551, 1.95856185e-08, 1, 5.17755838e-09, -0.818085551, 1.90003071e-08, -0.575096548),
+            CFrame.new(458.525299, 1900.65515, -5544.83301, -0.705812395, 1.41247432e-08, 0.708398819, -4.1446131e-09, 1, -2.40684521e-08, -0.708398819, -1.9923851e-08, -0.705812395),
+            CFrame.new(473.343903, 1900.66016, -5527.29541, -0.864727378, 5.62911175e-08, 0.502241552, 2.96155207e-08, 1, -6.10896649e-08, -0.502241552, -3.79517573e-08, -0.864727378),
+            CFrame.new(674.678162, 1900.77307, -5642.85889, -0.501198769, -4.59321203e-09, -0.865332186, 2.76936714e-08, 1, -2.13481552e-08, 0.865332186, -3.46638949e-08, -0.501198769),
+            CFrame.new(684.5625, 1900.77307, -5659.90283, -0.43978247, -8.17217494e-09, -0.89810431, 1.08992804e-09, 1, -9.63307478e-09, 0.89810431, -5.21532639e-09, -0.43978247),
+            CFrame.new(658.132263, 1900.77307, -5714.92773, 0.583243549, 1.4201369e-08, 0.812297344, -7.09926411e-08, 1, 3.34909771e-08, -0.812297344, -7.72005322e-08, 0.583243549),
+            CFrame.new(631.639832, 1900.77307, -5735.64697, -0.505768418, -3.81679151e-08, -0.862669289, -1.5043307e-08, 1, -3.54243319e-08, 0.862669289, -4.93910912e-09, -0.505768418)
+        }
+        
+        for _, targetCFrame in ipairs(pintuList) do
+            hrp.CFrame = targetCFrame
+            task.wait(1)
+            interactForDuration(2)
+            task.wait(0.5)
+        end
+        
+        if hrp then
+            hrp.CFrame = saved
+        end
+        task.wait(1)
+        
+        -- Buka pancing kembali
+        openRod()
+        task.wait(1)
+        
+        -- Auto mancing
+        startFishing(RE_FishToggle)
+        task.wait(3)
+    end
+end
+
+-- Tombol Mesin Logic (Jadwal jam 03.00, 06.00, 09.00, 12.00, 15.00, 18.00, 21.00, 00.00)
 BtnMesin.MouseButton1Click:Connect(function()
     isMesin = not isMesin
     BtnMesin.BackgroundTransparency = isMesin and 0 or 0.4
     if isMesin then
         task.spawn(function()
-            -- Eksekusi pertama kali langsung saat diklik
             pcall(runMesinRoutine)
             
-            -- Loop penjadwalan jam berikutnya
             while isMesin do
                 task.wait(1)
                 local timeTable = os.date("*t")
@@ -257,54 +337,33 @@ BtnMesin.MouseButton1Click:Connect(function()
                 local currentMin = timeTable.min
                 local currentSec = timeTable.sec
                 
-                -- Cek apakah sekarang tepat di jam target (0, 3, 6, 9, 12, 15, 18, 21) pada menit 0 detik 0
                 if (currentHour == 0 or currentHour == 3 or currentHour == 6 or currentHour == 9 or currentHour == 12 or currentHour == 15 or currentHour == 18 or currentHour == 21) and currentMin == 0 and currentSec == 0 then
                     pcall(runMesinRoutine)
-                    task.wait(2) -- Jeda agar tidak double trigger di detik yang sama
+                    task.wait(2)
                 end
             end
         end)
     end
 end)
 
--- Pintu Logic
+-- Tombol Pintu Logic (Jadwal jam 06.10, 12.10, 18.10, 00.10)
 BtnPintu.MouseButton1Click:Connect(function()
     isPintu = not isPintu
     BtnPintu.BackgroundTransparency = isPintu and 0 or 0.4
     if isPintu then
         task.spawn(function()
+            pcall(runPintuRoutine)
+            
             while isPintu do
-                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local saved = hrp.CFrame
-                    task.wait(0.5)
-                    
-                    local pintuList = {
-                        CFrame.new(439.730164, 1900.56018, -5559.40967, -0.575096548, 7.02793601e-09, 0.818085551, 1.95856185e-08, 1, 5.17755838e-09, -0.818085551, 1.90003071e-08, -0.575096548),
-                        CFrame.new(458.525299, 1900.65515, -5544.83301, -0.705812395, 1.41247432e-08, 0.708398819, -4.1446131e-09, 1, -2.40684521e-08, -0.708398819, -1.9923851e-08, -0.705812395),
-                        CFrame.new(473.343903, 1900.66016, -5527.29541, -0.864727378, 5.62911175e-08, 0.502241552, 2.96155207e-08, 1, -6.10896649e-08, -0.502241552, -3.79517573e-08, -0.864727378),
-                        CFrame.new(674.678162, 1900.77307, -5642.85889, -0.501198769, -4.59321203e-09, -0.865332186, 2.76936714e-08, 1, -2.13481552e-08, 0.865332186, -3.46638949e-08, -0.501198769),
-                        CFrame.new(684.5625, 1900.77307, -5659.90283, -0.43978247, -8.17217494e-09, -0.89810431, 1.08992804e-09, 1, -9.63307478e-09, 0.89810431, -5.21532639e-09, -0.43978247),
-                        CFrame.new(658.132263, 1900.77307, -5714.92773, 0.583243549, 1.4201369e-08, 0.812297344, -7.09926411e-08, 1, 3.34909771e-08, -0.812297344, -7.72005322e-08, 0.583243549),
-                        CFrame.new(631.639832, 1900.77307, -5735.64697, -0.505768418, -3.81679151e-08, -0.862669289, -1.5043307e-08, 1, -3.54243319e-08, 0.862669289, -4.93910912e-09, -0.505768418)
-                    }
-                    
-                    for _, targetCFrame in ipairs(pintuList) do
-                        if not isPintu then break end
-                        hrp.CFrame = targetCFrame
-                        task.wait(1)
-                        interactForDuration(2)
-                        task.wait(0.5)
-                    end
-                    
-                    if hrp and isPintu then
-                        hrp.CFrame = saved
-                    end
-                end
+                task.wait(1)
+                local timeTable = os.date("*t")
+                local currentHour = timeTable.hour
+                local currentMin = timeTable.min
+                local currentSec = timeTable.sec
                 
-                for i = 7260, 1, -1 do
-                    if not isPintu then break end
-                    task.wait(1)
+                if (currentHour == 0 or currentHour == 6 or currentHour == 12 or currentHour == 18) and currentMin == 10 and currentSec == 0 then
+                    pcall(runPintuRoutine)
+                    task.wait(2)
                 end
             end
         end)

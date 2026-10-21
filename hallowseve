@@ -162,13 +162,12 @@ CloseBtn.TextSize = 16
 CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
-local isFishing = false
+-- State Variables
 local isMesin = false
 local isPintu = false
-local isFishingPaused = false
 
 local function resetAll()
-    isFishing = false; isMesin = false; isPintu = false; isFishingPaused = false
+    isMesin = false; isPintu = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -199,73 +198,76 @@ BtnPintu.Position = UDim2.new(0, 115, 0, 45)
 BtnPintu.Text = "PINTU"
 styleBtn(BtnPintu, 9)
 
+-- Helper Fungsi Jalankan Mesin
+local function runMesinRoutine()
+    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local saved = hrp.CFrame
+        task.wait(0.5)
+        
+        -- Teleport ke lokasi mesin
+        hrp.CFrame = CFrame.new(542.045593, 1899.39062, -5635.92188, -0.998666584, 0, -0.0516242422, 0, 1, 0, 0.0516242422, 0, -0.998666584)
+        task.wait(1.5)
+        
+        -- Tutup pancing
+        closeRod()
+        task.wait(1)
+        
+        -- Fragment 1 (Biru)
+        openFragment1()
+        interactForDuration(3)
+        task.wait(1)
+        closeFragment1()
+        task.wait(1)
+        
+        -- Fragment 2 (Kuning)
+        openFragment2()
+        interactForDuration(4)
+        task.wait(1)
+        closeFragment2()
+        task.wait(1)
+        
+        -- Fragment 3 (Ungu)
+        openFragment3()
+        interactForDuration(5)
+        task.wait(1)
+        closeFragment3()
+        task.wait(1)
+        
+        -- Balik ke tempat save
+        if hrp then hrp.CFrame = saved end
+        task.wait(1)
+    end
+end
+
+-- Mesin Logic (Eksekusi pertama langsung, lalu tunggu jadwal jam 03.00, 06.00, 09.00, 12.00, 15.00, 18.00, 21.00, 00.00)
 BtnMesin.MouseButton1Click:Connect(function()
     isMesin = not isMesin
     BtnMesin.BackgroundTransparency = isMesin and 0 or 0.4
     if isMesin then
         task.spawn(function()
-            local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
+            -- Eksekusi pertama kali langsung saat diklik
+            pcall(runMesinRoutine)
             
+            -- Loop penjadwalan jam berikutnya
             while isMesin do
-                local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local wasFishingActive = isFishing
-                    if wasFishingActive then
-                        isFishingPaused = true
-                        pcall(function()
-                            RE_FishToggle:FireServer(false)
-                        end)
-                        task.wait(3)
-                    end
-                    
-                    local saved = hrp.CFrame
-                    task.wait(0.5)
-                    
-                    hrp.CFrame = CFrame.new(542.045593, 1899.39062, -5635.92188, -0.998666584, 0, -0.0516242422, 0, 1, 0, 0.0516242422, 0, -0.998666584)
-                    task.wait(1.5)
-                    
-                    closeRod()
-                    task.wait(1)
-                    
-                    openFragment1()
-                    interactForDuration(3)
-                    task.wait(1)
-                    closeFragment1()
-                    task.wait(1)
-                    
-                    openFragment2()
-                    interactForDuration(4)
-                    task.wait(1)
-                    closeFragment2()
-                    task.wait(1)
-                    
-                    openFragment3()
-                    interactForDuration(5)
-                    task.wait(1)
-                    closeFragment3()
-                    task.wait(1)
-                    
-                    if hrp then hrp.CFrame = saved end
-                    task.wait(1)
-                    
-                    if wasFishingActive and isFishing then
-                        pcall(function()
-                            RE_FishToggle:FireServer(true)
-                        end)
-                        task.wait(3)
-                        isFishingPaused = false
-                    end
-                end
+                task.wait(1)
+                local timeTable = os.date("*t")
+                local currentHour = timeTable.hour
+                local currentMin = timeTable.min
+                local currentSec = timeTable.sec
                 
-                for i = 7260, 1, -1 do
-                    if not isMesin then break end
-                    task.wait(1)
+                -- Cek apakah sekarang tepat di jam target (0, 3, 6, 9, 12, 15, 18, 21) pada menit 0 detik 0
+                if (currentHour == 0 or currentHour == 3 or currentHour == 6 or currentHour == 9 or currentHour == 12 or currentHour == 15 or currentHour == 18 or currentHour == 21) and currentMin == 0 and currentSec == 0 then
+                    pcall(runMesinRoutine)
+                    task.wait(2) -- Jeda agar tidak double trigger di detik yang sama
                 end
             end
         end)
     end
 end)
 
+-- Pintu Logic
 BtnPintu.MouseButton1Click:Connect(function()
     isPintu = not isPintu
     BtnPintu.BackgroundTransparency = isPintu and 0 or 0.4
@@ -310,48 +312,11 @@ BtnPintu.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 3. TOMBOL & LOGIKA (BARIS TENGAH)
--- ==========================================
-local BtnFishing = Instance.new("TextButton", MainFrame)
-BtnFishing.Size = UDim2.new(0, 200, 0, 28)
-BtnFishing.Position = UDim2.new(0, 10, 0, 80)
-BtnFishing.Text = "FISHING"
-styleBtn(BtnFishing, 9)
-
-BtnFishing.MouseButton1Click:Connect(function()
-    isFishing = not isFishing
-    BtnFishing.BackgroundTransparency = isFishing and 0 or 0.4
-    if isFishing then
-        task.spawn(function()
-            local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
-            
-            pcall(function()
-                RE_FishToggle:FireServer(true)
-            end)
-            
-            while isFishing do
-                if not isFishingPaused then
-                    pcall(function()
-                        RE_FishToggle:FireServer(true)
-                    end)
-                end
-                task.wait(1)
-            end
-        end)
-    else
-        pcall(function()
-            local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
-            RE_FishToggle:FireServer(false)
-        end)
-    end
-end)
-
--- ==========================================
--- 4. TOMBOL TELEPORT (BARIS BAWAH)
+-- 3. TOMBOL TELEPORT (BARIS BAWAH)
 -- ==========================================
 local BtnTeleportEve = Instance.new("TextButton", MainFrame)
 BtnTeleportEve.Size = UDim2.new(0, 200, 0, 28)
-BtnTeleportEve.Position = UDim2.new(0, 10, 0, 118)
+BtnTeleportEve.Position = UDim2.new(0, 10, 0, 80)
 BtnTeleportEve.Text = "TELEPORT EVE"
 styleBtn(BtnTeleportEve, 10)
 

@@ -224,7 +224,6 @@ local function runMesinRoutine()
         local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
         
         -- Stop mancing
-        stopFishing(RE_FishToggle)
         task.wait(3)
         
         local saved = hrp.CFrame
@@ -261,14 +260,13 @@ local function runMesinRoutine()
         
         -- Buka pancing kembali
         openRod()
-        task.wait(1)
+        task.wait(2)
         
         -- Balik ke tempat save
         if hrp then hrp.CFrame = saved end
         task.wait(1)
         
         -- Auto mancing
-        startFishing(RE_FishToggle)
         task.wait(3)
     end
 end
@@ -280,7 +278,6 @@ local function runPintuRoutine()
         local RE_FishToggle = Net:WaitForChild("RE/5302d60da4609e2b0fe4bb8395344962c66affb5106215c264313ba195278fc4")
         
         -- Stop mancing
-        stopFishing(RE_FishToggle)
         task.wait(3)
         
         -- Tutup pancing
@@ -317,7 +314,6 @@ local function runPintuRoutine()
         task.wait(1)
         
         -- Auto mancing
-        startFishing(RE_FishToggle)
         task.wait(3)
     end
 end

@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL FIXED) ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -141,12 +141,22 @@ CloseBtn.TextSize = 14
 CloseBtn.Font = Enum.Font.GothamBold
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- State Variables
+-- State Variables (Toggle System)
 local isMesin = false
 local isPintu = false
+local isMakam = false
+local isPotion = false
+local isEmote = false
+local isTPMerah = false
+local isTPKuning = false
+local isTPBiru = false
+
+-- Global Busy Lock / Mutex System untuk Mencegah Bentrok Antar Routine
+local isRoutineRunning = false
 
 local function resetAll()
-    isMesin = false; isPintu = false
+    isMesin = false; isPintu = false; isMakam = false; isPotion = false; isEmote = false; isTPMerah = false; isTPKuning = false; isTPBiru = false
+    isRoutineRunning = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -198,7 +208,7 @@ BtnEmote.Position = UDim2.new(0, 115, 0, 71)
 BtnEmote.Text = "EMOTE"
 styleBtn(BtnEmote, 9)
 
--- Baris 3: TP Merah, TP Kuning, TP Biru (Berjajar 3 dalam 1 baris)
+-- Baris 3: TP Merah, TP Kuning, TP Biru
 local BtnTPMerah = Instance.new("TextButton", MainFrame)
 BtnTPMerah.Size = UDim2.new(0, 62, 0, 26)
 BtnTPMerah.Position = UDim2.new(0, 10, 0, 102)
@@ -218,220 +228,243 @@ BtnTPBiru.Text = "TP BIRU"
 styleBtn(BtnTPBiru, 7)
 
 -- ==========================================
--- 3. ROUTINE LOGIC
+-- 3. ROUTINE LOGIC DENGAN SISTEM ANTREAN (QUEUE / MUTEX)
 -- ==========================================
 
+-- Wrapper aman agar jika routine lain sedang jalan, routine baru menunggu hingga selesai
+local function executeSafely(routineFunc)
+    while isRoutineRunning do
+        task.wait(2) -- Cek berkala setiap 2 detik jika karakter sedang sibuk
+    end
+    isRoutineRunning = true
+    local success, err = pcall(routineFunc)
+    isRoutineRunning = false
+    if not success then
+        warn("Routine Error: ", err)
+    end
+end
+
 local function runMesinRoutine()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        task.wait(3)
-        local saved = hrp.CFrame
-        task.wait(0.5)
-        
-        hrp.CFrame = CFrame.new(541.777344, 1899.38269, -5636.19141, -0.999005139, 7.20814208e-09, 0.0445950069, 6.24161789e-09, 1, -2.18126104e-08, -0.0445950069, -2.1512566e-08, -0.999005139)
-        task.wait(1.5)
-        
-        closeRod()
-        task.wait(1)
-        
-        openFragment(2)
-        interactForDuration(3)
-        task.wait(1)
-        closeFragment()
-        task.wait(1)
-        
-        openFragment(3)
-        interactForDuration(4)
-        task.wait(1)
-        closeFragment()
-        task.wait(1)
-        
-        openFragment(4)
-        interactForDuration(5)
-        task.wait(1)
-        closeFragment()
-        task.wait(1)
-        
-        openRod()
-        task.wait(2)
-        
-        if hrp then hrp.CFrame = saved end
-        task.wait(1)
-        task.wait(3)
-    end
+    executeSafely(function()
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            task.wait(3)
+            local saved = hrp.CFrame
+            task.wait(0.5)
+            
+            hrp.CFrame = CFrame.new(541.777344, 1899.38269, -5636.19141, -0.999005139, 7.20814208e-09, 0.0445950069, 6.24161789e-09, 1, -2.18126104e-08, -0.0445950069, -2.1512566e-08, -0.999005139)
+            task.wait(1.5)
+            
+            closeRod()
+            task.wait(1)
+            
+            openFragment(2)
+            interactForDuration(3)
+            task.wait(1)
+            closeFragment()
+            task.wait(1)
+            
+            openFragment(3)
+            interactForDuration(4)
+            task.wait(1)
+            closeFragment()
+            task.wait(1)
+            
+            openFragment(4)
+            interactForDuration(5)
+            task.wait(1)
+            closeFragment()
+            task.wait(1)
+            
+            openRod()
+            task.wait(2)
+            
+            if hrp then hrp.CFrame = saved end
+            task.wait(1)
+            task.wait(3)
+        end
+    end)
 end
 
--- Routine Pintu (TP dulu -> Jeda 5 detik -> Klik klik)
+-- Routine Pintu (TP dulu -> Klik klik -> Jeda 5 detik)
 local function runPintuRoutine()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        task.wait(3)
-        closeRod()
-        task.wait(1)
-        
-        local saved = hrp.CFrame
-        task.wait(0.5)
-        
-        local pintuList = {
-            CFrame.new(439.730164, 1900.56018, -5559.40967, -0.575096548, 7.02793601e-09, 0.818085551, 1.95856185e-08, 1, 5.17755838e-09, -0.818085551, 1.90003071e-08, -0.575096548),
-            CFrame.new(458.525299, 1900.65515, -5544.83301, -0.705812395, 1.41247432e-08, 0.708398819, -4.1446131e-09, 1, -2.40684521e-08, -0.708398819, -1.9923851e-08, -0.705812395),
-            CFrame.new(473.343903, 1900.66016, -5527.29541, -0.864727378, 5.62911175e-08, 0.502241552, 2.96155207e-08, 1, -6.10896649e-08, -0.502241552, -3.79517573e-08, -0.864727378),
-            CFrame.new(674.678162, 1900.77307, -5642.85889, -0.501198769, -4.59321203e-09, -0.865332186, 2.76936714e-08, 1, -2.13481552e-08, 0.865332186, -3.46638949e-08, -0.501198769),
-            CFrame.new(684.5625, 1900.77307, -5659.90283, -0.43978247, -8.17217494e-09, -0.89810431, 1.08992804e-09, 1, -9.63307478e-09, 0.89810431, -5.21532639e-09, -0.43978247),
-            CFrame.new(658.132263, 1900.77307, -5714.92773, 0.583243549, 1.4201369e-08, 0.812297344, -7.09926411e-08, 1, 3.34909771e-08, -0.812297344, -7.72005322e-08, 0.583243549),
-            CFrame.new(631.639832, 1900.77307, -5735.64697, -0.505768418, -3.81679151e-08, -0.862669289, -1.5043307e-08, 1, -3.54243319e-08, 0.862669289, -4.93910912e-09, -0.505768418)
-        }
-        
-        for _, targetCFrame in ipairs(pintuList) do
-            hrp.CFrame = targetCFrame
-            task.wait(5) -- Jeda 5 detik dulu setelah TP
-            interactForDuration(2) -- Baru klik-klik
+    executeSafely(function()
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            task.wait(3)
+            closeRod()
+            task.wait(1)
+            
+            local saved = hrp.CFrame
             task.wait(0.5)
+            
+            local pintuList = {
+                CFrame.new(439.730164, 1900.56018, -5559.40967, -0.575096548, 7.02793601e-09, 0.818085551, 1.95856185e-08, 1, 5.17755838e-09, -0.818085551, 1.90003071e-08, -0.575096548),
+                CFrame.new(458.525299, 1900.65515, -5544.83301, -0.705812395, 1.41247432e-08, 0.708398819, -4.1446131e-09, 1, -2.40684521e-08, -0.708398819, -1.9923851e-08, -0.705812395),
+                CFrame.new(473.343903, 1900.66016, -5527.29541, -0.864727378, 5.62911175e-08, 0.502241552, 2.96155207e-08, 1, -6.10896649e-08, -0.502241552, -3.79517573e-08, -0.864727378),
+                CFrame.new(674.678162, 1900.77307, -5642.85889, -0.501198769, -4.59321203e-09, -0.865332186, 2.76936714e-08, 1, -2.13481552e-08, 0.865332186, -3.46638949e-08, -0.501198769),
+                CFrame.new(684.5625, 1900.77307, -5659.90283, -0.43978247, -8.17217494e-09, -0.89810431, 1.08992804e-09, 1, -9.63307478e-09, 0.89810431, -5.21532639e-09, -0.43978247),
+                CFrame.new(658.132263, 1900.77307, -5714.92773, 0.583243549, 1.4201369e-08, 0.812297344, -7.09926411e-08, 1, 3.34909771e-08, -0.812297344, -7.72005322e-08, 0.583243549),
+                CFrame.new(631.639832, 1900.77307, -5735.64697, -0.505768418, -3.81679151e-08, -0.862669289, -1.5043307e-08, 1, -3.54243319e-08, 0.862669289, -4.93910912e-09, -0.505768418)
+            }
+            
+            for _, targetCFrame in ipairs(pintuList) do
+                hrp.CFrame = targetCFrame
+                task.wait(0.5)
+                interactForDuration(2) -- Klik-klik dulu
+                task.wait(5) -- Baru jeda 5 detik
+            end
+            
+            if hrp then hrp.CFrame = saved end
+            task.wait(1)
+            openRod()
+            task.wait(1)
+            task.wait(3)
         end
-        
-        if hrp then hrp.CFrame = saved end
-        task.wait(1)
-        openRod()
-        task.wait(1)
-        task.wait(3)
-    end
+    end)
 end
 
--- Routine Makam (TP dulu -> Jeda 5 detik -> Klik klik)
+-- Routine Makam (TP dulu -> Klik klik -> Jeda 5 detik)
 local function runMakamRoutine()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        task.wait(3)
-        closeRod()
-        task.wait(1)
-        
-        local saved = hrp.CFrame
-        task.wait(0.5)
-        
-        local makamList = {
-            CFrame.new(593.397339, 1924.37524, -5276.96484, -0.572416306, 2.41881626e-08, -0.819963157, -5.11063512e-08, 1, 6.51764296e-08, 0.819963157, 7.9213379e-08, -0.572416306),
-            CFrame.new(435.007416, 1909.39771, -5253.76123, -0.686829329, -4.04268619e-08, 0.72681874, -1.49570241e-08, 1, 4.14875672e-08, -0.72681874, 1.76238313e-08, -0.686829329),
-            CFrame.new(423.573822, 1909.56543, -5256.41504, -0.580412328, -3.78104374e-08, 0.81432271, -1.99335464e-08, 1, 3.22240297e-08, -0.81432271, 2.47088416e-09, -0.580412328),
-            CFrame.new(412.888092, 1909.46216, -5259.17725, -0.897205353, 1.25690454e-08, 0.441613615, 1.05962457e-08, 1, -6.93374691e-09, -0.441613615, -1.54154844e-09, -0.897205353),
-            CFrame.new(455.766571, 1924.26025, -5217.18408, -0.828657568, 1.22242207e-08, -0.559755862, 2.79825585e-08, 1, -1.95866434e-08, 0.559755862, -3.18940216e-08, -0.828657568),
-            CFrame.new(451.205109, 1924.48303, -5210.38721, -0.602180064, -5.61886218e-08, -0.798360288, -5.09004785e-08, 1, -3.19872697e-08, 0.798360288, 2.13748255e-08, -0.602180064),
-            CFrame.new(444.818848, 1924.49854, -5205.60645, -0.719240546, 2.22584884e-09, -0.694761157, 4.45422055e-09, 1, -1.40740031e-09, 0.694761157, -4.10687884e-09, -0.719240546),
-            CFrame.new(417.785461, 1925.0592, -5209.89941, -0.0657628104, -1.91630765e-08, 0.997835279, -1.9948537e-08, 1, 1.78899313e-08, -0.997835279, -1.8728862e-08, -0.0657628104),
-            CFrame.new(429.240082, 1931.4635, -5149.85156, -0.298677117, 4.19666328e-08, -0.954354227, 7.39893053e-08, 1, 2.08179731e-08, 0.954354227, -6.43941576e-08, -0.298677117),
-            CFrame.new(503.395386, 1957.94824, -5055.99121, -0.998013854, -2.06828332e-08, 0.0629949197, -2.15889244e-08, 1, -1.37028922e-08, -0.0629949197, -1.50356687e-08, -0.998013854),
-            CFrame.new(532.553711, 1915.91296, -5102.96582, -0.638146341, -3.36787238e-08, 0.769915104, -6.53487362e-08, 1, -1.04210587e-08, -0.769915104, -5.69631382e-08, -0.638146341),
-            CFrame.new(535.572144, 1916.47351, -5097.56152, -0.941393614, -8.38487113e-10, -0.337310016, -6.6811473e-10, 1, -6.2117389e-10, 0.337310016, -3.59407365e-10, -0.941393614),
-            CFrame.new(540.869446, 1915.94482, -5093.396, -0.994351983, -1.24615269e-08, -0.10613241, -1.55677871e-08, 1, 2.84393202e-08, 0.10613241, 2.99309413e-08, -0.994351983),
-            CFrame.new(545.877686, 1916.0094, -5093.73291, -0.989742517, 4.32245066e-08, -0.142862573, 4.79622564e-08, 1, -2.97193097e-08, 0.142862573, -3.62664778e-08, -0.989742517),
-            CFrame.new(561.036255, 1915.93896, -5094.9541, -0.997978687, 4.94000574e-08, 0.0635494888, 4.48824267e-08, 1, -7.25159595e-08, -0.0635494888, -6.95171281e-08, -0.997978687),
-            CFrame.new(568.047363, 1915.41626, -5093.73486, -0.894180059, -4.39039844e-08, 0.447707564, -2.56940496e-08, 1, 4.67467629e-08, -0.447707564, 3.02966008e-08, -0.894180059),
-            CFrame.new(607.182251, 1915.45703, -5104.13965, -0.9230178, 9.59989199e-10, -0.384757251, -2.86835764e-08, 1, 7.13058412e-08, 0.384757251, 7.68527784e-08, -0.9230178),
-            CFrame.new(616.689148, 1916.08228, -5106.021, -0.9995839, 4.24203108e-08, 0.0288443472, 4.09896757e-08, 1, -5.01897155e-08, -0.0288443472, -4.89865108e-08, -0.9995839),
-            CFrame.new(628.819763, 1916.03564, -5104.26709, -0.995445013, 3.64564912e-08, 0.0953375325, 3.44846462e-08, 1, -2.233039e-08, -0.0953375325, -1.89409946e-08, -0.995445013),
-            CFrame.new(636.345764, 1915.8075, -5102.43848, -0.977592349, 5.10314244e-08, 0.210506991, 4.82761671e-08, 1, -1.82274782e-08, -0.210506991, -7.65657315e-09, -0.977592349),
-            CFrame.new(645.559814, 1915.87683, -5099.30811, -0.975813568, 2.94604341e-08, 0.218604505, 2.9298894e-08, 1, -3.98059408e-09, -0.218604505, 2.52055243e-09, -0.975813568),
-            CFrame.new(618.759338, 1915.50452, -5150.62598, 0.0145487031, 3.13658894e-08, -0.999894142, 5.04630071e-09, 1, 3.14426352e-08, 0.999894142, -5.50321611e-09, 0.0145487031),
-            CFrame.new(620.685669, 1915.85376, -5158.27393, -0.0832260177, -2.01145536e-08, -0.996530712, -2.83972952e-08, 1, -1.78129582e-08, 0.996530712, 2.68162754e-08, -0.0832260177),
-            CFrame.new(620.096985, 1915.57471, -5163.9126, 0.215251923, -1.10725608e-07, -0.976558566, -1.74134076e-08, 1, -1.17221724e-07, 0.976558566, 4.22374136e-08, 0.215251923)
-        }
-        
-        for _, targetCFrame in ipairs(makamList) do
-            hrp.CFrame = targetCFrame
-            task.wait(5) -- Jeda 5 detik dulu setelah TP
-            interactForDuration(2) -- Baru klik-klik
+    executeSafely(function()
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            task.wait(3)
+            closeRod()
+            task.wait(1)
+            
+            local saved = hrp.CFrame
             task.wait(0.5)
+            
+            local makamList = {
+                CFrame.new(593.397339, 1924.37524, -5276.96484, -0.572416306, 2.41881626e-08, -0.819963157, -5.11063512e-08, 1, 6.51764296e-08, 0.819963157, 7.9213379e-08, -0.572416306),
+                CFrame.new(435.007416, 1909.39771, -5253.76123, -0.686829329, -4.04268619e-08, 0.72681874, -1.49570241e-08, 1, 4.14875672e-08, -0.72681874, 1.76238313e-08, -0.686829329),
+                CFrame.new(423.573822, 1909.56543, -5256.41504, -0.580412328, -3.78104374e-08, 0.81432271, -1.99335464e-08, 1, 3.22240297e-08, -0.81432271, 2.47088416e-09, -0.580412328),
+                CFrame.new(412.888092, 1909.46216, -5259.17725, -0.897205353, 1.25690454e-08, 0.441613615, 1.05962457e-08, 1, -6.93374691e-09, -0.441613615, -1.54154844e-09, -0.897205353),
+                CFrame.new(455.766571, 1924.26025, -5217.18408, -0.828657568, 1.22242207e-08, -0.559755862, 2.79825585e-08, 1, -1.95866434e-08, 0.559755862, -3.18940216e-08, -0.828657568),
+                CFrame.new(451.205109, 1924.48303, -5210.38721, -0.602180064, -5.61886218e-08, -0.798360288, -5.09004785e-08, 1, -3.19872697e-08, 0.798360288, 2.13748255e-08, -0.602180064),
+                CFrame.new(444.818848, 1924.49854, -5205.60645, -0.719240546, 2.22584884e-09, -0.694761157, 4.45422055e-09, 1, -1.40740031e-09, 0.694761157, -4.10687884e-09, -0.719240546),
+                CFrame.new(417.785461, 1925.0592, -5209.89941, -0.0657628104, -1.91630765e-08, 0.997835279, -1.9948537e-08, 1, 1.78899313e-08, -0.997835279, -1.8728862e-08, -0.0657628104),
+                CFrame.new(429.240082, 1931.4635, -5149.85156, -0.298677117, 4.19666328e-08, -0.954354227, 7.39893053e-08, 1, 2.08179731e-08, 0.954354227, -6.43941576e-08, -0.298677117),
+                CFrame.new(503.395386, 1957.94824, -5055.99121, -0.998013854, -2.06828332e-08, 0.0629949197, -2.15889244e-08, 1, -1.37028922e-08, -0.0629949197, -1.50356687e-08, -0.998013854),
+                CFrame.new(532.553711, 1915.91296, -5102.96582, -0.638146341, -3.36787238e-08, 0.769915104, -6.53487362e-08, 1, -1.04210587e-08, -0.769915104, -5.69631382e-08, -0.638146341),
+                CFrame.new(535.572144, 1916.47351, -5097.56152, -0.941393614, -8.38487113e-10, -0.337310016, -6.6811473e-10, 1, -6.2117389e-10, 0.337310016, -3.59407365e-10, -0.941393614),
+                CFrame.new(540.869446, 1915.94482, -5093.396, -0.994351983, -1.24615269e-08, -0.10613241, -1.55677871e-08, 1, 2.84393202e-08, 0.10613241, 2.99309413e-08, -0.994351983),
+                CFrame.new(545.877686, 1916.0094, -5093.73291, -0.989742517, 4.32245066e-08, -0.142862573, 4.79622564e-08, 1, -2.97193097e-08, 0.142862573, -3.62664778e-08, -0.989742517),
+                CFrame.new(561.036255, 1915.93896, -5094.9541, -0.997978687, 4.94000574e-08, 0.0635494888, 4.48824267e-08, 1, -7.25159595e-08, -0.0635494888, -6.95171281e-08, -0.997978687),
+                CFrame.new(568.047363, 1915.41626, -5093.73486, -0.894180059, -4.39039844e-08, 0.447707564, -2.56940496e-08, 1, 4.67467629e-08, -0.447707564, 3.02966008e-08, -0.894180059),
+                CFrame.new(607.182251, 1915.45703, -5104.13965, -0.9230178, 9.59989199e-10, -0.384757251, -2.86835764e-08, 1, 7.13058412e-08, 0.384757251, 7.68527784e-08, -0.9230178),
+                CFrame.new(616.689148, 1916.08228, -5106.021, -0.9995839, 4.24203108e-08, 0.0288443472, 4.09896757e-08, 1, -5.01897155e-08, -0.0288443472, -4.89865108e-08, -0.9995839),
+                CFrame.new(628.819763, 1916.03564, -5104.26709, -0.995445013, 3.64564912e-08, 0.0953375325, 3.44846462e-08, 1, -2.233039e-08, -0.0953375325, -1.89409946e-08, -0.995445013),
+                CFrame.new(636.345764, 1915.8075, -5102.43848, -0.977592349, 5.10314244e-08, 0.210506991, 4.82761671e-08, 1, -1.82274782e-08, -0.210506991, -7.65657315e-09, -0.977592349),
+                CFrame.new(645.559814, 1915.87683, -5099.30811, -0.975813568, 2.94604341e-08, 0.218604505, 2.9298894e-08, 1, -3.98059408e-09, -0.218604505, 2.52055243e-09, -0.975813568),
+                CFrame.new(618.759338, 1915.50452, -5150.62598, 0.0145487031, 3.13658894e-08, -0.999894142, 5.04630071e-09, 1, 3.14426352e-08, 0.999894142, -5.50321611e-09, 0.0145487031),
+                CFrame.new(620.685669, 1915.85376, -5158.27393, -0.0832260177, -2.01145536e-08, -0.996530712, -2.83972952e-08, 1, -1.78129582e-08, 0.996530712, 2.68162754e-08, -0.0832260177),
+                CFrame.new(620.096985, 1915.57471, -5163.9126, 0.215251923, -1.10725608e-07, -0.976558566, -1.74134076e-08, 1, -1.17221724e-07, 0.976558566, 4.22374136e-08, 0.215251923)
+            }
+            
+            for _, targetCFrame in ipairs(makamList) do
+                hrp.CFrame = targetCFrame
+                task.wait(0.5)
+                interactForDuration(2) -- Klik-klik dulu
+                task.wait(5) -- Baru jeda 5 detik
+            end
+            
+            if hrp then hrp.CFrame = saved end
+            task.wait(1)
+            openRod()
+            task.wait(1)
+            task.wait(3)
         end
-        
-        if hrp then hrp.CFrame = saved end
-        task.wait(1)
-        openRod()
-        task.wait(1)
-        task.wait(3)
-    end
+    end)
 end
 
 -- Routine Potion
 local function runPotionRoutine()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        task.wait(3)
-        local saved = hrp.CFrame
-        task.wait(0.5)
-        
-        hrp.CFrame = CFrame.new(495.260895, 1923.92969, -5282.64648, -0.0340240523, -2.72505951e-09, 0.999421, -7.85446153e-10, 1, 2.69989875e-09, -0.999421, -6.93129942e-10, -0.0340240523)
-        task.wait(1.5)
-        
-        closeRod()
-        task.wait(1)
-        
-        openFragment(4)
-        interactForDuration(4)
-        task.wait(1)
-        closeFragment()
-        task.wait(1)
-        
-        openFragment(5)
-        interactForDuration(4)
-        task.wait(1)
-        closeFragment()
-        task.wait(1)
-        
-        openRod()
-        task.wait(2)
-        
-        if hrp then hrp.CFrame = saved end
-        task.wait(1)
-        task.wait(3)
-    end
+    executeSafely(function()
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            task.wait(3)
+            local saved = hrp.CFrame
+            task.wait(0.5)
+            
+            hrp.CFrame = CFrame.new(495.260895, 1923.92969, -5282.64648, -0.0340240523, -2.72505951e-09, 0.999421, -7.85446153e-10, 1, 2.69989875e-09, -0.999421, -6.93129942e-10, -0.0340240523)
+            task.wait(1.5)
+            
+            closeRod()
+            task.wait(1)
+            
+            openFragment(4)
+            interactForDuration(4)
+            task.wait(1)
+            closeFragment()
+            task.wait(1)
+            
+            openFragment(5)
+            interactForDuration(4)
+            task.wait(1)
+            closeFragment()
+            task.wait(1)
+            
+            openRod()
+            task.wait(2)
+            
+            if hrp then hrp.CFrame = saved end
+            task.wait(1)
+            task.wait(3)
+        end
+    end)
 end
 
 -- Routine Emote
 local function runEmoteRoutine()
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        repeatActionForDuration(2, function() closeRod() end)
-        task.wait(1)
-        
-        local saved = hrp.CFrame
-        task.wait(1)
-        
-        hrp.CFrame = CFrame.new(557.78595, 1923.92798, -5255.62842, -0.953622997, 1.10437783e-08, -0.301003665, -2.22137402e-08, 1, 1.07066178e-07, 0.301003665, 1.08787184e-07, -0.953622997)
-        task.wait(2)
-        
-        Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 1, 1}))
-        task.wait(2)
-        
-        Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 1, 2}))
-        task.wait(2)
-        
-        local tpList = {
-            CFrame.new(554.129395, 1920.79871, -5127.52295, 0.416369528, -2.33246542e-08, -0.909195483, -2.18992842e-08, 1, -3.56830263e-08, 0.909195483, 3.47680533e-08, 0.416369528),
-            CFrame.new(617.141907, 1916.47388, -5169.96289, 0.487637222, -5.10648164e-08, 0.873046339, -2.15711076e-08, 1, 7.05388601e-08, -0.873046339, -5.32299502e-08, 0.487637222),
-            CFrame.new(520.997009, 1920.95605, -5146.67725, 0.771988332, -1.21853034e-08, -0.635636687, -2.52801762e-08, 1, -4.98733073e-08, 0.635636687, 5.45706165e-08, 0.771988332)
-        }
-        hrp.CFrame = tpList[math.random(1, #tpList)]
-        task.wait(2)
-        
-        repeatActionForDuration(2, function() openRod() end)
-        task.wait(60)
-        
-        repeatActionForDuration(2, function() closeRod() end)
-        
-        hrp.CFrame = CFrame.new(557.78595, 1923.92798, -5255.62842, -0.953622997, 1.10437783e-08, -0.301003665, -2.22137402e-08, 1, 1.07066178e-07, 0.301003665, 1.08787184e-07, -0.953622997)
-        task.wait(2)
-        
-        Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 2, 1}))
-        task.wait(2)
-        
-        if hrp then hrp.CFrame = saved end
-        task.wait(1)
-        
-        repeatActionForDuration(2, function() openRod() end)
-    end
+    executeSafely(function()
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            repeatActionForDuration(2, function() closeRod() end)
+            task.wait(1)
+            
+            local saved = hrp.CFrame
+            task.wait(1)
+            
+            hrp.CFrame = CFrame.new(557.78595, 1923.92798, -5255.62842, -0.953622997, 1.10437783e-08, -0.301003665, -2.22137402e-08, 1, 1.07066178e-07, 0.301003665, 1.08787184e-07, -0.953622997)
+            task.wait(2)
+            
+            Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 1, 1}))
+            task.wait(2)
+            
+            Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 1, 2}))
+            task.wait(2)
+            
+            local tpList = {
+                CFrame.new(554.129395, 1920.79871, -5127.52295, 0.416369528, -2.33246542e-08, -0.909195483, -2.18992842e-08, 1, -3.56830263e-08, 0.909195483, 3.47680533e-08, 0.416369528),
+                CFrame.new(617.141907, 1916.47388, -5169.96289, 0.487637222, -5.10648164e-08, 0.873046339, -2.15711076e-08, 1, 7.05388601e-08, -0.873046339, -5.32299502e-08, 0.487637222),
+                CFrame.new(520.997009, 1920.95605, -5146.67725, 0.771988332, -1.21853034e-08, -0.635636687, -2.52801762e-08, 1, -4.98733073e-08, 0.635636687, 5.45706165e-08, 0.771988332)
+            }
+            hrp.CFrame = tpList[math.random(1, #tpList)]
+            task.wait(2)
+            
+            repeatActionForDuration(2, function() openRod() end)
+            task.wait(60)
+            
+            repeatActionForDuration(2, function() closeRod() end)
+            
+            hrp.CFrame = CFrame.new(557.78595, 1923.92798, -5255.62842, -0.953622997, 1.10437783e-08, -0.301003665, -2.22137402e-08, 1, 1.07066178e-07, 0.301003665, 1.08787184e-07, -0.953622997)
+            task.wait(2)
+            
+            Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 2, 1}))
+            task.wait(2)
+            
+            if hrp then hrp.CFrame = saved end
+            task.wait(1)
+            
+            repeatActionForDuration(2, function() openRod() end)
+        end
+    end)
 end
 
 -- ==========================================
--- 4. EVENT CONNECTIONS
+-- 4. EVENT CONNECTIONS (TOGGLE SYSTEM)
 -- ==========================================
 
 BtnMesin.MouseButton1Click:Connect(function()
@@ -472,60 +505,80 @@ BtnPintu.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol Manual dengan efek ubah warna background saat diklik
 BtnMakam.MouseButton1Click:Connect(function()
-    BtnMakam.BackgroundTransparency = 0
-    task.spawn(function()
-        pcall(runMakamRoutine)
-    end)
-    task.wait(0.5)
-    BtnMakam.BackgroundTransparency = 0.4
+    isMakam = not isMakam
+    BtnMakam.BackgroundTransparency = isMakam and 0 or 0.4
+    if isMakam then
+        task.spawn(function()
+            pcall(runMakamRoutine)
+            isMakam = false
+            BtnMakam.BackgroundTransparency = 0.4
+        end)
+    end
 end)
 
 BtnPotion.MouseButton1Click:Connect(function()
-    BtnPotion.BackgroundTransparency = 0
-    task.spawn(function()
-        pcall(runPotionRoutine)
-    end)
-    task.wait(0.5)
-    BtnPotion.BackgroundTransparency = 0.4
+    isPotion = not isPotion
+    BtnPotion.BackgroundTransparency = isPotion and 0 or 0.4
+    if isPotion then
+        task.spawn(function()
+            pcall(runPotionRoutine)
+            isPotion = false
+            BtnPotion.BackgroundTransparency = 0.4
+        end)
+    end
 end)
 
 BtnEmote.MouseButton1Click:Connect(function()
-    BtnEmote.BackgroundTransparency = 0
-    task.spawn(function()
-        pcall(runEmoteRoutine)
-    end)
-    task.wait(0.5)
-    BtnEmote.BackgroundTransparency = 0.4
+    isEmote = not isEmote
+    BtnEmote.BackgroundTransparency = isEmote and 0 or 0.4
+    if isEmote then
+        task.spawn(function()
+            pcall(runEmoteRoutine)
+            isEmote = false
+            BtnEmote.BackgroundTransparency = 0.4
+        end)
+    end
 end)
 
 BtnTPMerah.MouseButton1Click:Connect(function()
-    BtnTPMerah.BackgroundTransparency = 0
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then 
-        hrp.CFrame = CFrame.new(554.129395, 1920.79871, -5127.52295, 0.416369528, -2.33246542e-08, -0.909195483, -2.18992842e-08, 1, -3.56830263e-08, 0.909195483, 3.47680533e-08, 0.416369528)
+    isTPMerah = not isTPMerah
+    BtnTPMerah.BackgroundTransparency = isTPMerah and 0 or 0.4
+    if isTPMerah then
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(554.129395, 1920.79871, -5127.52295, 0.416369528, -2.33246542e-08, -0.909195483, -2.18992842e-08, 1, -3.56830263e-08, 0.909195483, 3.47680533e-08, 0.416369528)
+        end
+        task.wait(0.3)
+        isTPMerah = false
+        BtnTPMerah.BackgroundTransparency = 0.4
     end
-    task.wait(0.3)
-    BtnTPMerah.BackgroundTransparency = 0.4
 end)
 
 BtnTPKuning.MouseButton1Click:Connect(function()
-    BtnTPKuning.BackgroundTransparency = 0
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then 
-        hrp.CFrame = CFrame.new(617.141907, 1916.47388, -5169.96289, 0.487637222, -5.10648164e-08, 0.873046339, -2.15711076e-08, 1, 7.05388601e-08, -0.873046339, -5.32299502e-08, 0.487637222)
+    isTPKuning = not isTPKuning
+    BtnTPKuning.BackgroundTransparency = isTPKuning and 0 or 0.4
+    if isTPKuning then
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(617.141907, 1916.47388, -5169.96289, 0.487637222, -5.10648164e-08, 0.873046339, -2.15711076e-08, 1, 7.05388601e-08, -0.873046339, -5.32299502e-08, 0.487637222)
+        end
+        task.wait(0.3)
+        isTPKuning = false
+        BtnTPKuning.BackgroundTransparency = 0.4
     end
-    task.wait(0.3)
-    BtnTPKuning.BackgroundTransparency = 0.4
 end)
 
 BtnTPBiru.MouseButton1Click:Connect(function()
-    BtnTPBiru.BackgroundTransparency = 0
-    local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then 
-        hrp.CFrame = CFrame.new(520.997009, 1920.95605, -5146.67725, 0.771988332, -1.21853034e-08, -0.635636687, -2.52801762e-08, 1, -4.98733073e-08, 0.635636687, 5.45706165e-08, 0.771988332)
+    isTPBiru = not isTPBiru
+    BtnTPBiru.BackgroundTransparency = isTPBiru and 0 or 0.4
+    if isTPBiru then
+        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if hrp then 
+            hrp.CFrame = CFrame.new(520.997009, 1920.95605, -5146.67725, 0.771988332, -1.21853034e-08, -0.635636687, -2.52801762e-08, 1, -4.98733073e-08, 0.635636687, 5.45706165e-08, 0.771988332)
+        end
+        task.wait(0.3)
+        isTPBiru = false
+        BtnTPBiru.BackgroundTransparency = 0.4
     end
-    task.wait(0.3)
-    BtnTPBiru.BackgroundTransparency = 0.4
 end)

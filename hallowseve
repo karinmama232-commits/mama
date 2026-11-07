@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL UPDATED) ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL FIXED) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -98,7 +98,7 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(253, 243, 226)
 MainFrame.BackgroundTransparency = 0.1
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -135)
-MainFrame.Size = UDim2.new(0, 220, 0, 270)
+MainFrame.Size = UDim2.new(0, 220, 0, 175)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -144,12 +144,9 @@ Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 -- State Variables
 local isMesin = false
 local isPintu = false
-local isMakam = false
-local isPotion = false
-local isEmote = false
 
 local function resetAll()
-    isMesin = false; isPintu = false; isMakam = false; isPotion = false; isEmote = false
+    isMesin = false; isPintu = false
 end
 
 IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
@@ -166,10 +163,10 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. TATA LETAK TOMBOL SESUAI PERMINTAAN
+-- 2. TATA LETAK TOMBOL SESUAI PERMINTAAN EXACT
 -- ==========================================
 
--- Baris 1: Mesin, Pintu, Makam (3 tombol seimbang)
+-- Baris 1: Mesin, Pintu, Makam
 local BtnMesin = Instance.new("TextButton", MainFrame)
 BtnMesin.Size = UDim2.new(0, 62, 0, 26)
 BtnMesin.Position = UDim2.new(0, 10, 0, 40)
@@ -188,7 +185,7 @@ BtnMakam.Position = UDim2.new(0, 148, 0, 40)
 BtnMakam.Text = "MAKAM"
 styleBtn(BtnMakam, 8)
 
--- Baris 2: Potion, Emote (2 tombol seimbang)
+-- Baris 2: Potion, Emote
 local BtnPotion = Instance.new("TextButton", MainFrame)
 BtnPotion.Size = UDim2.new(0, 95, 0, 26)
 BtnPotion.Position = UDim2.new(0, 10, 0, 71)
@@ -201,30 +198,29 @@ BtnEmote.Position = UDim2.new(0, 115, 0, 71)
 BtnEmote.Text = "EMOTE"
 styleBtn(BtnEmote, 9)
 
--- Baris 3: TP Merah, TP Kuning, TP Biru (Full Width ke bawah)
+-- Baris 3: TP Merah, TP Kuning, TP Biru (Berjajar 3 dalam 1 baris)
 local BtnTPMerah = Instance.new("TextButton", MainFrame)
-BtnTPMerah.Size = UDim2.new(0, 200, 0, 26)
+BtnTPMerah.Size = UDim2.new(0, 62, 0, 26)
 BtnTPMerah.Position = UDim2.new(0, 10, 0, 102)
 BtnTPMerah.Text = "TP MERAH"
-styleBtn(BtnTPMerah, 9)
+styleBtn(BtnTPMerah, 7)
 
 local BtnTPKuning = Instance.new("TextButton", MainFrame)
-BtnTPKuning.Size = UDim2.new(0, 200, 0, 26)
-BtnTPKuning.Position = UDim2.new(0, 10, 0, 133)
+BtnTPKuning.Size = UDim2.new(0, 62, 0, 26)
+BtnTPKuning.Position = UDim2.new(0, 79, 0, 102)
 BtnTPKuning.Text = "TP KUNING"
-styleBtn(BtnTPKuning, 9)
+styleBtn(BtnTPKuning, 7)
 
 local BtnTPBiru = Instance.new("TextButton", MainFrame)
-BtnTPBiru.Size = UDim2.new(0, 200, 0, 26)
-BtnTPBiru.Position = UDim2.new(0, 10, 0, 164)
+BtnTPBiru.Size = UDim2.new(0, 62, 0, 26)
+BtnTPBiru.Position = UDim2.new(0, 148, 0, 102)
 BtnTPBiru.Text = "TP BIRU"
-styleBtn(BtnTPBiru, 9)
+styleBtn(BtnTPBiru, 7)
 
 -- ==========================================
 -- 3. ROUTINE LOGIC
 -- ==========================================
 
--- Routine Mesin
 local function runMesinRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -265,7 +261,7 @@ local function runMesinRoutine()
     end
 end
 
--- Routine Pintu (Jeda 5 detik setiap TP)
+-- Routine Pintu (TP dulu -> Jeda 5 detik -> Klik klik)
 local function runPintuRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -288,8 +284,8 @@ local function runPintuRoutine()
         
         for _, targetCFrame in ipairs(pintuList) do
             hrp.CFrame = targetCFrame
-            task.wait(5) -- Diubah menjadi 5 detik
-            interactForDuration(2)
+            task.wait(5) -- Jeda 5 detik dulu setelah TP
+            interactForDuration(2) -- Baru klik-klik
             task.wait(0.5)
         end
         
@@ -301,7 +297,7 @@ local function runPintuRoutine()
     end
 end
 
--- Routine Makam (Jeda 5 detik setiap TP)
+-- Routine Makam (TP dulu -> Jeda 5 detik -> Klik klik)
 local function runMakamRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -341,8 +337,8 @@ local function runMakamRoutine()
         
         for _, targetCFrame in ipairs(makamList) do
             hrp.CFrame = targetCFrame
-            task.wait(5) -- Diubah menjadi 5 detik
-            interactForDuration(2)
+            task.wait(5) -- Jeda 5 detik dulu setelah TP
+            interactForDuration(2) -- Baru klik-klik
             task.wait(0.5)
         end
         
@@ -476,41 +472,60 @@ BtnPintu.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Tombol Manual dengan efek ubah warna background saat diklik
 BtnMakam.MouseButton1Click:Connect(function()
+    BtnMakam.BackgroundTransparency = 0
     task.spawn(function()
         pcall(runMakamRoutine)
     end)
+    task.wait(0.5)
+    BtnMakam.BackgroundTransparency = 0.4
 end)
 
 BtnPotion.MouseButton1Click:Connect(function()
+    BtnPotion.BackgroundTransparency = 0
     task.spawn(function()
         pcall(runPotionRoutine)
     end)
+    task.wait(0.5)
+    BtnPotion.BackgroundTransparency = 0.4
 end)
 
 BtnEmote.MouseButton1Click:Connect(function()
+    BtnEmote.BackgroundTransparency = 0
     task.spawn(function()
         pcall(runEmoteRoutine)
     end)
+    task.wait(0.5)
+    BtnEmote.BackgroundTransparency = 0.4
 end)
 
 BtnTPMerah.MouseButton1Click:Connect(function()
+    BtnTPMerah.BackgroundTransparency = 0
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 
         hrp.CFrame = CFrame.new(554.129395, 1920.79871, -5127.52295, 0.416369528, -2.33246542e-08, -0.909195483, -2.18992842e-08, 1, -3.56830263e-08, 0.909195483, 3.47680533e-08, 0.416369528)
     end
+    task.wait(0.3)
+    BtnTPMerah.BackgroundTransparency = 0.4
 end)
 
 BtnTPKuning.MouseButton1Click:Connect(function()
+    BtnTPKuning.BackgroundTransparency = 0
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 
         hrp.CFrame = CFrame.new(617.141907, 1916.47388, -5169.96289, 0.487637222, -5.10648164e-08, 0.873046339, -2.15711076e-08, 1, 7.05388601e-08, -0.873046339, -5.32299502e-08, 0.487637222)
     end
+    task.wait(0.3)
+    BtnTPKuning.BackgroundTransparency = 0.4
 end)
 
 BtnTPBiru.MouseButton1Click:Connect(function()
+    BtnTPBiru.BackgroundTransparency = 0
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 
         hrp.CFrame = CFrame.new(520.997009, 1920.95605, -5146.67725, 0.771988332, -1.21853034e-08, -0.635636687, -2.52801762e-08, 1, -4.98733073e-08, 0.635636687, 5.45706165e-08, 0.771988332)
     end
+    task.wait(0.3)
+    BtnTPBiru.BackgroundTransparency = 0.4
 end)

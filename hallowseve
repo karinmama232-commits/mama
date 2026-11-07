@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (UPDATED v2) ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL UPDATED) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -8,7 +8,7 @@ local Player = Players.LocalPlayer
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
 -- ==========================================
--- FUNGSI GLOBAL & HELPER (RE UPDATE)
+-- FUNGSI GLOBAL & HELPER
 -- ==========================================
 local function secureClick()
     pcall(function()
@@ -43,7 +43,6 @@ local function interactForDuration(duration)
     end
 end
 
--- Fungsi Remote Events Terbaru
 local function openRod()
     repeatActionForDuration(5, function()
         local RE_Open = Net:WaitForChild("RE/00a3a76752016f85e81b78a860bf2160d0f784761aee9a831db3c97741af87f8")
@@ -73,7 +72,7 @@ local function closeFragment()
 end
 
 -- ==========================================
--- 1. SETUP UI COMPACT (Disesuaikan untuk banyak tombol)
+-- 1. SETUP UI COMPACT
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "HallowsEveUI"
@@ -99,7 +98,7 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(253, 243, 226)
 MainFrame.BackgroundTransparency = 0.1
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -135)
-MainFrame.Size = UDim2.new(0, 220, 0, 270) -- Diperbesar agar pas untuk semua tombol
+MainFrame.Size = UDim2.new(0, 220, 0, 270)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -167,63 +166,62 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. PEMBUATAN TOMBOL SESUAI URUTAN
+-- 2. TATA LETAK TOMBOL SESUAI PERMINTAAN
 -- ==========================================
 
--- Baris 1: MESIN & PINTU
+-- Baris 1: Mesin, Pintu, Makam (3 tombol seimbang)
 local BtnMesin = Instance.new("TextButton", MainFrame)
-BtnMesin.Size = UDim2.new(0, 95, 0, 26)
+BtnMesin.Size = UDim2.new(0, 62, 0, 26)
 BtnMesin.Position = UDim2.new(0, 10, 0, 40)
 BtnMesin.Text = "MESIN"
-styleBtn(BtnMesin, 9)
+styleBtn(BtnMesin, 8)
 
 local BtnPintu = Instance.new("TextButton", MainFrame)
-BtnPintu.Size = UDim2.new(0, 95, 0, 26)
-BtnPintu.Position = UDim2.new(0, 115, 0, 40)
+BtnPintu.Size = UDim2.new(0, 62, 0, 26)
+BtnPintu.Position = UDim2.new(0, 79, 0, 40)
 BtnPintu.Text = "PINTU"
-styleBtn(BtnPintu, 9)
+styleBtn(BtnPintu, 8)
 
--- Baris 2: MAKAM & POTION
 local BtnMakam = Instance.new("TextButton", MainFrame)
-BtnMakam.Size = UDim2.new(0, 95, 0, 26)
-BtnMakam.Position = UDim2.new(0, 10, 0, 71)
+BtnMakam.Size = UDim2.new(0, 62, 0, 26)
+BtnMakam.Position = UDim2.new(0, 148, 0, 40)
 BtnMakam.Text = "MAKAM"
-styleBtn(BtnMakam, 9)
+styleBtn(BtnMakam, 8)
 
+-- Baris 2: Potion, Emote (2 tombol seimbang)
 local BtnPotion = Instance.new("TextButton", MainFrame)
 BtnPotion.Size = UDim2.new(0, 95, 0, 26)
-BtnPotion.Position = UDim2.new(0, 115, 0, 71)
+BtnPotion.Position = UDim2.new(0, 10, 0, 71)
 BtnPotion.Text = "POTION"
 styleBtn(BtnPotion, 9)
 
--- Baris 3: EMOTE (Full Width / Lebar)
 local BtnEmote = Instance.new("TextButton", MainFrame)
-BtnEmote.Size = UDim2.new(0, 200, 0, 26)
-BtnEmote.Position = UDim2.new(0, 10, 0, 102)
+BtnEmote.Size = UDim2.new(0, 95, 0, 26)
+BtnEmote.Position = UDim2.new(0, 115, 0, 71)
 BtnEmote.Text = "EMOTE"
 styleBtn(BtnEmote, 9)
 
--- Baris 4, 5, 6: TP MERAH, TP KUNING, TP BIRU
+-- Baris 3: TP Merah, TP Kuning, TP Biru (Full Width ke bawah)
 local BtnTPMerah = Instance.new("TextButton", MainFrame)
 BtnTPMerah.Size = UDim2.new(0, 200, 0, 26)
-BtnTPMerah.Position = UDim2.new(0, 10, 0, 133)
+BtnTPMerah.Position = UDim2.new(0, 10, 0, 102)
 BtnTPMerah.Text = "TP MERAH"
 styleBtn(BtnTPMerah, 9)
 
 local BtnTPKuning = Instance.new("TextButton", MainFrame)
 BtnTPKuning.Size = UDim2.new(0, 200, 0, 26)
-BtnTPKuning.Position = UDim2.new(0, 10, 0, 164)
+BtnTPKuning.Position = UDim2.new(0, 10, 0, 133)
 BtnTPKuning.Text = "TP KUNING"
 styleBtn(BtnTPKuning, 9)
 
 local BtnTPBiru = Instance.new("TextButton", MainFrame)
 BtnTPBiru.Size = UDim2.new(0, 200, 0, 26)
-BtnTPBiru.Position = UDim2.new(0, 10, 0, 195)
+BtnTPBiru.Position = UDim2.new(0, 10, 0, 164)
 BtnTPBiru.Text = "TP BIRU"
 styleBtn(BtnTPBiru, 9)
 
 -- ==========================================
--- 3. ROUTINE LOGIC MASING-MASING FITUR
+-- 3. ROUTINE LOGIC
 -- ==========================================
 
 -- Routine Mesin
@@ -240,21 +238,18 @@ local function runMesinRoutine()
         closeRod()
         task.wait(1)
         
-        -- Fragment 1
         openFragment(2)
         interactForDuration(3)
         task.wait(1)
         closeFragment()
         task.wait(1)
         
-        -- Fragment 2
         openFragment(3)
         interactForDuration(4)
         task.wait(1)
         closeFragment()
         task.wait(1)
         
-        -- Fragment 3
         openFragment(4)
         interactForDuration(5)
         task.wait(1)
@@ -270,7 +265,7 @@ local function runMesinRoutine()
     end
 end
 
--- Routine Pintu
+-- Routine Pintu (Jeda 5 detik setiap TP)
 local function runPintuRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -293,7 +288,7 @@ local function runPintuRoutine()
         
         for _, targetCFrame in ipairs(pintuList) do
             hrp.CFrame = targetCFrame
-            task.wait(1)
+            task.wait(5) -- Diubah menjadi 5 detik
             interactForDuration(2)
             task.wait(0.5)
         end
@@ -306,7 +301,7 @@ local function runPintuRoutine()
     end
 end
 
--- Routine Makam
+-- Routine Makam (Jeda 5 detik setiap TP)
 local function runMakamRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -346,7 +341,7 @@ local function runMakamRoutine()
         
         for _, targetCFrame in ipairs(makamList) do
             hrp.CFrame = targetCFrame
-            task.wait(1)
+            task.wait(5) -- Diubah menjadi 5 detik
             interactForDuration(2)
             task.wait(0.5)
         end
@@ -359,7 +354,7 @@ local function runMakamRoutine()
     end
 end
 
--- Routine Potion (Fragment 3 & 4)
+-- Routine Potion
 local function runPotionRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -373,14 +368,12 @@ local function runPotionRoutine()
         closeRod()
         task.wait(1)
         
-        -- Fragment 3 (Index 4)
         openFragment(4)
         interactForDuration(4)
         task.wait(1)
         closeFragment()
         task.wait(1)
         
-        -- Fragment 4 (Index 5)
         openFragment(5)
         interactForDuration(4)
         task.wait(1)
@@ -400,26 +393,21 @@ end
 local function runEmoteRoutine()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then
-        -- Tutup pancing berkali-kali selama 2 detik
         repeatActionForDuration(2, function() closeRod() end)
         task.wait(1)
         
         local saved = hrp.CFrame
         task.wait(1)
         
-        -- TP ke lokasi Emote/Gravekeeper
         hrp.CFrame = CFrame.new(557.78595, 1923.92798, -5255.62842, -0.953622997, 1.10437783e-08, -0.301003665, -2.22137402e-08, 1, 1.07066178e-07, 0.301003665, 1.08787184e-07, -0.953622997)
         task.wait(2)
         
-        -- Fire Emote 1
         Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 1, 1}))
         task.wait(2)
         
-        -- Fire Emote 2
         Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 1, 2}))
         task.wait(2)
         
-        -- TP Acak ke salah satu (Merah, Kuning, Biru)
         local tpList = {
             CFrame.new(554.129395, 1920.79871, -5127.52295, 0.416369528, -2.33246542e-08, -0.909195483, -2.18992842e-08, 1, -3.56830263e-08, 0.909195483, 3.47680533e-08, 0.416369528),
             CFrame.new(617.141907, 1916.47388, -5169.96289, 0.487637222, -5.10648164e-08, 0.873046339, -2.15711076e-08, 1, 7.05388601e-08, -0.873046339, -5.32299502e-08, 0.487637222),
@@ -428,35 +416,28 @@ local function runEmoteRoutine()
         hrp.CFrame = tpList[math.random(1, #tpList)]
         task.wait(2)
         
-        -- Buka pancing berkali-kali selama 2 detik
         repeatActionForDuration(2, function() openRod() end)
         task.wait(60)
         
-        -- Tutup pancing berkali-kali selama 2 detik
         repeatActionForDuration(2, function() closeRod() end)
         
-        -- TP kembali ke lokasi Emote
         hrp.CFrame = CFrame.new(557.78595, 1923.92798, -5255.62842, -0.953622997, 1.10437783e-08, -0.301003665, -2.22137402e-08, 1, 1.07066178e-07, 0.301003665, 1.08787184e-07, -0.953622997)
         task.wait(2)
         
-        -- Fire Emote 3
         Net:WaitForChild("RE/82ec9671d44a5e8fc06d005a33e6d588930c90ccdd03a6d9bd29176373fc0694"):FireServer(unpack({"Gravekeeper", 2, 1}))
         task.wait(2)
         
-        -- Balik ke save location awal
         if hrp then hrp.CFrame = saved end
         task.wait(1)
         
-        -- Buka pancing berkali-kali selama 2 detik
         repeatActionForDuration(2, function() openRod() end)
     end
 end
 
 -- ==========================================
--- 4. EVENT CONNECTIONS (BUTTONS & SCHEDULES)
+-- 4. EVENT CONNECTIONS
 -- ==========================================
 
--- Tombol Mesin (Jadwal otomatis)
 BtnMesin.MouseButton1Click:Connect(function()
     isMesin = not isMesin
     BtnMesin.BackgroundTransparency = isMesin and 0 or 0.4
@@ -476,7 +457,6 @@ BtnMesin.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol Pintu (Jadwal otomatis)
 BtnPintu.MouseButton1Click:Connect(function()
     isPintu = not isPintu
     BtnPintu.BackgroundTransparency = isPintu and 0 or 0.4
@@ -496,28 +476,24 @@ BtnPintu.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol Makam (Manual/Trigger)
 BtnMakam.MouseButton1Click:Connect(function()
     task.spawn(function()
         pcall(runMakamRoutine)
     end)
 end)
 
--- Tombol Potion (Manual/Trigger)
 BtnPotion.MouseButton1Click:Connect(function()
     task.spawn(function()
         pcall(runPotionRoutine)
     end)
 end)
 
--- Tombol Emote (Manual/Trigger)
 BtnEmote.MouseButton1Click:Connect(function()
     task.spawn(function()
         pcall(runEmoteRoutine)
     end)
 end)
 
--- Tombol TP Merah
 BtnTPMerah.MouseButton1Click:Connect(function()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 
@@ -525,7 +501,6 @@ BtnTPMerah.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol TP Kuning
 BtnTPKuning.MouseButton1Click:Connect(function()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 
@@ -533,7 +508,6 @@ BtnTPKuning.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol TP Biru
 BtnTPBiru.MouseButton1Click:Connect(function()
     local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if hrp then 

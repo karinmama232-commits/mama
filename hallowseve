@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD) ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD 4 PASANG) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -73,25 +73,46 @@ local function closeFragment()
     end)
 end
 
--- Fungsi Ganti Rod (Element Rod / Gosfin)
-local function equipElementRod()
-    pcall(function()
-        local args = {
-            [1] = "de207bea-9037-4b40-9e65-3f0fd9319f20",
-            [2] = "Fishing Rods"
-        }
-        Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
-    end)
+-- Tabel 4 Pasang UUID Gosfin & Element
+local gosfinList = {
+    "72e24892-8b4c-4e86-8377-e264583b5118",
+    "ff063736-5355-43e1-9631-bde7ea17436b",
+    "54415dc0-ef8d-49c0-890c-a1adb9544eab",
+    "31166898-6b5b-4c4c-9835-fb8b7e9da56b"
+}
+
+local elementList = {
+    "9185147a-99fa-46a4-8765-81626b3b26ea",
+    "a2dcb024-1d52-4d44-b497-5c403fcb162e",
+    "f3b324d8-a325-4740-bb9b-cf39127d82ce",
+    "700d8c04-49a6-4561-9b4d-6c1c6c659a5b"
+}
+
+-- Fungsi Ganti Rod Mengecek Ke-4 nya Sekaligus Berurutan
+local function equipGosfinAll()
+    for _, uuid in ipairs(gosfinList) do
+        pcall(function()
+            local args = {
+                [1] = uuid,
+                [2] = "Fishing Rods"
+            }
+            Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+        end)
+        task.wait(0.2)
+    end
 end
 
-local function equipGosfin()
-    pcall(function()
-        local args = {
-            [1] = "866ddfd4-2aae-4b3d-a4a4-36fecac168a8",
-            [2] = "Fishing Rods"
-        }
-        Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
-    end)
+local function equipElementRodAll()
+    for _, uuid in ipairs(elementList) do
+        pcall(function()
+            local args = {
+                [1] = uuid,
+                [2] = "Fishing Rods"
+            }
+            Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+        end)
+        task.wait(0.2)
+    end
 end
 
 -- ==========================================
@@ -492,7 +513,7 @@ local function runEmoteRoutine()
 end
 
 -- ==========================================
--- 4. EVENT CONNECTIONS & LOGIKA GANTI ROD BARU
+-- 4. EVENT CONNECTIONS & LOGIKA GANTI ROD BARU (4 PASANG)
 -- ==========================================
 
 BtnMesin.MouseButton1Click:Connect(function()
@@ -569,7 +590,7 @@ BtnEmote.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol Ganti Rod (Auto Cek Waktu & Lokasi Ruin)
+-- Tombol Ganti Rod (Auto Cek Waktu & Eksekusi Ke-4 Pasang UUID Sekaligus)
 BtnGantiRod.MouseButton1Click:Connect(function()
     isGantiRod = not isGantiRod
     BtnGantiRod.BackgroundTransparency = isGantiRod and 0 or 0.4
@@ -580,8 +601,6 @@ BtnGantiRod.MouseButton1Click:Connect(function()
                 local m = timeTable.min
                 local s = timeTable.sec
                 
-                -- Cek rentang 5 menit sebelum dan sesudah menit 00 atau 05 (misal: x:55 s.d x:05, atau x:00 s.d x:05, x:55 s.d x:00, dst)
-                -- Lebih tepatnya: (m >= 55 or m <= 05)
                 local isTargetTimeWindow = (m >= 55 or m <= 5)
                 
                 if isTargetTimeWindow then
@@ -596,16 +615,16 @@ BtnGantiRod.MouseButton1Click:Connect(function()
                         if hrp then
                             local ruinTargetPos = Vector3.new(6045.40186, -588.601013, 4608.93799)
                             local distToRuin = (hrp.Position - ruinTargetPos).Magnitude
-                            if distToRuin < 50 then -- Radius toleransi di area Ruin
+                            if distToRuin < 50 then
                                 inRuin = true
                             end
                         end
                         
-                        -- 3. Ganti rod berdasarkan lokasi
+                        -- 3. Eksekusi ke-4 pasang UUID secara berurutan berdasarkan lokasi
                         if inRuin then
-                            equipGosfin()
+                            equipGosfinAll()
                         else
-                            equipElementRod()
+                            equipElementRodAll()
                         end
                         task.wait(1.5)
                         
@@ -613,7 +632,6 @@ BtnGantiRod.MouseButton1Click:Connect(function()
                         openRod()
                     end)
                     
-                    -- Jeda agar tidak spam di rentang waktu yang sama (misal tunggu sampai lewat dari rentang)
                     while isGantiRod do
                         local t = os.date("*t")
                         if not (t.min >= 55 or t.min <= 5) then

@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD 4 PASANG) ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD 4 PASANG DELAY 0.5S) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -88,7 +88,7 @@ local elementList = {
     "700d8c04-49a6-4561-9b4d-6c1c6c659a5b"
 }
 
--- Fungsi Ganti Rod Mengecek Ke-4 nya Sekaligus Berurutan
+-- Fungsi Ganti Rod Mengecek Ke-4 nya Sekaligus Berurutan dengan Jeda 0.5 Detik
 local function equipGosfinAll()
     for _, uuid in ipairs(gosfinList) do
         pcall(function()
@@ -98,7 +98,7 @@ local function equipGosfinAll()
             }
             Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
         end)
-        task.wait(0.2)
+        task.wait(0.5)
     end
 end
 
@@ -111,7 +111,7 @@ local function equipElementRodAll()
             }
             Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
         end)
-        task.wait(0.2)
+        task.wait(0.5)
     end
 end
 
@@ -513,7 +513,7 @@ local function runEmoteRoutine()
 end
 
 -- ==========================================
--- 4. EVENT CONNECTIONS & LOGIKA GANTI ROD BARU (4 PASANG)
+-- 4. EVENT CONNECTIONS & LOGIKA GANTI ROD BARU (4 PASANG + DELAY 0.5S)
 -- ==========================================
 
 BtnMesin.MouseButton1Click:Connect(function()
@@ -590,7 +590,7 @@ BtnEmote.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol Ganti Rod (Auto Cek Waktu & Eksekusi Ke-4 Pasang UUID Sekaligus)
+-- Tombol Ganti Rod (Auto Cek Waktu & Eksekusi Ke-4 Pasang UUID Berurutan dengan Jeda 0.5s)
 BtnGantiRod.MouseButton1Click:Connect(function()
     isGantiRod = not isGantiRod
     BtnGantiRod.BackgroundTransparency = isGantiRod and 0 or 0.4
@@ -620,7 +620,7 @@ BtnGantiRod.MouseButton1Click:Connect(function()
                             end
                         end
                         
-                        -- 3. Eksekusi ke-4 pasang UUID secara berurutan berdasarkan lokasi
+                        -- 3. Eksekusi ke-4 pasang UUID secara berurutan dengan jeda 0.5 detik per UUID
                         if inRuin then
                             equipGosfinAll()
                         else

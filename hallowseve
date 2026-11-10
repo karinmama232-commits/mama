@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD) ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC - UPDATED RE) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -8,7 +8,7 @@ local Player = Players.LocalPlayer
 local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
 
 -- ==========================================
--- FUNGSI GLOBAL & HELPER (REMOTE BARU)
+-- FUNGSI GLOBAL & HELPER (UPDATED RE)
 -- ==========================================
 local function secureClick()
     pcall(function()
@@ -43,7 +43,6 @@ local function interactForDuration(duration)
     end
 end
 
--- Update Remote Pancing Baru
 local function openRod()
     repeatActionForDuration(5, function()
         local RE_Open = Net:WaitForChild("RE/b778f0b208d6b8d0f8e2712303cfcf41ad56bf61f74dd56ecf03a7ad2ad26601")
@@ -58,7 +57,6 @@ local function closeRod()
     end)
 end
 
--- Update Remote Fragment Baru
 local function openFragment(index)
     repeatActionForDuration(5, function()
         local RE_Open = Net:WaitForChild("RE/b778f0b208d6b8d0f8e2712303cfcf41ad56bf61f74dd56ecf03a7ad2ad26601")
@@ -70,27 +68,6 @@ local function closeFragment()
     repeatActionForDuration(5, function()
         local RE_Close = Net:WaitForChild("RE/84bb7751d6193f6f8b56e7eb4c0c1a55506a2a069a614013a9a96d710b66a753")
         RE_Close:FireServer()
-    end)
-end
-
--- Fungsi Ganti Rod (Element Rod / Gosfin)
-local function equipElementRod()
-    pcall(function()
-        local args = {
-            [1] = "de207bea-9037-4b40-9e65-3f0fd9319f20",
-            [2] = "Fishing Rods"
-        }
-        Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
-    end)
-end
-
-local function equipGosfin()
-    pcall(function()
-        local args = {
-            [1] = "866ddfd4-2aae-4b3d-a4a4-36fecac168a8",
-            [2] = "Fishing Rods"
-        }
-        Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
     end)
 end
 
@@ -120,8 +97,8 @@ MainFrame.Name = "HallowsMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(253, 243, 226)
 MainFrame.BackgroundTransparency = 0.1
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 220, 0, 210)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -135)
+MainFrame.Size = UDim2.new(0, 220, 0, 175)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -170,7 +147,6 @@ local isPintu = false
 local isMakam = false
 local isPotion = false
 local isEmote = false
-local isGantiRod = false
 local isTPMerah = false
 local isTPKuning = false
 local isTPBiru = false
@@ -179,7 +155,7 @@ local isTPBiru = false
 local isRoutineRunning = false
 
 local function resetAll()
-    isMesin = false; isPintu = false; isMakam = false; isPotion = false; isEmote = false; isGantiRod = false; isTPMerah = false; isTPKuning = false; isTPBiru = false
+    isMesin = false; isPintu = false; isMakam = false; isPotion = false; isEmote = false; isTPMerah = false; isTPKuning = false; isTPBiru = false
     isRoutineRunning = false
 end
 
@@ -200,7 +176,6 @@ end
 -- 2. TATA LETAK TOMBOL
 -- ==========================================
 
--- Baris 1: Mesin, Pintu, Makam
 local BtnMesin = Instance.new("TextButton", MainFrame)
 BtnMesin.Size = UDim2.new(0, 62, 0, 26)
 BtnMesin.Position = UDim2.new(0, 10, 0, 40)
@@ -219,7 +194,6 @@ BtnMakam.Position = UDim2.new(0, 148, 0, 40)
 BtnMakam.Text = "MAKAM"
 styleBtn(BtnMakam, 8)
 
--- Baris 2: Potion, Emote
 local BtnPotion = Instance.new("TextButton", MainFrame)
 BtnPotion.Size = UDim2.new(0, 95, 0, 26)
 BtnPotion.Position = UDim2.new(0, 10, 0, 71)
@@ -232,34 +206,26 @@ BtnEmote.Position = UDim2.new(0, 115, 0, 71)
 BtnEmote.Text = "EMOTE"
 styleBtn(BtnEmote, 9)
 
--- Baris 3 Baru: GANTI ROD (Full Lebar 200px)
-local BtnGantiRod = Instance.new("TextButton", MainFrame)
-BtnGantiRod.Size = UDim2.new(0, 200, 0, 26)
-BtnGantiRod.Position = UDim2.new(0, 10, 0, 102)
-BtnGantiRod.Text = "GANTI ROD (AUTO RUIN)"
-styleBtn(BtnGantiRod, 8)
-
--- Baris 4: TP Merah, TP Kuning, TP Biru
 local BtnTPMerah = Instance.new("TextButton", MainFrame)
 BtnTPMerah.Size = UDim2.new(0, 62, 0, 26)
-BtnTPMerah.Position = UDim2.new(0, 10, 0, 133)
+BtnTPMerah.Position = UDim2.new(0, 10, 0, 102)
 BtnTPMerah.Text = "TP MERAH"
 styleBtn(BtnTPMerah, 7)
 
 local BtnTPKuning = Instance.new("TextButton", MainFrame)
 BtnTPKuning.Size = UDim2.new(0, 62, 0, 26)
-BtnTPKuning.Position = UDim2.new(0, 79, 0, 133)
+BtnTPKuning.Position = UDim2.new(0, 79, 0, 102)
 BtnTPKuning.Text = "TP KUNING"
 styleBtn(BtnTPKuning, 7)
 
 local BtnTPBiru = Instance.new("TextButton", MainFrame)
 BtnTPBiru.Size = UDim2.new(0, 62, 0, 26)
-BtnTPBiru.Position = UDim2.new(0, 148, 0, 133)
+BtnTPBiru.Position = UDim2.new(0, 148, 0, 102)
 BtnTPBiru.Text = "TP BIRU"
 styleBtn(BtnTPBiru, 7)
 
 -- ==========================================
--- 3. ROUTINE LOGIC DENGAN SISTEM ANTREAN (QUEUE / MUTEX)
+-- 3. ROUTINE LOGIC DENGAN SISTEM ANTREAN
 -- ==========================================
 
 local function executeSafely(routineFunc)
@@ -407,7 +373,7 @@ local function runMakamRoutine()
     end)
 end
 
--- Routine Potion (Dobel Fragment 3)
+-- Routine Potion (UPDATED: Dobel Fragment Index 3)
 local function runPotionRoutine()
     executeSafely(function()
         local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
@@ -422,14 +388,14 @@ local function runPotionRoutine()
             closeRod()
             task.wait(1)
             
-            -- Dobel Fragment 3 (index 4)
-            openFragment(4)
+            -- Potion Dobel Index 3
+            openFragment(3)
             interactForDuration(4)
             task.wait(1)
             closeFragment()
             task.wait(1)
             
-            openFragment(4)
+            openFragment(3)
             interactForDuration(4)
             task.wait(1)
             closeFragment()
@@ -492,7 +458,7 @@ local function runEmoteRoutine()
 end
 
 -- ==========================================
--- 4. EVENT CONNECTIONS & LOGIKA GANTI ROD BARU
+-- 4. EVENT CONNECTIONS (TOGGLE SYSTEM)
 -- ==========================================
 
 BtnMesin.MouseButton1Click:Connect(function()
@@ -565,66 +531,6 @@ BtnEmote.MouseButton1Click:Connect(function()
             pcall(runEmoteRoutine)
             isEmote = false
             BtnEmote.BackgroundTransparency = 0.4
-        end)
-    end
-end)
-
--- Tombol Ganti Rod (Auto Cek Waktu & Lokasi Ruin)
-BtnGantiRod.MouseButton1Click:Connect(function()
-    isGantiRod = not isGantiRod
-    BtnGantiRod.BackgroundTransparency = isGantiRod and 0 or 0.4
-    if isGantiRod then
-        task.spawn(function()
-            while isGantiRod do
-                local timeTable = os.date("*t")
-                local m = timeTable.min
-                local s = timeTable.sec
-                
-                -- Cek rentang 5 menit sebelum dan sesudah menit 00 atau 05 (misal: x:55 s.d x:05, atau x:00 s.d x:05, x:55 s.d x:00, dst)
-                -- Lebih tepatnya: (m >= 55 or m <= 05)
-                local isTargetTimeWindow = (m >= 55 or m <= 5)
-                
-                if isTargetTimeWindow then
-                    executeSafely(function()
-                        -- 1. Tutup pancing dulu
-                        closeRod()
-                        task.wait(1)
-                        
-                        -- 2. Cek lokasi (apakah berada di Ruin berdasarkan jarak koordinat)
-                        local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-                        local inRuin = false
-                        if hrp then
-                            local ruinTargetPos = Vector3.new(6045.40186, -588.601013, 4608.93799)
-                            local distToRuin = (hrp.Position - ruinTargetPos).Magnitude
-                            if distToRuin < 50 then -- Radius toleransi di area Ruin
-                                inRuin = true
-                            end
-                        end
-                        
-                        -- 3. Ganti rod berdasarkan lokasi
-                        if inRuin then
-                            equipGosfin()
-                        else
-                            equipElementRod()
-                        end
-                        task.wait(1.5)
-                        
-                        -- 4. Buka pancing kembali
-                        openRod()
-                    end)
-                    
-                    -- Jeda agar tidak spam di rentang waktu yang sama (misal tunggu sampai lewat dari rentang)
-                    while isGantiRod do
-                        local t = os.date("*t")
-                        if not (t.min >= 55 or t.min <= 5) then
-                            break
-                        end
-                        task.wait(5)
-                    end
-                end
-                
-                task.wait(2)
-            end
         end)
     end
 end)

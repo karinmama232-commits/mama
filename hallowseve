@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD + TOMBOL O INSTANT) ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD FULL RAW + TOMBOL O) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -73,46 +73,82 @@ local function closeFragment()
     end)
 end
 
--- Tabel 4 Pasang UUID Gosfin & Element
-local gosfinList = {
-    "72e24892-8b4c-4e86-8377-e264583b5118",
-    "ff063736-5355-43e1-9631-bde7ea17436b",
-    "54415dc0-ef8d-49c0-890c-a1adb9544eab",
-    "31166898-6b5b-4c4c-9835-fb8b7e9da56b"
-}
-
-local elementList = {
-    "9185147a-99fa-46a4-8765-81626b3b26ea",
-    "a2dcb024-1d52-4d44-b497-5c403fcb162e",
-    "f3b324d8-a325-4740-bb9b-cf39127d82ce",
-    "700d8c04-49a6-4561-9b4d-6c1c6c659a5b"
-}
-
--- Fungsi Ganti Rod Mengecek Ke-4 nya Sekaligus Berurutan dengan Jeda 0.5 Detik
+-- Eksekusi Gosfin Sesuai Urutan Asli Tanpa Disingkat
 local function equipGosfinAll()
-    for _, uuid in ipairs(gosfinList) do
-        pcall(function()
-            local args = {
-                [1] = uuid,
-                [2] = "Fishing Rods"
-            }
-            Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
-        end)
-        task.wait(0.5)
-    end
+    pcall(function()
+        local args = {
+            [1] = "72e24892-8b4c-4e86-8377-e264583b5118",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
+
+    pcall(function()
+        local args = {
+            [1] = "ff063736-5355-43e1-9631-bde7ea17436b",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
+
+    pcall(function()
+        local args = {
+            [1] = "54415dc0-ef8d-49c0-890c-a1adb9544eab",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
+
+    pcall(function()
+        local args = {
+            [1] = "31166898-6b5b-4c4c-9835-fb8b7e9da56b",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
 end
 
+-- Eksekusi Element Sesuai Urutan Asli Tanpa Disingkat
 local function equipElementRodAll()
-    for _, uuid in ipairs(elementList) do
-        pcall(function()
-            local args = {
-                [1] = uuid,
-                [2] = "Fishing Rods"
-            }
-            Net:WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
-        end)
-        task.wait(0.5)
-    end
+    pcall(function()
+        local args = {
+            [1] = "9185147a-99fa-46a4-8765-81626b3b26ea",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
+
+    pcall(function()
+        local args = {
+            [1] = "a2dcb024-1d52-4d44-b497-5c403fcb162e",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
+
+    pcall(function()
+        local args = {
+            [1] = "f3b324d8-a325-4740-bb9b-cf39127d82ce",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
+
+    pcall(function()
+        local args = {
+            [1] = "700d8c04-49a6-4561-9b4d-6c1c6c659a5b",
+            [2] = "Fishing Rods"
+        }
+        game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RE/6dac9147bf0a5965cb7a2a0819049d78a632f3e5f02a09f21524c4df580b8975"):FireServer(unpack(args))
+    end)
+    task.wait(0.5)
 end
 
 -- ==========================================
@@ -596,7 +632,7 @@ BtnEmote.MouseButton1Click:Connect(function()
     end
 end)
 
--- Core Fungsi Ganti Rod (Tutup Pancing -> Cek Ruin -> Eksekusi 4 Pasang + Jeda 0.5s -> Buka Pancing)
+-- Core Fungsi Ganti Rod Sesuai Urutan Asli Tanpa Disingkat
 local function processGantiRod()
     executeSafely(function()
         closeRod()

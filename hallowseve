@@ -1,4 +1,4 @@
--- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (2 TOMBOL GANTI ROD + TOMBOL TEST "O") ]] --
+-- [[ HALLOWS EVE - pociXkarin GLOBAL EDITION (FINAL QUEUED SYNC + GANTI ROD + TOMBOL O INSTANT) ]] --
 
 local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -116,7 +116,7 @@ local function equipElementRodAll()
 end
 
 -- ==========================================
--- 1. SETUP UI COMPACT (Diperbesar sedikit tingginya untuk 2 tombol di baris 3)
+-- 1. SETUP UI COMPACT
 -- ==========================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "HallowsEveUI"
@@ -142,7 +142,7 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(253, 243, 226)
 MainFrame.BackgroundTransparency = 0.1
 MainFrame.Position = UDim2.new(0.5, -110, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 220, 0, 240)
+MainFrame.Size = UDim2.new(0, 220, 0, 210)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -253,18 +253,18 @@ BtnEmote.Position = UDim2.new(0, 115, 0, 71)
 BtnEmote.Text = "EMOTE"
 styleBtn(BtnEmote, 9)
 
--- Baris 3: GANTI ROD (Auto Waktu) & Tombol TEST "O"
+-- Baris 3: GANTI ROD (130px) & Tombol O (65px)
 local BtnGantiRod = Instance.new("TextButton", MainFrame)
 BtnGantiRod.Size = UDim2.new(0, 130, 0, 26)
 BtnGantiRod.Position = UDim2.new(0, 10, 0, 102)
 BtnGantiRod.Text = "GANTI ROD"
 styleBtn(BtnGantiRod, 8)
 
-local BtnTestO = Instance.new("TextButton", MainFrame)
-BtnTestO.Size = UDim2.new(0, 65, 0, 26)
-BtnTestO.Position = UDim2.new(0, 145, 0, 102)
-BtnTestO.Text = "O"
-styleBtn(BtnTestO, 9)
+local BtnO = Instance.new("TextButton", MainFrame)
+BtnO.Size = UDim2.new(0, 65, 0, 26)
+BtnO.Position = UDim2.new(0, 145, 0, 102)
+BtnO.Text = "O"
+styleBtn(BtnO, 9)
 
 -- Baris 4: TP Merah, TP Kuning, TP Biru
 local BtnTPMerah = Instance.new("TextButton", MainFrame)
@@ -273,29 +273,17 @@ BtnTPMerah.Position = UDim2.new(0, 10, 0, 133)
 BtnTPMerah.Text = "TP MERAH"
 styleBtn(BtnTPMerah, 7)
 
-BtnTPMerah.Position = UDim2.new(0, 10, 0, 133 + 31)
+local BtnTPKuning = Instance.new("TextButton", MainFrame)
 BtnTPKuning.Size = UDim2.new(0, 62, 0, 26)
-BtnTPKuning.Position = UDim2.new(0, 79, 0, 133 + 31)
+BtnTPKuning.Position = UDim2.new(0, 79, 0, 133)
+BtnTPKuning.Text = "TP KUNING"
+styleBtn(BtnTPKuning, 7)
+
+local BtnTPBiru = Instance.new("TextButton", MainFrame)
 BtnTPBiru.Size = UDim2.new(0, 62, 0, 26)
-BtnTPBiru.Position = UDim2.new(0, 148, 0, 133 + 31)
-
--- Menyesuaikan posisi TP agar turun pas di bawah baris 3
-BtnTPMerah.Position = UDim2.new(0, 10, 0, 133)
-BtnTPKuning.Position = UDim2.new(0, 79, 0, 133)
 BtnTPBiru.Position = UDim2.new(0, 148, 0, 133)
-
--- Revisi posisi baris 4 ke bawah baris 3
-BtnTPMerah.Position = UDim2.new(0, 10, 0, 133)
-BtnTPKuning.Position = UDim2.new(0, 79, 0, 133)
-BtnTPBiru.Position = UDim2.new(0, 148, 0, 133)
-
--- Supaya rapih, kita set posisi fix:
-BtnGantiRod.Position = UDim2.new(0, 10, 0, 102)
-BtnTestO.Position = UDim2.new(0, 145, 0, 102)
-
-BtnTPMerah.Position = UDim2.new(0, 10, 0, 133)
-BtnTPKuning.Position = UDim2.new(0, 79, 0, 133)
-BtnTPBiru.Position = UDim2.new(0, 148, 0, 133)
+BtnTPBiru.Text = "TP BIRU"
+styleBtn(BtnTPBiru, 7)
 
 -- ==========================================
 -- 3. ROUTINE LOGIC DENGAN SISTEM ANTREAN (QUEUE / MUTEX)
@@ -531,7 +519,7 @@ local function runEmoteRoutine()
 end
 
 -- ==========================================
--- 4. EVENT CONNECTIONS & LOGIKA GANTI ROD (AUTO & TOMBOL "O")
+-- 4. EVENT CONNECTIONS & LOGIKA GANTI ROD (AUTO & TOMBOL O INSTANT)
 -- ==========================================
 
 BtnMesin.MouseButton1Click:Connect(function()
@@ -608,7 +596,7 @@ BtnEmote.MouseButton1Click:Connect(function()
     end
 end)
 
--- Core Fungsi Ganti Rod (Tutup -> Cek Ruin -> Eksekusi 4 Pasang + Jeda 0.5s -> Buka)
+-- Core Fungsi Ganti Rod (Tutup Pancing -> Cek Ruin -> Eksekusi 4 Pasang + Jeda 0.5s -> Buka Pancing)
 local function processGantiRod()
     executeSafely(function()
         closeRod()
@@ -635,7 +623,7 @@ local function processGantiRod()
     end)
 end
 
--- Tombol Ganti Rod (Auto Waktu seperti sebelumnya)
+-- Tombol Ganti Rod (Auto Waktu)
 BtnGantiRod.MouseButton1Click:Connect(function()
     isGantiRod = not isGantiRod
     BtnGantiRod.BackgroundTransparency = isGantiRod and 0 or 0.4
@@ -666,13 +654,13 @@ BtnGantiRod.MouseButton1Click:Connect(function()
     end
 end)
 
--- Tombol TEST "O" (Langsung test eksekusi ganti rod saat diklik tanpa nunggu waktu)
-BtnTestO.MouseButton1Click:Connect(function()
+-- Tombol O (Instant tanpa cek waktu, langsung tutup pancing -> ganti rod -> buka pancing)
+BtnO.MouseButton1Click:Connect(function()
     task.spawn(function()
-        BtnTestO.BackgroundTransparency = 0
+        BtnO.BackgroundTransparency = 0
         processGantiRod()
         task.wait(0.5)
-        BtnTestO.BackgroundTransparency = 0.4
+        BtnO.BackgroundTransparency = 0.4
     end)
 end)
 

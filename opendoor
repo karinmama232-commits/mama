@@ -60,8 +60,8 @@ MainFrame.Name = "OpenDoorMain"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(253, 243, 226)
 MainFrame.BackgroundTransparency = 0.1
-MainFrame.Position = UDim2.new(0.5, -110, 0.5, -135)
-MainFrame.Size = UDim2.new(0, 220, 0, 210)
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 220, 0, 244)
 MainFrame.Visible = false
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -118,7 +118,7 @@ local function styleBtn(b, fSize)
 end
 
 -- ==========================================
--- 2. TATA LETAK 6 TOMBOL BARU
+-- 2. TATA LETAK TOMBOL
 -- ==========================================
 
 -- Baris 1: Pintu 1, Pintu 2, Pintu 3
@@ -161,6 +161,25 @@ BtnAutoTombol3.Position = UDim2.new(0, 10, 0, 150)
 BtnAutoTombol3.Text = "AUTO TOMBOL 3"
 styleBtn(BtnAutoTombol3, 9)
 
+-- Baris 5: Mancing 1, Mancing 2, Mancing 3
+local BtnMancing1 = Instance.new("TextButton", MainFrame)
+BtnMancing1.Size = UDim2.new(0, 62, 0, 28)
+BtnMancing1.Position = UDim2.new(0, 10, 0, 186)
+BtnMancing1.Text = "MANCING 1"
+styleBtn(BtnMancing1, 8)
+
+local BtnMancing2 = Instance.new("TextButton", MainFrame)
+BtnMancing2.Size = UDim2.new(0, 62, 0, 28)
+BtnMancing2.Position = UDim2.new(0, 79, 0, 186)
+BtnMancing2.Text = "MANCING 2"
+styleBtn(BtnMancing2, 8)
+
+local BtnMancing3 = Instance.new("TextButton", MainFrame)
+BtnMancing3.Size = UDim2.new(0, 62, 0, 28)
+BtnMancing3.Position = UDim2.new(0, 148, 0, 186)
+BtnMancing3.Text = "MANCING 3"
+styleBtn(BtnMancing3, 8)
+
 -- ==========================================
 -- 3. LOGIKA EKSEKUSI TOMBOL
 -- ==========================================
@@ -195,7 +214,7 @@ BtnPintu2.MouseButton1Click:Connect(function()
     end)
 end)
 
--- PINTU 3 (Koordinat Pintu 3 disesuaikan / placeholder aman)
+-- PINTU 3
 BtnPintu3.MouseButton1Click:Connect(function()
     BtnPintu3.BackgroundTransparency = 0
     task.spawn(function()
@@ -286,5 +305,50 @@ BtnAutoTombol3.MouseButton1Click:Connect(function()
         end)
         task.wait(0.3)
         BtnAutoTombol3.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- MANCING 1
+BtnMancing1.MouseButton1Click:Connect(function()
+    BtnMancing1.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-755.256531, 7.28787947, 5199.7832, 0.873855233, -5.75456705e-09, 0.486186206, -6.48782028e-10, 1, 1.30022375e-08, -0.486186206, -1.16775025e-08, 0.873855233)
+            end
+        end)
+        task.wait(0.3)
+        BtnMancing1.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- MANCING 2
+BtnMancing2.MouseButton1Click:Connect(function()
+    BtnMancing2.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-835.172363, 18.9663944, 5053.12695, -0.918210804, -9.5275583e-09, -0.396092087, -2.26853647e-08, 1, 2.85347497e-08, 0.396092087, 3.51864102e-08, -0.918210804)
+            end
+        end)
+        task.wait(0.3)
+        BtnMancing2.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- MANCING 3
+BtnMancing3.MouseButton1Click:Connect(function()
+    BtnMancing3.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-911.933167, 30.0566025, 5113.63135, -0.715471208, 3.65361208e-09, 0.698642254, 1.63124856e-08, 1, 1.14758327e-08, -0.698642254, 1.9607219e-08, -0.715471208)
+            end
+        end)
+        task.wait(0.3)
+        BtnMancing3.BackgroundTransparency = 0.4
     end)
 end)

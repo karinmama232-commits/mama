@@ -202,7 +202,7 @@ BtnPintu3.MouseButton1Click:Connect(function()
         pcall(function()
             local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
             if hrp then
-                hrp.CFrame = CFrame.new(-908.023132, 30.0566044, 5139.74902, -0.846317172, 1.06416866e-08, 0.53267926, -1.23840849e-08, 1, -3.96534112e-08, -0.53267926, -4.01561095e-08, -0.846317172)
+                hrp.CFrame = CFrame.new(-898.179321, 30.0566025, 5096.28613, 0.971639037, -3.9838536e-08, -0.236468881, 4.38812258e-08, 1, 1.18331709e-08, 0.236468881, -2.1874115e-08, 0.971639037)
             end
         end)
         task.wait(0.3)

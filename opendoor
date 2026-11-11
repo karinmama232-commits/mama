@@ -1,0 +1,290 @@
+-- [[ OPEN DOOR ELEMENT - pociXkarin GLOBAL EDITION ]] --
+
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+
+local Net = ReplicatedStorage:WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+
+-- ==========================================
+-- FUNGSI GLOBAL & HELPER
+-- ==========================================
+local function secureClick()
+    pcall(function()
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") then
+                local char = Player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    local dist = (char.HumanoidRootPart.Position - obj.Parent.Position).Magnitude
+                    if dist < 25 then
+                        task.wait(0.2)
+                        fireproximityprompt(obj)
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function clickTimes(times)
+    for i = 1, times do
+        secureClick()
+        task.wait(0.3)
+    end
+end
+
+-- ==========================================
+-- 1. SETUP UI COMPACT
+-- ==========================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "OpenDoorElementUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ResetOnSpawn = false
+
+local IconButton = Instance.new("TextButton")
+IconButton.Name = "OpenDoorIcon"
+IconButton.Parent = ScreenGui
+IconButton.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+IconButton.Position = UDim2.new(0, 15, 0.5, -22)
+IconButton.Size = UDim2.new(0, 45, 0, 45)
+IconButton.Text = "🎃"
+IconButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+IconButton.TextSize = 25
+IconButton.Active = true
+IconButton.Draggable = true
+Instance.new("UICorner", IconButton).CornerRadius = UDim.new(0, 8)
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "OpenDoorMain"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(253, 243, 226)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Position = UDim2.new(0.5, -110, 0.5, -135)
+MainFrame.Size = UDim2.new(0, 220, 0, 210)
+MainFrame.Visible = false
+MainFrame.Active = true
+MainFrame.Draggable = true
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Header = Instance.new("Frame", MainFrame)
+Header.Size = UDim2.new(1, 0, 0, 32)
+Header.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", Header)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "🚪 Open Door Element"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 10
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local HideBtn = Instance.new("TextButton", Header)
+HideBtn.Position = UDim2.new(0.70, 0, 0.15, 0)
+HideBtn.Size = UDim2.new(0, 22, 0, 22)
+HideBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+HideBtn.BackgroundTransparency = 0.4
+HideBtn.Text = "-"
+HideBtn.TextColor3 = Color3.fromRGB(230, 126, 34)
+HideBtn.TextSize = 16
+HideBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", HideBtn).CornerRadius = UDim.new(0, 6)
+
+local CloseBtn = Instance.new("TextButton", Header)
+CloseBtn.Position = UDim2.new(0.84, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 22, 0, 22)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.BackgroundTransparency = 0.4
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(230, 126, 34)
+CloseBtn.TextSize = 14
+CloseBtn.Font = Enum.Font.GothamBold
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
+
+IconButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+HideBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
+CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+
+local function styleBtn(b, fSize)
+    b.BackgroundColor3 = Color3.fromRGB(230, 126, 34)
+    b.BackgroundTransparency = 0.4
+    b.TextColor3 = Color3.new(1,1,1)
+    b.TextSize = fSize
+    b.Font = Enum.Font.GothamBold
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+end
+
+-- ==========================================
+-- 2. TATA LETAK 6 TOMBOL BARU
+-- ==========================================
+
+-- Baris 1: Pintu 1, Pintu 2, Pintu 3
+local BtnPintu1 = Instance.new("TextButton", MainFrame)
+BtnPintu1.Size = UDim2.new(0, 62, 0, 28)
+BtnPintu1.Position = UDim2.new(0, 10, 0, 42)
+BtnPintu1.Text = "PINTU 1"
+styleBtn(BtnPintu1, 8)
+
+local BtnPintu2 = Instance.new("TextButton", MainFrame)
+BtnPintu2.Size = UDim2.new(0, 62, 0, 28)
+BtnPintu2.Position = UDim2.new(0, 79, 0, 42)
+BtnPintu2.Text = "PINTU 2"
+styleBtn(BtnPintu2, 8)
+
+local BtnPintu3 = Instance.new("TextButton", MainFrame)
+BtnPintu3.Size = UDim2.new(0, 62, 0, 28)
+BtnPintu3.Position = UDim2.new(0, 148, 0, 42)
+BtnPintu3.Text = "PINTU 3"
+styleBtn(BtnPintu3, 8)
+
+-- Baris 2: Auto Tombol 1
+local BtnAutoTombol1 = Instance.new("TextButton", MainFrame)
+BtnAutoTombol1.Size = UDim2.new(0, 200, 0, 28)
+BtnAutoTombol1.Position = UDim2.new(0, 10, 0, 78)
+BtnAutoTombol1.Text = "AUTO TOMBOL 1"
+styleBtn(BtnAutoTombol1, 9)
+
+-- Baris 3: Auto Tombol 2
+local BtnAutoTombol2 = Instance.new("TextButton", MainFrame)
+BtnAutoTombol2.Size = UDim2.new(0, 200, 0, 28)
+BtnAutoTombol2.Position = UDim2.new(0, 10, 0, 114)
+BtnAutoTombol2.Text = "AUTO TOMBOL 2"
+styleBtn(BtnAutoTombol2, 9)
+
+-- Baris 4: Auto Tombol 3
+local BtnAutoTombol3 = Instance.new("TextButton", MainFrame)
+BtnAutoTombol3.Size = UDim2.new(0, 200, 0, 28)
+BtnAutoTombol3.Position = UDim2.new(0, 10, 0, 150)
+BtnAutoTombol3.Text = "AUTO TOMBOL 3"
+styleBtn(BtnAutoTombol3, 9)
+
+-- ==========================================
+-- 3. LOGIKA EKSEKUSI TOMBOL
+-- ==========================================
+
+-- PINTU 1
+BtnPintu1.MouseButton1Click:Connect(function()
+    BtnPintu1.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-723.625366, 7.28811502, 5194.5, -0.989724457, -3.03635552e-08, -0.142987952, -2.68430291e-08, 1, -2.65501559e-08, 0.142987952, -2.24391083e-08, -0.989724457)
+            end
+        end)
+        task.wait(0.3)
+        BtnPintu1.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- PINTU 2
+BtnPintu2.MouseButton1Click:Connect(function()
+    BtnPintu2.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-807.691772, 18.9663906, 5074.22021, -0.955084443, 1.95657179e-08, 0.29633373, 2.19587193e-08, 1, 4.74705786e-09, -0.29633373, 1.10409504e-08, -0.955084443)
+            end
+        end)
+        task.wait(0.3)
+        BtnPintu2.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- PINTU 3 (Koordinat Pintu 3 disesuaikan / placeholder aman)
+BtnPintu3.MouseButton1Click:Connect(function()
+    BtnPintu3.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.CFrame = CFrame.new(-908.023132, 30.0566044, 5139.74902, -0.846317172, 1.06416866e-08, 0.53267926, -1.23840849e-08, 1, -3.96534112e-08, -0.53267926, -4.01561095e-08, -0.846317172)
+            end
+        end)
+        task.wait(0.3)
+        BtnPintu3.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- AUTO TOMBOL 1
+BtnAutoTombol1.MouseButton1Click:Connect(function()
+    BtnAutoTombol1.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Titik 1 (klik 1x)
+                hrp.CFrame = CFrame.new(-780.248779, 7.28811502, 5123.50342, -0.765295565, 1.06813158e-09, 0.643679023, -8.005137e-09, 1, -1.11770415e-08, -0.643679023, -1.37064786e-08, -0.765295565)
+                task.wait(0.5)
+                clickTimes(1)
+                
+                -- Titik 2 (klik 2x)
+                hrp.CFrame = CFrame.new(-740.751099, 7.28811502, 5208.26562, -0.0496876612, 2.36285498e-08, -0.998764813, 4.90494867e-10, 1, 2.3633369e-08, 0.998764813, 6.84397872e-10, -0.0496876612)
+                task.wait(0.5)
+                clickTimes(2)
+                
+                -- Titik 3 (klik 3x)
+                hrp.CFrame = CFrame.new(-758.816406, 7.28811502, 5082.16846, 0.66218245, -1.64123701e-08, 0.74934268, -5.91192872e-08, 1, 7.41451487e-08, -0.74934268, -9.33982207e-08, 0.66218245)
+                task.wait(0.5)
+                clickTimes(3)
+            end
+        end)
+        task.wait(0.3)
+        BtnAutoTombol1.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- AUTO TOMBOL 2
+BtnAutoTombol2.MouseButton1Click:Connect(function()
+    BtnAutoTombol2.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Titik 1 (klik 2x)
+                hrp.CFrame = CFrame.new(-827.618652, 18.9663925, 5122.29639, 0.991379201, 1.10433213e-07, 0.131023824, -1.07494699e-07, 1, -2.9500006e-08, -0.131023824, 1.51613264e-08, 0.991379201)
+                task.wait(0.5)
+                clickTimes(2)
+                
+                -- Titik 2 (klik 3x)
+                hrp.CFrame = CFrame.new(-803.094971, 18.9663944, 5096.41406, 0.853791058, 1.10763445e-07, -0.520615816, -8.04834102e-08, 1, 8.07647851e-08, 0.520615816, -2.70553162e-08, 0.853791058)
+                task.wait(0.5)
+                clickTimes(3)
+            end
+        end)
+        task.wait(0.3)
+        BtnAutoTombol2.BackgroundTransparency = 0.4
+    end)
+end)
+
+-- AUTO TOMBOL 3
+BtnAutoTombol3.MouseButton1Click:Connect(function()
+    BtnAutoTombol3.BackgroundTransparency = 0
+    task.spawn(function()
+        pcall(function()
+            local hrp = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                -- Titik 1 (klik 1x)
+                hrp.CFrame = CFrame.new(-908.023132, 30.0566044, 5139.74902, -0.846317172, 1.06416866e-08, 0.53267926, -1.23840849e-08, 1, -3.96534112e-08, -0.53267926, -4.01561095e-08, -0.846317172)
+                task.wait(0.5)
+                clickTimes(1)
+                
+                -- Titik 2 (klik 2x)
+                hrp.CFrame = CFrame.new(-967.887329, 30.0566635, 5144.87207, 0.998318315, 1.21428267e-09, 0.0579698756, -4.41614612e-09, 1, 5.51051187e-08, -0.0579698756, -5.52684547e-08, 0.998318315)
+                task.wait(0.5)
+                clickTimes(2)
+                
+                -- Titik 3 (klik 3x)
+                hrp.CFrame = CFrame.new(-922.887085, 30.0566044, 5101.56396, 0.616167724, 4.64387142e-08, -0.787614942, -9.78347501e-08, 1, -1.75769923e-08, 0.787614942, 8.78864839e-08, 0.616167724)
+                task.wait(0.5)
+                clickTimes(3)
+            end
+        end)
+        task.wait(0.3)
+        BtnAutoTombol3.BackgroundTransparency = 0.4
+    end)
+end)

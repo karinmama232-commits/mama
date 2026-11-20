@@ -2,7 +2,7 @@
 local webhook_url = "https://discord.com/api/webhooks/1501401598243639336/YAARK-eSD9nbygohQ64puYEX5zBoSPRNTLj7wcqD8Zup6nIsWk0aYpDGV2MK2MbwfftW"
 
 -- Kata kunci yang dipantau (format huruf kecil)
-local keywords = { "poci", "pocix", "pocistore" }
+local keywords = { "poci", "pocix", "popochop", "wtb", "evestore", "mamasore", "pocistore" }
 
 -- Variabel penyimpan total token selama script berjalan
 local totalTokens = 0

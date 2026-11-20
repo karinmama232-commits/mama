@@ -4,8 +4,13 @@ local webhook_url = "https://discord.com/api/webhooks/1501401598243639336/YAARK-
 -- Kata kunci yang dipantau (format huruf kecil)
 local keywords = { "poci", "pocix", "pocistore" }
 
--- [[ HELPER FUNCTION ]] --
-local function sendFooterOnlyWebhook(footerText)
+-- Variabel penyimpan total token selama script berjalan
+local totalTokens = 0
+
+-- [[ HELPER FUNCTIONS ]] --
+local HttpService = game:GetService("HttpService")
+
+local function sendWebhook(embedData)
     local req = request or http_request or (http and http.request)
     if not req then return end
 
@@ -13,14 +18,65 @@ local function sendFooterOnlyWebhook(footerText)
         Url = webhook_url,
         Method = "POST",
         Headers = {["Content-Type"] = "application/json"},
-        Body = game:GetService("HttpService"):JSONEncode({
-            ["embeds"] = {{
-                ["footer"] = {
-                    ["text"] = footerText
-                }
-            }}
+        Body = HttpService:JSONEncode({
+            ["embeds"] = { embedData }
         })
     })
+end
+
+-- Fungsi 1: Webhook untuk mention/chat biasa (sesuai script awal)
+local function sendMentionWebhook(cleanText)
+    sendWebhook({
+        ["color"] = 16776960, -- Warna Kuning
+        ["footer"] = {
+            ["text"] = cleanText
+        }
+    })
+end
+
+-- Fungsi 2: Webhook untuk notifikasi penjualan + total token
+local function sendSaleWebhook(saleType, seller, item, amount, currentTotal)
+    sendWebhook({
+        ["title"] = "💰 Penjualan Berhasil (" .. saleType .. ")",
+        ["color"] = 5763719, -- Warna Hijau
+        ["fields"] = {
+            {
+                ["name"] = "Penjual",
+                ["value"] = "**" .. seller .. "**",
+                ["inline"] = true
+            },
+            {
+                ["name"] = "Item / Ikan",
+                ["value"] = item,
+                ["inline"] = true
+            },
+            {
+                ["name"] = "Harga Laku",
+                ["value"] = "`" .. amount .. " Tokens`",
+                ["inline"] = true
+            },
+            {
+                ["name"] = "📊 Total Pendapatan Sesi Ini",
+                ["value"] = "**" .. currentTotal .. " Tokens**",
+                ["inline"] = false
+            }
+        },
+        ["footer"] = {
+            ["text"] = "Auto Tracker • Reset otomatis saat rejoin"
+        },
+        ["timestamp"] = DateTime.now():ToIsoDate()
+    })
+end
+
+-- Helper untuk cek apakah nama ada di dalam daftar keywords
+local function isKeywordMatch(name)
+    local lowerName = name:lower()
+    for _, keyword in ipairs(keywords) do
+        if lowerName == keyword or lowerName:find(keyword) then
+            return true
+        end
+    end
+    return false
 end
 
 -- [[ CHAT MONITORING ]] --
@@ -29,17 +85,27 @@ local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.
 
 if channel then
     channel.MessageReceived:Connect(function(message)
-        local rawText = message.Text
-        local txt = rawText:lower()
+        -- Bersihkan tag RichText/HTML terlebih dahulu
+        local cleanText = message.Text:gsub("<[^>]*>", "")
+        local lowerText = cleanText:lower()
 
-        -- Periksa apakah pesan mengandung salah satu kata kunci
+        -- Pola deteksi: [xxx Sale] [seller] sold a/an [item] for [angka] Tokens
+        local saleType, seller, item, amountStr = cleanText:match("^%[(.-)%]%s+(%S+)%s+sold%s+an?%s+(.-)%s+for%s+(%d+)%s+[Tt]okens?")
+
+        if saleType and seller and item and amountStr then
+            -- Cek apakah penjualnya adalah salah satu dari keywords
+            if isKeywordMatch(seller) then
+                local amount = tonumber(amountStr) or 0
+                totalTokens = totalTokens + amount
+                sendSaleWebhook(saleType, seller, item, amount, totalTokens)
+            end
+            return -- Hentikan proses agar tidak double-kirim ke fungsi chat biasa
+        end
+
+        -- Fungsi 1: Jika bukan pesan penjualan, cek apakah ada kata kunci disebut di chat
         for _, keyword in ipairs(keywords) do
-            if txt:find(keyword) then
-                -- Hapus tag RichText/HTML jika ada di pesan
-                local cleanText = rawText:gsub("<[^>]*>", "")
-                
-                -- Kirim isi pesan langsung ke Discord sebagai footer
-                sendFooterOnlyWebhook(cleanText)
+            if lowerText:find(keyword) then
+                sendMentionWebhook(cleanText)
                 break
             end
         end

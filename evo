@@ -1,0 +1,194 @@
+-- [[ CONFIGURATION ]] --
+local webhook_url = "https://discord.com/api/webhooks/1501314866235969647/ue6JQKQryItIT4VE-_QKcSbMVqFnUGc39Ki6yoD5wN6G4N2qW_1JGkfyCHMeYzs2OaiA"
+
+local BATCH_SIZE = 10
+local TARGET_ITEM_LOWER = "evolved enchant stone"
+
+-- Server Mapping (Exact names as provided)
+local serverMap = {
+    ["chzmilk21"]    = "B1", ["chzmilk22"]    = "B1", ["chzmilk23"]   = "B1", ["chzmilk24"]    = "B1",
+    ["chzmilk16"]    = "B2", ["chzmilk17"]    = "B2", ["chzmilk18"]    = "B2", ["chzmilk20"]    = "B2",
+    ["gigafishrod"]  = "B3", ["fastreelfish"] = "B3", ["bercandcanda"] = "B3", ["yuumaainn"]    = "B3",
+    ["chzmilk25"]    = "B4", ["chzmilk26"]    = "B4", ["chzmilk27"]    = "B4", ["chzmilk28"]    = "B4",
+    ["gosfintiga"]   = "B5", ["gosfindua"]    = "B5", ["goafinsatu"]   = "B5", ["gosfinempat"]  = "B5",
+    ["longfishbit"]  = "B6", ["botolyklttt"]  = "B6", ["maachaamichi"] = "B6", ["uunnttuunngg"] = "B6",
+    ["claimpass20"]  = "B7", ["claimpass19"]  = "B7", ["claimpass18"]  = "B7", ["claimpass17"]  = "B7",
+    ["claimpass16"]  = "B8", ["claimpass15"]  = "B8", ["claimpass14"]  = "B8", ["claimpass13"]  = "B8",
+    ["claimpass12"]  = "B9", ["claimpass11"]  = "B9", ["claimpass10"]  = "B9", ["claimpass9"]   = "B9"
+}
+
+-- Batch Buffer (Reset every 10 catches)
+local batchBuffer = {
+    count = 0,
+    players = {},
+    playerOrder = {},
+    server = "Unknown",
+    startTime = nil
+}
+
+-- Total Accumulated Catches (Reset only via !claim)
+local totalCatches = {
+    total = 0,
+    players = {},
+    playerOrder = {}
+}
+
+-- [[ HELPER FUNCTIONS ]] --
+local function sendWebhookPayload(embedTitle, descriptionText, embedColor, footerText)
+    local req = request or http_request or (http and http.request)
+    if not req then return end
+
+    req({
+        Url = webhook_url,
+        Method = "POST",
+        Headers = {["Content-Type"] = "application/json"},
+        Body = game:GetService("HttpService"):JSONEncode({
+            ["embeds"] = {{
+                ["title"] = embedTitle,
+                ["description"] = descriptionText,
+                ["color"] = embedColor,
+                ["footer"] = {
+                    ["text"] = footerText
+                }
+            }}
+        })
+    })
+end
+
+local function detectServer(playerName)
+    if not playerName then return "Unknown" end
+    return serverMap[playerName:lower()] or "Unknown"
+end
+
+local function formatDuration(seconds)
+    if seconds < 60 then
+        return string.format("%d detik", seconds)
+    end
+    local mins = math.floor(seconds / 60)
+    local secs = seconds % 60
+    if secs > 0 then
+        return string.format("%d menit %d detik", mins, secs)
+    else
+        return string.format("%d menit", mins)
+    end
+end
+
+local function getTotalEvoString()
+    if totalCatches.total == 0 then
+        return "Total Evo: 0"
+    end
+
+    local lines = { "Total Evo: " .. totalCatches.total }
+    for _, player in ipairs(totalCatches.playerOrder) do
+        local count = totalCatches.players[player]
+        if count and count > 0 then
+            table.insert(lines, string.format("%d %s", count, player))
+        end
+    end
+
+    return table.concat(lines, "\n")
+end
+
+-- [[ BATCH SUMMARY FUNCTION ]] --
+local function sendBatchSummary()
+    local elapsedSeconds = batchBuffer.startTime and (os.time() - batchBuffer.startTime) or 0
+    local durationStr = formatDuration(elapsedSeconds)
+
+    local footerStr = "Event Session: " .. durationStr .. "\n" ..
+                      getTotalEvoString() .. "\n" ..
+                      "Type **!claim** in chat to collect evo"
+
+    local playerListStr = table.concat(batchBuffer.playerOrder, ", ")
+
+    local title = "Evolved Enchant Stone Has Concluded!"
+    local description = "**Server: " .. batchBuffer.server .. "**\n" ..
+                        "Caught " .. batchBuffer.count .. " Evo\n" ..
+                        "(" .. playerListStr .. ")"
+    local color = 10181046 -- Purple
+
+    sendWebhookPayload(title, description, color, footerStr)
+
+    -- Reset Batch Buffer Only
+    batchBuffer.count = 0
+    batchBuffer.players = {}
+    batchBuffer.playerOrder = {}
+    batchBuffer.server = "Unknown"
+    batchBuffer.startTime = nil
+end
+
+-- [[ STARTUP NOTIFICATION ]] --
+local localPlayerName = game.Players.LocalPlayer.Name
+local startupServer = detectServer(localPlayerName)
+
+sendWebhookPayload(
+    "Webhook Fishit Active",
+    "Script initialized for account: **" .. localPlayerName .. "** (Server: **" .. startupServer .. "**)\nMonitoring Evolved Enchant Stone logs (Batch: " .. BATCH_SIZE .. ")...",
+    65535,
+    "Status: Monitoring Active | Type **!claim** in chat to collect evo"
+)
+
+-- [[ CHAT MONITORING & CLAIM SYSTEM ]] --
+local TextChatService = game:GetService("TextChatService")
+local channel = TextChatService:FindFirstChild("RBXGeneral") or TextChatService.TextChannels:FindFirstChild("RBXGeneral")
+
+if channel then
+    channel.MessageReceived:Connect(function(message)
+        local rawText = message.Text
+        local txt = rawText:lower()
+        local senderName = message.TextSource and game.Players:GetPlayerByUserId(message.TextSource.UserId) and game.Players:GetPlayerByUserId(message.TextSource.UserId).Name or "Unknown Player"
+
+        -- 1. DETECT !CLAIM COMMAND
+        if txt:find("!claim") then
+            local claimedTotal = totalCatches.total
+
+            sendWebhookPayload(
+                "Evo Claimed Successfully!",
+                "All accumulated Evolved Enchant Stone have been claimed by **" .. senderName .. "**!\n" ..
+                "Total Claimed: **" .. claimedTotal .. " Evo**",
+                65280, -- Green
+                "Counter has been reset to 0"
+            )
+
+            -- Reset Accumulated Totals
+            totalCatches.total = 0
+            totalCatches.players = {}
+            totalCatches.playerOrder = {}
+            return
+        end
+
+        -- 2. DETECT EVOLVED ENCHANT STONE CATCH LOGS
+        if txt:find("obtained") and txt:find(TARGET_ITEM_LOWER) then
+            local cleanerText = rawText:gsub("<[^>]*>", "")
+            local luckyPlayer = cleanerText:match("^(.-) obtained") or "Unknown Player"
+
+            -- Start timer & detect server on first catch of the batch
+            if batchBuffer.count == 0 then
+                batchBuffer.startTime = os.time()
+                batchBuffer.server = detectServer(luckyPlayer)
+            elseif batchBuffer.server == "Unknown" then
+                batchBuffer.server = detectServer(luckyPlayer)
+            end
+
+            -- Add to Batch Buffer
+            batchBuffer.count = batchBuffer.count + 1
+            if not batchBuffer.players[luckyPlayer] then
+                batchBuffer.players[luckyPlayer] = 0
+                table.insert(batchBuffer.playerOrder, luckyPlayer)
+            end
+            batchBuffer.players[luckyPlayer] = batchBuffer.players[luckyPlayer] + 1
+
+            -- Add to Lifetime Accumulated Total
+            totalCatches.total = totalCatches.total + 1
+            if not totalCatches.players[luckyPlayer] then
+                totalCatches.players[luckyPlayer] = 0
+                table.insert(totalCatches.playerOrder, luckyPlayer)
+            end
+            totalCatches.players[luckyPlayer] = totalCatches.players[luckyPlayer] + 1
+
+            -- Trigger Webhook when reaching 10 catches
+            if batchBuffer.count >= BATCH_SIZE then
+                sendBatchSummary()
+            end
+        end
+    end)
+end

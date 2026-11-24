@@ -3,18 +3,19 @@ local webhook_url = "https://discord.com/api/webhooks/1501314866235969647/ue6JQK
 
 local BATCH_SIZE = 10
 local TARGET_ITEM_LOWER = "evolved enchant stone"
+local SCRIPT_START_TIME = os.time()
 
 -- Server Mapping (Exact names as provided)
 local serverMap = {
     ["chzmilk21"]    = "B1", ["chzmilk22"]    = "B1", ["chzmilk23"]   = "B1", ["chzmilk24"]    = "B1",
-    ["chzmilk16"]    = "B2", ["chzmilk17"]    = "B2", ["chzmilk18"]    = "B2", ["chzmilk20"]    = "B2",
+    ["chzmilk16"]    = "B2", ["chzmilk17"]    = "B2", ["chzmilk18"]   = "B2", ["chzmilk20"]    = "B2",
     ["gigafishrod"]  = "B3", ["fastreelfish"] = "B3", ["bercandcanda"] = "B3", ["yuumaainn"]    = "B3",
-    ["chzmilk25"]    = "B4", ["chzmilk26"]    = "B4", ["chzmilk27"]    = "B4", ["chzmilk28"]    = "B4",
-    ["gosfintiga"]   = "B5", ["gosfindua"]    = "B5", ["goafinsatu"]   = "B5", ["gosfinempat"]  = "B5",
+    ["chzmilk25"]    = "B4", ["chzmilk26"]    = "B4", ["chzmilk27"]   = "B4", ["chzmilk28"]    = "B4",
+    ["gosfintiga"]   = "B5", ["gosfindua"]    = "B5", ["goafinsatu"]  = "B5", ["gosfinempat"]  = "B5",
     ["longfishbit"]  = "B6", ["botolyklttt"]  = "B6", ["maachaamichi"] = "B6", ["uunnttuunngg"] = "B6",
-    ["claimpass20"]  = "B7", ["claimpass19"]  = "B7", ["claimpass18"]  = "B7", ["claimpass17"]  = "B7",
-    ["claimpass16"]  = "B8", ["claimpass15"]  = "B8", ["claimpass14"]  = "B8", ["claimpass13"]  = "B8",
-    ["claimpass12"]  = "B9", ["claimpass11"]  = "B9", ["claimpass10"]  = "B9", ["claimpass9"]   = "B9"
+    ["claimpass20"]  = "B7", ["claimpass19"]  = "B7", ["claimpass18"] = "B7", ["claimpass17"]  = "B7",
+    ["claimpass16"]  = "B8", ["claimpass15"]  = "B8", ["claimpass14"] = "B8", ["claimpass13"]  = "B8",
+    ["claimpass12"]  = "B9", ["claimpass11"]  = "B9", ["claimpass10"] = "B9", ["claimpass9"]   = "B9"
 }
 
 -- Batch Buffer (Reset every 10 catches)
@@ -38,19 +39,24 @@ local function sendWebhookPayload(embedTitle, descriptionText, embedColor, foote
     local req = request or http_request or (http and http.request)
     if not req then return end
 
+    local embedData = {
+        ["description"] = descriptionText,
+        ["color"] = embedColor,
+        ["footer"] = {
+            ["text"] = footerText
+        }
+    }
+
+    if embedTitle and embedTitle ~= "" then
+        embedData["title"] = embedTitle
+    end
+
     req({
         Url = webhook_url,
         Method = "POST",
         Headers = {["Content-Type"] = "application/json"},
         Body = game:GetService("HttpService"):JSONEncode({
-            ["embeds"] = {{
-                ["title"] = embedTitle,
-                ["description"] = descriptionText,
-                ["color"] = embedColor,
-                ["footer"] = {
-                    ["text"] = footerText
-                }
-            }}
+            ["embeds"] = {embedData}
         })
     })
 end
@@ -73,40 +79,58 @@ local function formatDuration(seconds)
     end
 end
 
-local function getTotalEvoString()
-    if totalCatches.total == 0 then
-        return "Total Evo: 0"
-    end
+local function formatRuntime(seconds)
+    local hrs = math.floor(seconds / 3600)
+    local mins = math.floor((seconds % 3600) / 60)
+    local secs = seconds % 60
+    return string.format("%02d:%02d:%02d", hrs, mins, secs)
+end
 
-    local lines = { "Total Evo: " .. totalCatches.total }
+local function getBatchBreakdownString()
+    local items = {}
+    for _, player in ipairs(batchBuffer.playerOrder) do
+        local count = batchBuffer.players[player]
+        if count and count > 0 then
+            table.insert(items, string.format("(%d) %s", count, player))
+        end
+    end
+    return table.concat(items, ", ")
+end
+
+local function getTotalBreakdownString()
+    local lines = {}
     for _, player in ipairs(totalCatches.playerOrder) do
         local count = totalCatches.players[player]
         if count and count > 0 then
-            table.insert(lines, string.format("%d %s", count, player))
+            table.insert(lines, string.format("(%d) %s", count, player))
         end
     end
-
     return table.concat(lines, "\n")
 end
 
 -- [[ BATCH SUMMARY FUNCTION ]] --
 local function sendBatchSummary()
-    local elapsedSeconds = batchBuffer.startTime and (os.time() - batchBuffer.startTime) or 0
-    local durationStr = formatDuration(elapsedSeconds)
+    local now = os.time()
+    local elapsedBatch = batchBuffer.startTime and (now - batchBuffer.startTime) or 0
+    local elapsedRuntime = now - SCRIPT_START_TIME
 
-    local footerStr = "Event Session: " .. durationStr .. "\n" ..
-                      getTotalEvoString() .. "\n" ..
+    local durationStr = formatDuration(elapsedBatch)
+    local runtimeStr = formatRuntime(elapsedRuntime)
+    local batchListStr = getBatchBreakdownString()
+    local totalListStr = getTotalBreakdownString()
+
+    local description = "**Server: " .. batchBuffer.server .. "**\n" ..
+                        "Total Evo: " .. totalCatches.total
+
+    local footerStr = "**Script Runtime:** " .. runtimeStr .. "\n\n" ..
+                      batchListStr .. "\n\n" ..
+                      batchBuffer.count .. " Evo dalam waktu: " .. durationStr .. "\n\n" ..
+                      totalListStr .. "\n\n" ..
                       "Type **!claim** in chat to collect evo"
 
-    local playerListStr = table.concat(batchBuffer.playerOrder, ", ")
-
-    local title = "Evolved Enchant Stone Has Concluded!"
-    local description = "**Server: " .. batchBuffer.server .. "**\n" ..
-                        "Caught " .. batchBuffer.count .. " Evo\n" ..
-                        "(" .. playerListStr .. ")"
     local color = 10181046 -- Purple
 
-    sendWebhookPayload(title, description, color, footerStr)
+    sendWebhookPayload(nil, description, color, footerStr)
 
     -- Reset Batch Buffer Only
     batchBuffer.count = 0
